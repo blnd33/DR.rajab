@@ -65,6 +65,21 @@ final class Pg
         DB::statement("CREATE TRIGGER {$table}_append_only BEFORE UPDATE OR DELETE ON {$table} FOR EACH ROW EXECUTE FUNCTION forbid_update_delete()");
     }
 
+    /**
+     * UNIQUE index where NULLs count as equal (one lot bucket per location, even
+     * when lot/expiry/shelf are empty). SQLite has no NULLS NOT DISTINCT; the
+     * preview gets a plain unique index and services find-or-create under a lock.
+     *
+     * @param  list<string>  $columns
+     */
+    public static function uniqueNullsNotDistinct(string $table, string $name, array $columns): void
+    {
+        $list = implode(', ', $columns);
+        $suffix = self::isPostgres() ? ' NULLS NOT DISTINCT' : '';
+
+        DB::statement("CREATE UNIQUE INDEX {$name} ON {$table} ({$list}){$suffix}");
+    }
+
     public static function trigramIndex(string $table, string $column): void
     {
         if (self::isPostgres()) {

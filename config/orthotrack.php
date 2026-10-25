@@ -1,6 +1,10 @@
 <?php
 
+use App\Services\Barcode\Parsers\Gs1Parser;
+use App\Services\Barcode\Parsers\InternalLabelParser;
+use App\Services\Barcode\Parsers\PlainCodeParser;
 use App\Services\Branches\Checks\DocumentsCheck;
+use App\Services\Branches\Checks\StockCheck;
 use App\Services\Branches\Checks\UsersCheck;
 
 return [
@@ -36,7 +40,29 @@ return [
     'branch_checks' => [
         UsersCheck::class,
         DocumentsCheck::class,
+        StockCheck::class,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Barcode parsers
+    |--------------------------------------------------------------------------
+    |
+    | Tried in order; the first that understands a scan wins. To support a new
+    | vendor label format, add one ScanParser class above PlainCodeParser.
+    |
+    */
+    'scan_parsers' => [
+        InternalLabelParser::class,
+        Gs1Parser::class,
+        PlainCodeParser::class,
+    ],
+
+    // Excel imports: rows applied per queued job.
+    'import_chunk_size' => 500,
+
+    // Daily expiry / low-stock check (business timezone).
+    'stock_alerts_time' => '06:00',
 
     /*
     |--------------------------------------------------------------------------

@@ -4,8 +4,9 @@
  * Usage (Blade):
  *   <div x-data="scanner({ method: 'handleScan' })"> … </div>
  * Every scan calls $wire[method](raw) when `method` is set and dispatches a `scanned`
- * browser event { raw, symbology, source }. Works client-side; parsing (GS1 etc.)
- * happens on the server (Phase 1 parsers).
+ * browser event { raw, symbology, source }. Parsing (GS1 etc.) happens on the server.
+ * With { serverFeedback: true } the beep/vibration waits for the server's verdict
+ * (`scan-feedback` event: success = found, error = unknown / not allowed).
  */
 import { feedback } from './feedback'
 import { stripSymbologyId } from './symbology'
@@ -16,6 +17,7 @@ const DUPLICATE_WINDOW_MS = 1500
 
 export default (options = {}) => ({
     method: options.method ?? null,
+    serverFeedback: options.serverFeedback ?? false,
     cameraOn: false,
     cameraError: null,
     starting: false,
@@ -131,7 +133,7 @@ export default (options = {}) => ({
         if (this.lastScan && this.lastScan.value === value && now - this.lastScan.at < DUPLICATE_WINDOW_MS) return
         this.lastScan = { value, at: now }
 
-        feedback('success')
+        if (!this.serverFeedback) feedback('success')
 
         const detail = { raw: value, symbology: symbology ?? format, source }
         this.$dispatch('scanned', detail)

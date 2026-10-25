@@ -13,6 +13,10 @@
 
 @custom-variant rtl (&:where([dir='rtl'], [dir='rtl'] *));
 
+/* The ops app is light-only. Shared components (expiry chip…) carry dark: styles for the
+   admin panel, which switches with a .dark class — never apply them because of the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
     html {
         -webkit-text-size-adjust: 100%;

@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Branches;
 use App\Filament\Admin\Resources\Branches\Pages\CreateBranch;
 use App\Filament\Admin\Resources\Branches\Pages\EditBranch;
 use App\Filament\Admin\Resources\Branches\Pages\ListBranches;
+use App\Filament\Admin\Resources\Branches\RelationManagers\LocationsRelationManager;
 use App\Filament\Admin\Resources\Branches\Schemas\BranchForm;
 use App\Filament\Admin\Resources\Branches\Tables\BranchesTable;
 use App\Models\Branch;
@@ -47,6 +48,11 @@ class BranchResource extends Resource
     public static function table(Table $table): Table
     {
         return BranchesTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [LocationsRelationManager::class];
     }
 
     public static function getPages(): array

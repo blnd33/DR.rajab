@@ -70,6 +70,7 @@ class AdminPanelProvider extends PanelProvider
             ->unsavedChangesAlerts()
             ->navigationGroups([
                 NavigationGroup::make(fn () => __('Operations'))->collapsible(),
+                NavigationGroup::make(fn () => __('Stock'))->collapsible(),
                 NavigationGroup::make(fn () => __('Catalog'))->collapsible(),
                 NavigationGroup::make(fn () => __('Finance'))->collapsible(),
                 NavigationGroup::make(fn () => __('Administration'))->collapsible(),

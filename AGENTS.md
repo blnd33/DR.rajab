@@ -4,7 +4,7 @@ Read `docs/ARCHITECTURE.md` and `docs/DATABASE.md` before changing code. The cli
 
 ## Hard rules
 - Business logic only in `app/Services/*`. Filament resources (`app/Filament/Admin`) and Livewire components (`app/Livewire/Ops`) call services; they never write stock or money directly.
-- Every stock / money change: `DB::transaction` + `lockForUpdate` + a ledger row. Ledgers and `activity_log` are append-only (Postgres trigger) — corrections are new reversing rows.
+- Every stock / money change: `DB::transaction` + `lockForUpdate` + a ledger row. Stock goes only through `App\Services\Stock\StockMovementService`; new barcode formats = a new `ScanParser` in `config('orthotrack.scan_parsers')`. Ledgers and `activity_log` are append-only (Postgres trigger) — corrections are new reversing rows.
 - Authorization = permission ("what", `app/Services/Permissions/PermissionRegistry.php`) **and** branch scope ("where", `BranchScopeResolver`). Add new permissions to the registry; never hardcode role names in checks.
 - Nothing financial or stock-related is hard-deleted (void/cancel with a required reason).
 - Money: `numeric(18,4)` + `brick/math`; rates `numeric(18,8)`; every financial row stores currency + `fx_snapshot_id`.
@@ -17,4 +17,5 @@ Read `docs/ARCHITECTURE.md` and `docs/DATABASE.md` before changing code. The cli
 - `php artisan migrate:fresh --seed` — schema + demo data (non-production)
 - `php artisan test` — Pest (feature tests need PostgreSQL database `orthotrack_test`)
 - `vendor/bin/phpstan analyse` · `vendor/bin/pint`
+- `php artisan stock:alerts` — daily expiry-level / low-stock digests (scheduled 06:00)
 - `npm run dev` / `npm run build`

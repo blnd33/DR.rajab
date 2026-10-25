@@ -1,7 +1,8 @@
-{{-- Max 5 items. Scan sits in the middle as the primary action. Later phases add Surgery / Tasks. --}}
+{{-- Max 5 items. Scan sits in the middle as the primary action. Phase 3 swaps Stock/Alerts for Surgery/Tasks as needed. --}}
 @php
     $items = [
         ['route' => 'ops.home', 'label' => __('Home'), 'icon' => 'heroicon-o-home'],
+        ['route' => 'ops.stock.index', 'label' => __('Stock'), 'icon' => 'heroicon-o-archive-box', 'match' => 'ops.stock.*'],
         ['route' => 'ops.scan', 'label' => __('Scan'), 'icon' => 'heroicon-o-qr-code', 'primary' => true],
         ['route' => 'ops.notifications', 'label' => __('Alerts'), 'icon' => 'heroicon-o-bell'],
         ['route' => 'ops.profile', 'label' => __('Me'), 'icon' => 'heroicon-o-user-circle'],
@@ -9,9 +10,9 @@
 @endphp
 
 <nav class="ot-safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card" aria-label="{{ __('Main') }}">
-    <ul class="mx-auto grid max-w-screen-md grid-cols-4">
+    <ul class="mx-auto grid max-w-screen-md grid-cols-5">
         @foreach ($items as $item)
-            @php($active = request()->routeIs($item['route']))
+            @php($active = request()->routeIs($item['match'] ?? $item['route']))
             <li>
                 <a href="{{ route($item['route']) }}" wire:navigate
                    @if ($active) aria-current="page" @endif

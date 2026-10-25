@@ -84,6 +84,22 @@ Demo users (local/staging only — the seeder refuses to run in production). Pas
 
 > Camera scanning needs HTTPS (or `localhost`). To test on a phone over the LAN, use a tunnel with HTTPS (e.g. `cloudflared tunnel --url http://localhost:8000`).
 
+### Try the inventory (Phase 1)
+
+With the demo data (`php artisan migrate:fresh --seed`):
+
+* **Admin → Stock → Receive stock** — click the scan field and scan (or type) a GS1 code, e.g. `(01)08712345000011(17)290630(10)LTEST1(21)SN-NEW-001`: product, lot, expiry and serial fill in. Plain SKUs, extra barcodes (`KM-3530`) and serials work too.
+* **Serial units / Lots** — expiry chips, filters by expiry level, *Correct details* (with reason) and the unit's history. **Recall search** — try lot `L26001A`.
+* **Excel imports** — download a template, fill it, upload: every row is checked and shown with old → new before anything changes.
+* **System → Expiry levels** — change colors / day ranges; gaps and overlaps are refused.
+* **Phone app** (`staff`, Sorani) — Stock, Scan, Receive and Recall.
+
+Excel imports run on the queue. The local preview `.env` uses `QUEUE_CONNECTION=sync` (runs at once); on a server keep `redis`/`database` with Horizon or `php artisan queue:work --queue=high,default,imports,pdf`.
+
+Labels print from the browser: the print sheet's page size equals the label size, so pick the thermal printer and "actual size" (no scaling, no margins) in the print dialog.
+
+Daily stock alerts (expiry levels, low stock) run at 06:00 via the scheduler; run them by hand with `php artisan stock:alerts`.
+
 ### Quality checks
 
 ```bash
@@ -96,7 +112,7 @@ vendor/bin/pint --test
 
 ## Production (Ubuntu 24.04 VPS — 2 vCPU / 4 GB to start)
 
-1. **Packages:** Nginx, PHP-FPM 8.3 (`pgsql redis intl gd mbstring xml zip bcmath curl`), PostgreSQL 16+, Redis, Supervisor, Node 22, Chrome/Chromium (for Browsershot PDFs, Phase 1+), Certbot.
+1. **Packages:** Nginx, PHP-FPM 8.3 (`pgsql redis intl gd mbstring xml zip bcmath curl`), PostgreSQL 16+, Redis, Supervisor, Node 22, Chrome/Chromium (for Browsershot PDFs, Phase 5), Certbot.
 2. **Database:** create role + database with a strong password (`deploy/local/create-local-db.sql` shows the statements).
 3. **Code:** clone to `/var/www/orthotrack` (owner: `deploy`; `storage/` and `bootstrap/cache/` writable by PHP-FPM).
 4. **.env:** `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://…`, `SESSION_SECURE_COOKIE=true`, `ORTHOTRACK_REQUIRE_ADMIN_MFA=true`, `REDIS_CLIENT=phpredis`, DB/Redis/mail credentials, `BACKUP_*`, `VAPID_*` (`php artisan webpush:vapid`).

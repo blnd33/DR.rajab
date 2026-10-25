@@ -1,6 +1,9 @@
 <?php
 
 use App\Models\IdempotencyKey;
+use App\Services\Expiry\ExpiryTransitionNotifier;
+use App\Services\Stock\LowStockDetector;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
 /*
@@ -8,8 +11,7 @@ use Illuminate\Support\Facades\Schedule;
 | Scheduler (cron: * * * * * php artisan schedule:run)
 |--------------------------------------------------------------------------
 | Times are in the business timezone (Asia/Baghdad). Later phases add:
-| expiry-level sweep, low-stock sweep, EUR/USD rate fetch, recurring
-| expenses, overdue kits / supplier invoices.
+| EUR/USD rate fetch, recurring expenses, overdue kits / supplier invoices.
 */
 
 $tz = config('orthotrack.timezone');
@@ -30,3 +32,18 @@ Schedule::call(fn () => IdempotencyKey::query()->where('created_at', '<', now()-
 
 // Expired password reset tokens.
 Schedule::command('auth:clear-resets')->daily();
+
+/*
+| Stock alerts (Phase 1): items entering a new expiry level, products below minimum.
+| Run by hand: php artisan stock:alerts
+*/
+Artisan::command('stock:alerts {--no-notify : Update expiry levels without sending notifications}', function (ExpiryTransitionNotifier $expiry, LowStockDetector $lowStock) {
+    $entered = $expiry->run(notify: ! $this->option('no-notify'));
+    $this->info('Expiry levels updated: '.array_sum(array_map('array_sum', $entered)).' items entered a new level.');
+
+    if (! $this->option('no-notify')) {
+        $this->info('Low-stock digests sent for '.$lowStock->notify().' branch(es).');
+    }
+})->purpose('Daily expiry-level and low-stock alerts');
+
+Schedule::command('stock:alerts')->dailyAt(config('orthotrack.stock_alerts_time'))->timezone($tz)->onOneServer()->withoutOverlapping();

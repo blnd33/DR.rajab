@@ -15,12 +15,14 @@ class DatabaseSeeder extends Seeder
             CurrencySeeder::class,
             PermissionSeeder::class,
             SettingsSeeder::class,
+            InventoryBaseSeeder::class,
         ]);
 
         if (! app()->isProduction()) {
             $this->call([
                 DemoBranchSeeder::class,
                 DemoUserSeeder::class,
+                DemoCatalogSeeder::class,
             ]);
         }
     }

@@ -55,10 +55,13 @@ final class PermissionRegistry
                 'products.import' => ['Import products from Excel', false],
                 'products.export' => ['Export products to Excel', false],
                 'products.print_labels' => ['Print barcode labels', true],
+                'labels.templates' => ['Edit label layouts', false],
             ],
             'stock' => [
                 'stock.view' => ['View stock', true],
                 'stock.view_cost' => ['View stock cost and value', true],
+                'stock.receive' => ['Enter opening stock (receive without a purchase)', true],
+                'stock.correct' => ['Correct lot, expiry, cost or shelf (with a reason)', true],
                 'stock.adjust' => ['Adjust stock after a count', true],
                 'stock.recall' => ['Recall search by lot', false],
                 'stock.override_expired' => ['Use or move expired units (with reason)', true],
@@ -229,7 +232,7 @@ final class PermissionRegistry
                 'admin.access', 'dashboard.view',
                 'branches.view_any', 'activity.view_any',
                 'products.view_any', 'products.export',
-                'stock.view', 'stock.view_cost', 'stock.export', 'stock.recall',
+                'stock.view', 'stock.view_cost', 'stock.export', 'stock.recall', 'stock.correct',
                 'transfers.view_any', 'stock_requests.view_any', 'returns.view_any', 'write_offs.view_any', 'stock_counts.view_any',
                 'customers.view_any', 'customers.manage',
                 'cash_boxes.view_any', 'cash_boxes.manage', 'cash_boxes.review_closing', 'cash_boxes.transfer',
@@ -244,7 +247,7 @@ final class PermissionRegistry
 
             Role::Doctor->value => [
                 'ops.access',
-                'stock.view',
+                'products.view_any', 'stock.view', 'stock.recall',
                 'transfers.view_any', 'stock_requests.view_any', 'stock_requests.create',
                 'returns.customer', 'write_offs.report',
                 'customers.view_any',
@@ -267,7 +270,7 @@ final class PermissionRegistry
             Role::BranchStaff->value => [
                 'ops.access',
                 'products.view_any', 'products.print_labels',
-                'stock.view',
+                'stock.view', 'stock.receive', 'stock.recall',
                 'transfers.view_any', 'transfers.create', 'transfers.send', 'transfers.receive', 'transfers.cancel',
                 'stock_requests.view_any', 'stock_requests.create',
                 'returns.view_any', 'returns.customer', 'returns.supplier',

@@ -8,8 +8,10 @@ use App\Models\Activity;
 use App\Models\User;
 use App\Policies\RolePolicy;
 use App\Services\Auth\LoginAttemptLogger;
+use App\Services\Expiry\ExpiryClassifier;
 use App\Services\Permissions\BranchScopeResolver;
 use App\Services\Settings\SettingsRepository;
+use App\Services\Stock\AlertRecipients;
 use App\Support\Locale\DigitConverter;
 use App\Support\Locale\LocaleRegistry;
 use App\Support\Locale\NumberLocale;
@@ -39,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(LocaleRegistry::class);
         // Memoised per request (and per Octane request if ever used).
         $this->app->scoped(BranchScopeResolver::class);
+        $this->app->scoped(ExpiryClassifier::class);
+        $this->app->scoped(AlertRecipients::class);
 
         $this->app->bind(LoginResponseContract::class, LoginResponse::class);
         $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);

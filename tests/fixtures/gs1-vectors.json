@@ -1,0 +1,51 @@
+{
+    "_about": "GS1 scan vectors for Gs1Parser (\u001d = GS / FNC1). Add real box scans here when the client sends photos.",
+    "vectors": [
+        {
+            "name": "DataMatrix with ]d2 prefix and GS separator",
+            "raw": "]d2010950110153000317270131" ,
+            "raw_suffix": "10ABC123\u001d21SN0001",
+            "expect": { "gtin": "09501101530003", "expiry_date": "2027-01-31", "lot": "ABC123", "serial": "SN0001" }
+        },
+        {
+            "name": "Human-readable brackets, day 00 = last day of month",
+            "raw": "(01)09501101530003(17)270100(10)LOT-9(21)S9",
+            "expect": { "gtin": "09501101530003", "expiry_date": "2027-01-31", "lot": "LOT-9", "serial": "S9" }
+        },
+        {
+            "name": "Scanner stripped the prefix, serial before lot",
+            "raw": "010950110153000317270131",
+            "raw_suffix": "21X1\u001d10L2",
+            "expect": { "gtin": "09501101530003", "expiry_date": "2027-01-31", "lot": "L2", "serial": "X1" }
+        },
+        {
+            "name": "Keyboard placeholder <GS> instead of the GS character",
+            "raw": "0109501101530003<GS>10L3<GS>17271231",
+            "expect": { "gtin": "09501101530003", "expiry_date": "2027-12-31", "lot": "L3", "serial": null }
+        },
+        {
+            "name": "GS1-128 with ]C1, production date (11)",
+            "raw": "]C1010950110153000311250601",
+            "raw_suffix": "1727060110LX",
+            "expect": { "gtin": "09501101530003", "production_date": "2025-06-01", "expiry_date": "2027-06-01", "lot": "LX", "serial": null }
+        },
+        {
+            "name": "Other AIs are kept as extras",
+            "raw": "0109501101530003240REF-77",
+            "raw_suffix": "\u001d21S1",
+            "expect": { "gtin": "09501101530003", "serial": "S1", "extras": { "240": "REF-77" } }
+        },
+        {
+            "name": "Wrong GTIN check digit is a warning, not a failure",
+            "raw": "010950110153000410L",
+            "expect": { "gtin": "09501101530004", "lot": "L", "warnings": 1 }
+        },
+        {
+            "name": "Impossible expiry month",
+            "raw": "010950110153000317271301",
+            "raw_suffix": "10L",
+            "expect": { "gtin": "09501101530003", "expiry_date": null, "lot": "L", "warnings": 1 }
+        }
+    ],
+    "not_gs1": ["10-200", "SKU-123", "KN-TIB-5", "SN-000123", "4006381333931", ""]
+}

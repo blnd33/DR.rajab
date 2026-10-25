@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -26,6 +27,7 @@ class Branch extends Model
 
     /** @use HasFactory<BranchFactory> */
     use HasFactory;
+
     use LogsActivity;
     use TracksAuthor;
 
@@ -79,6 +81,24 @@ class Branch extends Model
     public function manager(): BelongsTo
     {
         return $this->belongsTo(User::class, 'manager_id');
+    }
+
+    /** @return HasMany<BranchLocation, $this> */
+    public function locations(): HasMany
+    {
+        return $this->hasMany(BranchLocation::class);
+    }
+
+    /** @return HasMany<StockUnit, $this> */
+    public function stockUnits(): HasMany
+    {
+        return $this->hasMany(StockUnit::class);
+    }
+
+    /** @return HasMany<StockBatch, $this> */
+    public function stockBatches(): HasMany
+    {
+        return $this->hasMany(StockBatch::class);
     }
 
     /** @return BelongsTo<Currency, $this> */

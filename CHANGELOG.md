@@ -2,6 +2,45 @@
 
 All notable changes per build phase.
 
+## [Phase 1 — Core Inventory] — 2026-10-26
+
+Plan: [docs/phases/PHASE-1-PLAN.md](docs/phases/PHASE-1-PLAN.md) (approved P1-1 … P1-6).
+
+### Added
+- **Catalog:** products (SKU, GTIN, names in EN/AR/KU, category tree, brand, size, unit, serial or lot tracking, implant flag, prices + currency, default minimum, photo), extra barcodes per product, minimum / maximum / reorder quantity per branch, categories, brands, units, suppliers (master data; payables in Phase 4). Tracking type locks once a product has stock.
+- **Stock:** serial units (one row per implant, globally unique serial) and lot buckets (quantity per product × branch × lot × expiry × shelf × cost). Shelves per branch. Statuses and locations from the brief.
+- **Stock ledger:** `StockMovementService` is the only writer — permission + branch check, `DB::transaction` + `lockForUpdate`, one `stock_movements` row per change, append-only (database trigger + model guard). Phase 1 movements: opening stock, Excel import, corrections (lot / expiry / cost / supplier / shelf, with reason and old → new on the row), Super Admin status correction. Concurrent receipts of the same serial or bucket are handled (unique index + savepoint retry).
+- **Expired items:** recorded with a warning, blocked from use (`assertUsable`) unless the user has *override expired* in that branch and gives a reason — ready for surgeries, sales and transfers.
+- **Receive stock** (admin and phone): scan box after box — GS1 fills product, lot, expiry and serial; scanning a lot again adds 1; product defaults fill the cost.
+- **Barcodes:** parser chain in `config/orthotrack.php` (`scan_parsers`): our own labels → GS1 (DataMatrix / GS1-128, `]d2` `]C1` `]Q3` prefixes, GS / `<GS>` separators, bracketed form, AIs 01 10 11 17 21 + extras, YYMMDD century rule, day 00, check digit) → plain codes (serial, SKU, GTIN-8/12/13/14, extra barcodes, lot numbers). Unknown codes are saved with their bytes (hex) under *System → Unrecognised scans*.
+- **Labels:** templates (size in mm, Code 128 / DataMatrix / GS1 DataMatrix / QR, printed fields, text size); print sheet sized to the label for thermal printers (one label per page), from products, units and lots (single or bulk, copies).
+- **Expiry levels:** editable list with color picker, labels in 3 languages, live preview; validation (exactly one "Expired" fixed at ≤ 0 and blocking, no gaps, no overlaps, open-ended last level); readable text color computed per color; optional "blocks usage" and "notify on enter" per level. Expiry chips (color + label + days left + date) everywhere.
+- **FEFO:** soonest valid expiry first for units and lots (skips expired and blocking levels); lot quantities allocated across buckets.
+- **Serial history & recall:** unit timeline from the ledger (admin and phone); recall search by lot (exact, then partial) across all branches with status and location.
+- **Low stock:** `v_stock_on_hand` / `v_low_stock` views, admin page with inline minimum edit and navigation badge, phone filter, dashboard card.
+- **Alerts:** daily `stock:alerts` (06:00 Baghdad): items entering a new expiry level and low stock → one digest per branch, in-app + web push, in each user's language.
+- **Excel import / export:** templates (Data + Instructions sheet in English, Arabic, Kurdish) for products, stock and minimum stock; upload → check every row → preview with counts and old → new per field → confirm → queued import with progress → error file; original file kept; every step in the activity log. Rules from the brief: matched by SKU / serial, empty cells never overwrite, no branch or status changes, used / sold units rejected, serial = quantity 1, Excel serial dates and text dates, Arabic-Indic digits normalised, Arabic / Kurdish text intact. Exports in the same column format.
+- **Dashboard:** stock value per currency (true cost), below minimum, expired, next level, expiry × branch table in the configured colors.
+- **Phone app:** bottom bar Home · Stock · **Scan** · Alerts · Me; Scan resolves every code (unit / product / lot / unknown) with FEFO hint, wrong-branch and expired warnings, success / error beep from the server's answer; Stock list with expiry-level and below-minimum filters; product, unit (history), recall and receive screens; Home tiles for the branch.
+- **Branches:** shelves tab; closing is blocked while the branch holds stock.
+- **Permissions:** new `stock.receive`, `stock.correct`, `labels.templates`; Branch Staff can receive and recall in their branches, Doctors see products and recall, Accountants can correct costs.
+- **Seeders:** units, default expiry levels and two label templates (also in production); demo catalog (14 fictional orthopedic products, 3 suppliers, shelves) with stock in DHK / EBL / BGW across every expiry level.
+- **Tests:** GS1 vectors (`tests/fixtures/gs1-vectors.json`, shared for future real box scans), ledger rules and concurrency guards, corrections, overrides, append-only, expiry level validation, FEFO, transition notifications, scan resolver, recall, stock value, low stock, branch closing, every Excel rule, template, screens in 3 languages and permission refusals — 157 tests in total.
+
+### Changed from the approved plan
+- Lot buckets also key on unit cost + currency (so two deliveries of one lot at different prices keep their true cost); Phase 4 rebuilds the key with the purchase line.
+- `stock_movements.details` (jsonb) added for old → new values of corrections.
+- Serial, SKU and GTIN matching live in one `PlainCodeParser` instead of separate parsers (same order of checks).
+- The daily jobs run as one scheduled command (`stock:alerts`) instead of two queued jobs.
+- Excel lot rows: a lot already in stock must have the same quantity (refused otherwise) — Excel never adds to or recounts existing stock; new deliveries go through *Receive stock*.
+- Local preview `.env` runs queued jobs immediately (`QUEUE_CONNECTION=sync`); servers keep the queue + worker.
+
+### Known gaps / to review
+- One-click "Transfer all stock to branch X" (closing) and "Request from another branch" (low stock) arrive with transfers and stock requests in Phase 2 (P1-4).
+- Stock value in one currency arrives with exchange rates in Phase 4 (P1-3).
+- Arabic and Sorani texts for Phase 1 were written by the developer — native-speaker review needed before go-live.
+- Real box labels from the client have not been scanned yet; add them to `tests/fixtures/gs1-vectors.json` when they arrive.
+
 ## [Phase 0 — Foundation] — 2026-10-25
 
 ### Added

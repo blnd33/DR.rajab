@@ -155,6 +155,8 @@ Laravel `password_reset_tokens`, `jobs`, `job_batches`, `failed_jobs`; Filament 
 
 ## Phase 1 — Core inventory
 
+> Built 2026-10-26 (`database/migrations/*_p1_*`). Built differences: `stock_batches` keys its bucket on `unit_cost + cost_currency` until Phase 4 adds `purchase_item_id`; `stock_movements` has an extra `details jsonb` (old → new values of corrections); `branch_locations.name` is optional; `data_imports` has `failure_message`.
+
 ### branch_locations *(shelves / storage spots)*
 | id | branch_id FK | code varchar(32) | name jsonb **tr** | is_active | UNIQUE(branch_id, code) |
 
