@@ -1,0 +1,23 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import '../../tokens.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+@source '../../../../resources/views/components/**/*';
+
+/* Arabic / Sorani: Vazirmatn, slightly larger and looser for readability. */
+html[dir='rtl'] {
+    --font-family: var(--font-arabic);
+}
+
+html[dir='rtl'] body {
+    font-size: 1.0625rem;
+    line-height: 1.6;
+}
+
+/* Codes (serial, lot, SKU, document numbers) are always LTR monospace. */
+.ot-code {
+    font-family: var(--font-mono);
+    direction: ltr;
+    unicode-bidi: isolate;
+}
