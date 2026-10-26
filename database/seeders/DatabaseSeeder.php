@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             SettingsSeeder::class,
             InventoryBaseSeeder::class,
+            ExpenseCategorySeeder::class,
         ]);
 
         if (! app()->isProduction()) {
@@ -25,6 +26,7 @@ class DatabaseSeeder extends Seeder
                 DemoCatalogSeeder::class,
                 DemoMovementSeeder::class,
                 DemoClinicalSeeder::class,
+                DemoMoneySeeder::class,
             ]);
         }
     }

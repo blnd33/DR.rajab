@@ -2,6 +2,43 @@
 
 All notable changes per build phase.
 
+## [Phase 4 — Money] — 2026-10-26
+
+Plan: [docs/phases/PHASE-4-PLAN.md](docs/phases/PHASE-4-PLAN.md) (decisions P4-1 … P4-17; built straight after Phase 3).
+
+### Added
+- **Exchange rates**: USD → IQD (typed by a permitted user) and EUR → USD (typed, or fetched daily from the ECB as a suggestion to confirm — or confirmed automatically when the setting says so). Rates are append-only; each confirmation makes a new immutable *rate snapshot*. Every money row stores its currency and snapshot, so an amount converts the same way forever (USD is the pivot). Money screens refuse to save before both rates exist.
+- **Cash boxes & bank accounts** per branch and currency (head-office boxes have no branch), with an opening balance. One money ledger (`money_transactions`, append-only, `MoneyLedgerService` only): signed amount, USD value, running balance, reversing rows for corrections; a cash box never goes below zero (a bank account may, when allowed).
+- **Daily closing**: count the drawer (optional notes count), see the difference, explain it; *submit* locks the closing, books the difference so the box matches the drawer, opens a *cash difference* issue and tells the reviewers. Reviewed in **Finance → Daily closings**.
+- **Moving money**: same-currency transfers between boxes / branches (send → receive, cancel reverses); **currency exchange** of own money at the deal rate with the gain / loss against the day's reference rate (in USD).
+- **Purchases (supplier invoices)**: number unique per supplier, invoice / due date (default = supplier's payment terms), currency, receiving branch, lines, invoice discount spread over the lines (the *true unit cost* is what was paid), invoice file. *Confirm* → payable on the supplier's statement; *Receive* in one or more deliveries by scanning or typing (serial, lot, expiry) through `StockMovementService` — every unit / lot remembers its purchase line, so each purchase keeps its own cost layer; *Cancel* only while nothing was received, paid or costed.
+- **Landed costs**: shipping, customs, clearance, bank fees (any currency) spread by value or quantity over the lines; units and lots still in stock get the extra cost, the part on items already used or sold is kept as cost of sales; an optional payee (forwarder / broker) gets a payable.
+- **Supplier payments** from a box or bank (wire, hawala, cash, cheque), allocated to the oldest open invoices or to a chosen one; payments in another currency store the rate and the realised exchange gain / loss. Above the threshold (setting, USD) the payment waits for approval before money leaves. Void puts the money back and reverses the statement.
+- **Supplier statement**: supplier page with *We owe* per currency, the running statement and their purchases; dashboard card and daily reminder for overdue invoices.
+- **Credit notes**: *Record supplier credit* on a sent supplier return lowers what we owe.
+- **Approvals queue** (**Finance → Approvals**): large supplier payments and expenses (and commission payouts) — approve or reject with a note; nobody approves their own request (except the Super Admin).
+- **Sales**: scan units / lots, hospital or walk-in buyer, currency, list price (converted at today's rate) or typed price, discount, near-expiry / FEFO override reason; paid now into the branch box. *Void* puts items back on the shelf and reverses the money. Credit sales + customer payments (allocated to open invoices) only when the *credit sales* switch is on; the customer page gets a statement.
+- **Expenses**: translatable categories (14 seeded in every environment), paid from a box (branch or head office), payee, receipts; above the threshold → approval; head-office costs can be split over branches (shares = 100 %). **Recurring expenses** (monthly, day 1–28) are created every morning, posted or waiting for approval per rule.
+- **Doctor commissions** (behind the *commissions* switch, hidden otherwise — for Super Admins too): rules per doctor / surgery type / product or category, fixed or % — earned when a surgery completes, approved, paid from a box.
+- **Dashboard**: *Money* — money in boxes and banks, owed to suppliers (one USD total at today's rates, split per currency underneath), overdue supplier invoices, approvals waiting for you; stock value now one USD total.
+- **Phone app (cashier)**: **Cash** tile on Tasks → box balances, money on its way (receive), latest movements; **New sale** by scanning with live total; **Record an expense** with a receipt photo; **Exchange currency** with today's reference rate; **Close the day** with a live difference.
+- **Scheduler**: `php artisan money:daily` at 07:00 — ECB rate suggestion, recurring expenses due today, overdue supplier invoice reminders.
+- **Older documents**: write-offs get their USD cost and snapshot on approval; supplier returns, surgeries (fee) and stock costs carry snapshot columns.
+- **Demo data**: `DemoMoneySeeder` — rates, a head-office bank and three cash boxes, a NovaJoint invoice in EUR (discount, partly received, shipping + customs, partly paid), an overdue BoneTech invoice, a large payment waiting for approval, a draft, a cash sale, four expenses (one split, one waiting), a recurring rent, an exchange, a transfer on its way and a closing five dollars short.
+- **Tests**: ledger, closings, transfers, exchanges, rates and snapshots, purchases (true cost, receiving, landed costs on stock and on sold items, cross-currency payments with gain / loss, approvals, statements, credit notes), sales (cash, credit, void), expenses (approval, split, recurring), commissions, every finance screen in 3 languages, branch money scope, feature switches, phone closing and counter sale.
+
+### Fixed
+- Cash box list totals summed balances as floats — now summed in the database (decimal).
+
+### Changed from the plan
+- No `shipments` table yet (landed costs hang on the purchase); approvals cover supplier payments, expenses and commission payouts — write-offs and stock requests keep their own Phase 2 flows.
+- Supplier payment statuses are *pending approval → posted* (no separate *approved* step) plus *rejected* / *voided*.
+- Printed invoices, receipts and statements come with the Phase 5 PDFs.
+
+### Known gaps / to review
+- The ECB fetch needs outbound internet on the server; without it the EUR rate is typed by hand.
+- Arabic and Sorani texts for Phase 4 were written by the developer — native-speaker review needed before go-live (money words especially).
+
 ## [Phase 3 — Clinical & assets] — 2026-10-26
 
 Plan: [docs/phases/PHASE-3-PLAN.md](docs/phases/PHASE-3-PLAN.md) (decisions P3-1 … P3-12; built straight after Phase 2).

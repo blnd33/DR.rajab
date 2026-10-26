@@ -422,6 +422,8 @@ Index (status, due_back_at) → overdue kits.
 
 ## Phase 4 — Money
 
+> Built 2026-10-26 (`database/migrations/2026_10_29_*`). Built differences: no `shipments` table (landed costs belong to a purchase); `cash_boxes.allow_overdraft` (bank accounts only); `approvals.type` is `supplier_payment`, `expense`, `commission_payout`; supplier payment status is `pending_approval`, `posted`, `rejected`, `voided`; `landed_costs.cogs_amount` keeps the part on items already used or sold; `stock_units` / `stock_batches` carry `purchase_item_id` + `cost_fx_snapshot_id` (the lot bucket key includes `purchase_item_id`); `stock_movements`, `write_offs`, `supplier_returns` (+ `credit_note_id`), `customer_return_items.credit_note_id`, `surgeries.fee_fx_snapshot_id` / `sales_invoice_id` added. `money_transactions` and `party_ledger_entries` are append-only (trigger).
+
 ### exchange_rates *(append-only history)*
 | id | base_currency | quote_currency | rate numeric(18,8) | source (`manual`,`ecb`,`api_other`) | status (`suggested`,`confirmed`,`rejected`) | effective_at | set_by FK NULL | confirmed_by, confirmed_at | note | created_at |
 Pairs: `USD→IQD` (manual; API value is only a suggestion), `EUR→USD` (auto-fetched suggestion, confirm or auto-confirm per setting).

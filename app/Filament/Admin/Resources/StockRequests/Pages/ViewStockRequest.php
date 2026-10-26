@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\StockRequests\Pages;
 
 use App\Enums\StockRequestStatus;
 use App\Filament\Admin\Resources\StockRequests\StockRequestResource;
+use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\Branch;
 use App\Models\StockRequest;
@@ -20,6 +21,8 @@ use Filament\Support\Icons\Heroicon;
 
 class ViewStockRequest extends ViewRecord
 {
+    use RefreshesInfolist;
+
     protected static string $resource = StockRequestResource::class;
 
     public function getTitle(): string

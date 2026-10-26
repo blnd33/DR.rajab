@@ -27,7 +27,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Items going back to suppliers (Module 14). The credit note arrives with Phase 4.
+ * Items going back to suppliers (Module 14), then the credit note that lowers what we owe.
  */
 class SupplierReturnResource extends Resource
 {

@@ -3,12 +3,16 @@
 namespace App\Filament\Admin\Resources\Suppliers;
 
 use App\Filament\Admin\Resources\Suppliers\Pages\ManageSuppliers;
+use App\Filament\Admin\Resources\Suppliers\Pages\ViewSupplier;
+use App\Filament\Admin\Resources\Suppliers\RelationManagers\StatementRelationManager;
+use App\Filament\Admin\Resources\Suppliers\RelationManagers\SupplierPurchasesRelationManager;
 use App\Filament\Admin\Tables\Columns\CodeColumn;
 use App\Models\Currency;
 use App\Models\Supplier;
 use BackedEnum;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -22,7 +26,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 /**
- * Supplier master data (Module 7). Purchases, payments and the statement arrive in Phase 4.
+ * Supplier master data (Module 7) with their purchases, payments and statement.
  */
 class SupplierResource extends Resource
 {
@@ -85,13 +89,21 @@ class SupplierResource extends Resource
                 IconColumn::make('is_active')->label(__('Active'))->boolean(),
             ])
             ->filters([TernaryFilter::make('is_active')->label(__('Active'))->default(true)])
-            ->recordActions([EditAction::make()])
+            ->recordActions([ViewAction::make(), EditAction::make()])
             ->headerActions([CreateAction::make()])
             ->emptyStateHeading(__('No suppliers yet'));
     }
 
     public static function getPages(): array
     {
-        return ['index' => ManageSuppliers::route('/')];
+        return [
+            'index' => ManageSuppliers::route('/'),
+            'view' => ViewSupplier::route('/{record}'),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [StatementRelationManager::class, SupplierPurchasesRelationManager::class];
     }
 }

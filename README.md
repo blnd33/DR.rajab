@@ -109,11 +109,21 @@ With the demo data (`php artisan migrate:fresh --seed`):
 * **Clinical → Patients** — only the patients you may see; every opening is logged.
 * **Phone app** (`doctor`) → **Tasks → New surgery** — scan implants, add a new patient, *Save draft* or *Complete*; the draft is kept on the phone if the connection drops (see *My surgeries → Saved on this phone*).
 * **Phone app** (`staff`) → **Tasks → Kits** — prepare / refill by scanning, check out, return by scanning.
+### Try money (Phase 4)
+
+* **Finance → Exchange rates** — USD → IQD 1,460 and EUR → USD 1.08 are set; set a new rate or fetch the ECB one (a suggestion to confirm).
+* **Finance → Approvals** — a 7,040 USD BoneTech payment and a 1,400 USD Erbil expense wait (log in as `accountant` or `superadmin`; nobody approves their own request).
+* **Finance → Purchases** — the NovaJoint invoice (EUR, discount spread, shipping + customs, partly received and paid): *Receive items* for the back-ordered femoral component, *Pay* the rest; the BoneTech one is overdue.
+* **Catalog → Suppliers → NovaJoint** — what we owe per currency and the statement.
+* **Finance → Daily closings** — Erbil closed five dollars short (*Mark reviewed*).
+* **Phone app** (`cashier`, Erbil) → **Tasks → Cash** — receive the 300 USD sent from Duhok, *New sale* by scanning, *Record an expense*, *Close the day*.
+* Commissions and credit sales are switched off; turn them on in **Settings** to see their screens.
+
 Excel imports run on the queue. The local preview `.env` uses `QUEUE_CONNECTION=sync` (runs at once); on a server keep `redis`/`database` with Horizon or `php artisan queue:work --queue=high,default,imports,pdf`.
 
 Labels print from the browser: the print sheet's page size equals the label size, so pick the thermal printer and "actual size" (no scaling, no margins) in the print dialog.
 
-Daily stock alerts (expiry levels, low stock) run at 06:00 via the scheduler; run them by hand with `php artisan stock:alerts`.
+Daily stock alerts (expiry levels, low stock) run at 06:00 via the scheduler; run them by hand with `php artisan stock:alerts`. Money jobs (ECB rate suggestion, recurring expenses, overdue supplier invoices) run at 07:00: `php artisan money:daily`.
 
 ### Quality checks
 

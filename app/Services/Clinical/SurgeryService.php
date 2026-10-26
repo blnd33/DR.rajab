@@ -24,6 +24,7 @@ use App\Models\User;
 use App\Notifications\DocumentEvent;
 use App\Services\Barcode\ScanResolver;
 use App\Services\Barcode\ScanResultKind;
+use App\Services\Expenses\CommissionService;
 use App\Services\Movement\Notifier;
 use App\Services\Numbering\DocumentNumberGenerator;
 use App\Services\Permissions\BranchScopeResolver;
@@ -204,6 +205,8 @@ class SurgeryService
 
             return $surgery;
         });
+
+        app(CommissionService::class)->accrueFor($surgery);
 
         if ($surgery->items()->whereNotNull('warnings')->exists()) {
             $this->notifier->toBranch('kits.resolve_unaccounted', $surgery->branch_id, new DocumentEvent(

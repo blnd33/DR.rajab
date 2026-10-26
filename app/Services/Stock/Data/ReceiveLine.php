@@ -3,7 +3,7 @@
 namespace App\Services\Stock\Data;
 
 /**
- * One line of stock coming in (opening balance, Excel import; purchases in Phase 4).
+ * One line of stock coming in (opening balance, Excel import, purchase receipt).
  * Serial-tracked products: serial required, quantity 1. Lot-tracked: quantity ≥ 1.
  */
 final class ReceiveLine
@@ -19,6 +19,8 @@ final class ReceiveLine
         public readonly string $costCurrency = 'USD',
         public readonly ?int $supplierId = null,
         public readonly ?int $locationId = null,
+        public readonly ?int $purchaseItemId = null,
+        public readonly ?int $costFxSnapshotId = null,
     ) {}
 
     /**
@@ -37,6 +39,8 @@ final class ReceiveLine
             costCurrency: (string) ($data['cost_currency'] ?? 'USD'),
             supplierId: filled($data['supplier_id'] ?? null) ? (int) $data['supplier_id'] : null,
             locationId: filled($data['location_id'] ?? null) ? (int) $data['location_id'] : null,
+            purchaseItemId: filled($data['purchase_item_id'] ?? null) ? (int) $data['purchase_item_id'] : null,
+            costFxSnapshotId: filled($data['cost_fx_snapshot_id'] ?? null) ? (int) $data['cost_fx_snapshot_id'] : null,
         );
     }
 

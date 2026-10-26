@@ -8,6 +8,7 @@ use App\Models\Concerns\TracksAuthor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -88,6 +89,18 @@ class Customer extends Model
     public function returns(): HasMany
     {
         return $this->hasMany(CustomerReturn::class);
+    }
+
+    /** @return HasMany<SalesInvoice, $this> */
+    public function salesInvoices(): HasMany
+    {
+        return $this->hasMany(SalesInvoice::class);
+    }
+
+    /** @return MorphMany<PartyLedgerEntry, $this> */
+    public function ledgerEntries(): MorphMany
+    {
+        return $this->morphMany(PartyLedgerEntry::class, 'party');
     }
 
     public function label(): string

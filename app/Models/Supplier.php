@@ -79,6 +79,18 @@ class Supplier extends Model
         return $this->morphMany(Attachment::class, 'attachable');
     }
 
+    /** @return HasMany<Purchase, $this> */
+    public function purchases(): HasMany
+    {
+        return $this->hasMany(Purchase::class);
+    }
+
+    /** @return MorphMany<PartyLedgerEntry, $this> */
+    public function ledgerEntries(): MorphMany
+    {
+        return $this->morphMany(PartyLedgerEntry::class, 'party');
+    }
+
     /** @param Builder<Supplier> $query */
     public function scopeActive(Builder $query): void
     {

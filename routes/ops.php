@@ -5,6 +5,11 @@ use App\Http\Controllers\Ops\CountScanSyncController;
 use App\Http\Controllers\Ops\PatientLookupController;
 use App\Http\Controllers\Ops\PushSubscriptionController;
 use App\Http\Controllers\Ops\SurgerySyncController;
+use App\Livewire\Ops\Cash\CashHub;
+use App\Livewire\Ops\Cash\CloseDay;
+use App\Livewire\Ops\Cash\ExchangeCreate;
+use App\Livewire\Ops\Cash\ExpenseCreate;
+use App\Livewire\Ops\Cash\SaleCreate;
 use App\Livewire\Ops\Clinical\KitIndex;
 use App\Livewire\Ops\Clinical\KitShow;
 use App\Livewire\Ops\Clinical\SurgeryCreate;
@@ -66,6 +71,13 @@ Route::livewire('/surgeries/new', SurgeryCreate::class)->name('surgeries.create'
 Route::livewire('/surgeries/{surgery}', SurgeryShow::class)->name('surgeries.show');
 Route::livewire('/kits', KitIndex::class)->name('kits.index');
 Route::livewire('/kits/{kit}', KitShow::class)->name('kits.show');
+
+// Phase 4 — cashier: boxes, sales at the counter, expenses, exchange, daily closing.
+Route::livewire('/cash', CashHub::class)->name('cash');
+Route::livewire('/cash/sale', SaleCreate::class)->name('cash.sale');
+Route::livewire('/cash/expense', ExpenseCreate::class)->name('cash.expense');
+Route::livewire('/cash/exchange', ExchangeCreate::class)->name('cash.exchange');
+Route::livewire('/cash/{box}/close', CloseDay::class)->name('cash.close');
 Route::get('/lookup/patients', PatientLookupController::class)->name('lookup.patients');
 
 // Offline-tolerant sync: stock count scans queued on the phone (idempotent by client_uuid).

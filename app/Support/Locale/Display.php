@@ -2,6 +2,7 @@
 
 namespace App\Support\Locale;
 
+use App\Models\Currency;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 
@@ -21,6 +22,24 @@ final class Display
         $formatted = number_format((float) $value, $decimals, '.', ',');
 
         return DigitConverter::forDisplay($formatted, app(LocaleRegistry::class)->digits());
+    }
+
+    /** @var array<string, int>|null */
+    private static ?array $currencyDecimals = null;
+
+    /**
+     * Money: currency code (Western, as a code) + amount with the currency's decimals
+     * in the user's digits, e.g. "USD 1,250.00", "IQD ١٬٦٣٧٬٥٠٠".
+     */
+    public static function money(int|float|string|null $amount, ?string $currency): string
+    {
+        if ($amount === null || $amount === '' || $currency === null) {
+            return '';
+        }
+
+        self::$currencyDecimals ??= Currency::query()->pluck('decimals', 'code')->map(fn ($d) => (int) $d)->all();
+
+        return $currency.' '.self::number($amount, self::$currencyDecimals[$currency] ?? 2);
     }
 
     /**

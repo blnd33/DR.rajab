@@ -8,6 +8,12 @@
 
     {{-- Start something --}}
     <section aria-label="{{ __('New') }}" class="grid grid-cols-2 gap-3">
+        @if ($canCash)
+            <a href="{{ route('ops.cash') }}" wire:navigate class="ot-card flex min-h-20 flex-col justify-between gap-2 p-4 hover:bg-subtle">
+                @svg('heroicon-o-wallet', 'size-7 text-primary')
+                <span class="font-semibold">{{ __('Cash') }}</span>
+            </a>
+        @endif
         @if ($canSurgery)
             <a href="{{ route('ops.surgeries.create') }}" class="ot-card flex min-h-20 flex-col justify-between gap-2 p-4 hover:bg-subtle">
                 @svg('heroicon-o-heart', 'size-7 text-primary')

@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\WriteOffs\Pages;
 
 use App\Enums\WriteOffStatus;
 use App\Filament\Admin\Resources\WriteOffs\WriteOffResource;
+use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\WriteOff;
 use App\Services\Movement\WriteOffService;
@@ -14,6 +15,8 @@ use Filament\Support\Icons\Heroicon;
 
 class ViewWriteOff extends ViewRecord
 {
+    use RefreshesInfolist;
+
     protected static string $resource = WriteOffResource::class;
 
     public function getTitle(): string

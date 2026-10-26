@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Kits\Pages;
 use App\Enums\KitStatus;
 use App\Filament\Admin\Resources\KitCheckouts\KitCheckoutResource;
 use App\Filament\Admin\Resources\Kits\KitResource;
+use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\Customer;
 use App\Models\Kit;
@@ -23,6 +24,8 @@ use Filament\Support\Icons\Heroicon;
 
 class ViewKit extends ViewRecord
 {
+    use RefreshesInfolist;
+
     protected static string $resource = KitResource::class;
 
     public function getTitle(): string

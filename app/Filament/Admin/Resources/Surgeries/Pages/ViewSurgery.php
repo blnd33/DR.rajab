@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Surgeries\Pages;
 
 use App\Enums\SurgeryStatus;
 use App\Filament\Admin\Resources\Surgeries\SurgeryResource;
+use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\Surgery;
 use App\Services\Clinical\SurgeryService;
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\Storage;
 
 class ViewSurgery extends ViewRecord
 {
+    use RefreshesInfolist;
+
     protected static string $resource = SurgeryResource::class;
 
     public function getTitle(): string

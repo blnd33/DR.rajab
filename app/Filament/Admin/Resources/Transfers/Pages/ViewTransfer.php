@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Transfers\Pages;
 
 use App\Enums\TransferStatus;
 use App\Filament\Admin\Resources\Transfers\TransferResource;
+use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\Transfer;
 use App\Models\TransferItem;
@@ -19,6 +20,8 @@ use Filament\Support\Icons\Heroicon;
 
 class ViewTransfer extends ViewRecord
 {
+    use RefreshesInfolist;
+
     protected static string $resource = TransferResource::class;
 
     public function getTitle(): string

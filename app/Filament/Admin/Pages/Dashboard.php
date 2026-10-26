@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Pages;
 
 use App\Filament\Admin\Widgets\ClinicalOverview;
 use App\Filament\Admin\Widgets\ExpiryByBranch;
+use App\Filament\Admin\Widgets\MoneyOverview;
 use App\Filament\Admin\Widgets\PendingWork;
 use App\Filament\Admin\Widgets\StockOverview;
 use App\Filament\Admin\Widgets\SystemOverview;
@@ -30,6 +31,7 @@ class Dashboard extends BaseDashboard
         return [
             SystemOverview::class,
             StockOverview::class,
+            MoneyOverview::class,
             PendingWork::class,
             ClinicalOverview::class,
             ExpiryByBranch::class,

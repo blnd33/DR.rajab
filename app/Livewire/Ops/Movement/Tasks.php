@@ -64,6 +64,7 @@ class Tasks extends Component
             'canSurgery' => $can('surgeries.create'),
             'canSurgeries' => $can('surgeries.view_any') || $can('surgeries.create'),
             'canKits' => $can('kits.view_any'),
+            'canCash' => $can('cash_boxes.view_any'),
             'surgeryDrafts' => $can('surgeries.create')
                 ? Surgery::query()->where('created_by', $user->id)->where('status', SurgeryStatus::Draft)->latest()->limit(5)->get()
                 : collect(),

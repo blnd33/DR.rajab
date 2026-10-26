@@ -9,6 +9,7 @@ use App\Filament\Admin\Resources\Customers\Pages\ViewCustomer;
 use App\Filament\Admin\Resources\Customers\RelationManagers\CustomerKitCheckoutsRelationManager;
 use App\Filament\Admin\Resources\Customers\RelationManagers\CustomerReturnsRelationManager;
 use App\Filament\Admin\Resources\Customers\RelationManagers\CustomerSurgeriesRelationManager;
+use App\Filament\Admin\Resources\Suppliers\RelationManagers\StatementRelationManager;
 use App\Filament\Admin\Tables\Columns\CodeColumn;
 use App\Models\Currency;
 use App\Models\Customer;
@@ -115,6 +116,7 @@ class CustomerResource extends Resource
             CustomerKitCheckoutsRelationManager::class,
             CustomerSurgeriesRelationManager::class,
             CustomerReturnsRelationManager::class,
+            StatementRelationManager::class,
         ];
     }
 }

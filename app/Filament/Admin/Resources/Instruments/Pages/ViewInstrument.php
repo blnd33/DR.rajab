@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Instruments\Pages;
 
 use App\Enums\InstrumentStatus;
 use App\Filament\Admin\Resources\Instruments\InstrumentResource;
+use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\Instrument;
 use App\Models\User;
@@ -18,6 +19,8 @@ use Filament\Support\Icons\Heroicon;
 
 class ViewInstrument extends ViewRecord
 {
+    use RefreshesInfolist;
+
     protected static string $resource = InstrumentResource::class;
 
     public function getTitle(): string

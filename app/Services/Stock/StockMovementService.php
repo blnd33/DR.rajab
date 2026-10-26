@@ -130,6 +130,7 @@ class StockMovementService
                         'location_type' => LocationType::Shelf->value,
                         'branch_location_id' => $line->locationId,
                         'kit_id' => null,
+                        'purchase_item_id' => $line->purchaseItemId,
                         'unit_cost' => $cost,
                         'cost_currency' => $line->costCurrency,
                     ], [
@@ -137,6 +138,7 @@ class StockMovementService
                         'base_unit_cost' => $cost,
                         'landed_unit_cost' => '0',
                         'supplier_id' => $line->supplierId,
+                        'cost_fx_snapshot_id' => $line->costFxSnapshotId,
                     ]);
 
                     $batch->quantity += $line->quantity;
@@ -313,6 +315,7 @@ class StockMovementService
                 'location_type' => $source->location_type->value,
                 'branch_location_id' => $new['branch_location_id'],
                 'kit_id' => $source->kit_id,
+                'purchase_item_id' => $source->purchase_item_id,
                 'unit_cost' => $unitCost,
                 'cost_currency' => $new['cost_currency'],
             ], [
@@ -846,6 +849,177 @@ class StockMovementService
             ['from_branch_id' => $kitBatch->branch_id], LocationType::Kit, $kitBatch->kit_id);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Landed costs (Phase 4)
+    |--------------------------------------------------------------------------
+    | Shipping, customs… raise the true cost of what is still ours. A unit's landed cost grows
+    | in place; a lot bucket moves to the bucket of its new cost (the cost is part of the key).
+    */
+
+    /**
+     * Add a landed cost per unit (in the unit's cost currency) to a unit still on hand.
+     */
+    public function addLandedCostToUnit(StockUnit $unit, string $perUnit, User $by, Model $reference, string $group, string $reason): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, 'purchases.landed_costs', $unit->branch_id);
+
+        if (! $unit->status->isOnHand()) {
+            throw new StockRuleViolation(__('Unit :serial is :status — it is no longer in our stock.', ['serial' => $unit->serial, 'status' => $unit->status->getLabel()]), 'serial');
+        }
+
+        $old = ['landed_unit_cost' => $unit->landed_unit_cost, 'unit_cost' => $unit->unit_cost];
+        $unit->landed_unit_cost = $this->money((string) BigDecimal::of($unit->landed_unit_cost)->plus($perUnit));
+        $unit->unit_cost = $this->money((string) BigDecimal::of($unit->base_unit_cost)->plus($unit->landed_unit_cost));
+        $unit->lock_version++;
+        $unit->save();
+
+        return $this->record($group, MovementType::CostAdjustment, $by, now(), [
+            'product_id' => $unit->product_id,
+            'stock_unit_id' => $unit->id,
+            'quantity' => 1,
+            'from_branch_id' => $unit->branch_id,
+            'to_branch_id' => $unit->branch_id,
+            'from_status' => $unit->status,
+            'to_status' => $unit->status,
+            'unit_cost' => $unit->unit_cost,
+            'cost_currency' => $unit->cost_currency,
+            'reason' => $reason,
+            'details' => ['landed_unit_cost' => ['old' => $old['landed_unit_cost'], 'new' => $unit->landed_unit_cost], 'unit_cost' => ['old' => $old['unit_cost'], 'new' => $unit->unit_cost]],
+        ], $reference);
+    }
+
+    /**
+     * Add a landed cost per unit to a whole lot bucket: its quantity moves to the bucket with
+     * the new true cost (same lot, expiry, place and purchase line).
+     */
+    public function addLandedCostToBatch(StockBatch $batch, string $perUnit, User $by, Model $reference, string $group, string $reason): ?StockMovement
+    {
+        return DB::transaction(function () use ($batch, $perUnit, $by, $reference, $group, $reason) {
+            $source = $this->lockBatch($batch);
+            $this->authorize($by, 'purchases.landed_costs', $source->branch_id);
+
+            if ($source->quantity < 1) {
+                return null;
+            }
+
+            $landed = $this->money((string) BigDecimal::of($source->landed_unit_cost)->plus($perUnit));
+            $unitCost = $this->money((string) BigDecimal::of($source->base_unit_cost)->plus($landed));
+
+            $target = $this->lockBucket([
+                'product_id' => $source->product_id,
+                'branch_id' => $source->branch_id,
+                'lot' => $source->lot,
+                'expiry_date' => $source->expiry_date?->toDateString(),
+                'location_type' => $source->location_type->value,
+                'branch_location_id' => $source->branch_location_id,
+                'kit_id' => $source->kit_id,
+                'purchase_item_id' => $source->purchase_item_id,
+                'unit_cost' => $unitCost,
+                'cost_currency' => $source->cost_currency,
+            ], [
+                'production_date' => $source->production_date?->toDateString(),
+                'base_unit_cost' => $source->base_unit_cost,
+                'landed_unit_cost' => $landed,
+                'supplier_id' => $source->supplier_id,
+                'customer_id' => $source->customer_id,
+                'last_expiry_level_id' => $source->last_expiry_level_id,
+                'cost_fx_snapshot_id' => $source->cost_fx_snapshot_id,
+            ]);
+
+            $quantity = $source->quantity;
+            $target->quantity += $quantity;
+            $target->save();
+
+            $source->quantity = 0;
+            $source->save();
+
+            return $this->record($group, MovementType::CostAdjustment, $by, now(), [
+                'product_id' => $source->product_id,
+                'from_batch_id' => $source->id,
+                'to_batch_id' => $target->id,
+                'quantity' => $quantity,
+                'from_branch_id' => $source->branch_id,
+                'to_branch_id' => $source->branch_id,
+                'from_location_type' => $source->location_type,
+                'to_location_type' => $target->location_type,
+                'from_kit_id' => $source->kit_id,
+                'to_kit_id' => $target->kit_id,
+                'unit_cost' => $target->unit_cost,
+                'cost_currency' => $target->cost_currency,
+                'reason' => $reason,
+                'details' => ['landed_unit_cost' => ['old' => $source->landed_unit_cost, 'new' => $landed], 'unit_cost' => ['old' => $source->unit_cost, 'new' => $unitCost]],
+            ], $reference);
+        });
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sales (Phase 4)
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Sold: the unit leaves our stock for good (to the customer, if any).
+     */
+    public function sellUnit(StockUnit $unit, Branch $branch, ?Customer $customer, User $by, Model $reference, string $group, ?string $overrideReason = null): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, 'sales.create', $branch);
+
+        if ($unit->status !== StockStatus::InStock || $unit->branch_id !== $branch->id) {
+            throw new StockRuleViolation(__('Unit :serial is not on a shelf in :branch.', ['serial' => $unit->serial, 'branch' => $branch->code]), 'serial');
+        }
+
+        $override = $this->assertUsable($unit, $by, $overrideReason);
+
+        return $this->changeUnit($unit, StockStatus::Sold, null, MovementType::Sale, $by, $reference, $group, [
+            'is_override' => $override,
+            'override_reason' => $override ? $overrideReason : null,
+        ], set: ['customer_id' => $customer?->id]);
+    }
+
+    public function sellBatch(StockBatch $batch, int $quantity, Branch $branch, ?Customer $customer, User $by, Model $reference, string $group, ?string $overrideReason = null): StockMovement
+    {
+        $batch = $this->lockBatch($batch);
+        $this->authorize($by, 'sales.create', $branch);
+
+        if ($batch->location_type !== LocationType::Shelf || $batch->branch_id !== $branch->id) {
+            throw new StockRuleViolation(__('This lot is not on a shelf in :from.', ['from' => $branch->code]), 'lot');
+        }
+
+        $override = $this->assertUsable($batch, $by, $overrideReason);
+
+        return $this->takeFromBatch($batch, $quantity, MovementType::Sale, $by, $reference, $group, [
+            'customer_id' => $customer?->id,
+            'is_override' => $override,
+            'override_reason' => $override ? $overrideReason : null,
+        ]);
+    }
+
+    /**
+     * Sale voided: the sold unit is back on the shelf of the branch.
+     */
+    public function unsellUnit(StockUnit $unit, Branch $branch, User $by, Model $reference, string $group, string $reason): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, 'sales.void', $branch);
+
+        if ($unit->status !== StockStatus::Sold) {
+            throw new StockRuleViolation(__('Unit :serial is :status, not sold.', ['serial' => $unit->serial, 'status' => $unit->status->getLabel()]), 'serial');
+        }
+
+        return $this->changeUnit($unit, StockStatus::InStock, $branch->id, MovementType::SaleReturn, $by, $reference, $group, ['reason' => $reason]);
+    }
+
+    public function unsellBatch(StockBatch $source, int $quantity, Branch $branch, User $by, Model $reference, string $group, string $reason): StockBatch
+    {
+        $this->authorize($by, 'sales.void', $branch);
+
+        return $this->putIntoBucket($source, $branch->id, $quantity, MovementType::SaleReturn, $by, $reference, $group, ['reason' => $reason]);
+    }
+
     /**
      * A status change of one unit with its ledger row ($toBranchId = new owner, null = same).
      * $set: attributes applied with the change (kit, hospital).
@@ -964,6 +1138,7 @@ class StockMovementService
             'location_type' => $location->value,
             'branch_location_id' => $sameShelf ? $source->branch_location_id : null,
             'kit_id' => $location === LocationType::Shelf ? null : $kitId,
+            'purchase_item_id' => $source->purchase_item_id,
             'unit_cost' => $source->unit_cost,
             'cost_currency' => $source->cost_currency,
         ], [
@@ -972,6 +1147,7 @@ class StockMovementService
             'landed_unit_cost' => $source->landed_unit_cost,
             'supplier_id' => $source->supplier_id,
             'last_expiry_level_id' => $source->last_expiry_level_id,
+            'cost_fx_snapshot_id' => $source->cost_fx_snapshot_id,
         ]);
 
         $target->quantity += $quantity;
@@ -1056,6 +1232,8 @@ class StockMovementService
             'unit_cost' => $cost,
             'cost_currency' => $line->costCurrency,
             'supplier_id' => $line->supplierId,
+            'purchase_item_id' => $line->purchaseItemId,
+            'cost_fx_snapshot_id' => $line->costFxSnapshotId,
             'received_at' => $now,
         ]);
 

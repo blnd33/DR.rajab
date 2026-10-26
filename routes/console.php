@@ -1,8 +1,14 @@
 <?php
 
+use App\Enums\Role;
 use App\Models\IdempotencyKey;
+use App\Models\User;
 use App\Services\Assets\OverdueKitNotifier;
+use App\Services\Expenses\RecurringExpenseService;
 use App\Services\Expiry\ExpiryTransitionNotifier;
+use App\Services\Money\FxService;
+use App\Services\Purchasing\OverduePayablesNotifier;
+use App\Services\Settings\SettingsRepository;
 use App\Services\Stock\LowStockDetector;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
@@ -11,8 +17,7 @@ use Illuminate\Support\Facades\Schedule;
 |--------------------------------------------------------------------------
 | Scheduler (cron: * * * * * php artisan schedule:run)
 |--------------------------------------------------------------------------
-| Times are in the business timezone (Asia/Baghdad). Later phases add:
-| EUR/USD rate fetch, recurring expenses, overdue kits / supplier invoices.
+| Times are in the business timezone (Asia/Baghdad).
 */
 
 $tz = config('orthotrack.timezone');
@@ -50,3 +55,30 @@ Artisan::command('stock:alerts {--no-notify : Update expiry levels without sendi
 })->purpose('Daily expiry-level, low-stock and overdue-kit alerts');
 
 Schedule::command('stock:alerts')->dailyAt(config('orthotrack.stock_alerts_time'))->timezone($tz)->onOneServer()->withoutOverlapping();
+
+/*
+| Money (Phase 4): ECB EUR/USD suggestion (confirmed by a person unless auto-confirm is on),
+| recurring expenses due today, overdue supplier invoice reminders.
+| Run by hand: php artisan money:daily
+*/
+Artisan::command('money:daily {--no-notify : Do the work without sending reminders}', function (FxService $fx, SettingsRepository $settings, RecurringExpenseService $recurring, OverduePayablesNotifier $overdue) {
+    if ($settings->bool('fx.eur_usd_auto_fetch')) {
+        $rate = $fx->fetchEcb();
+        $this->info($rate === null ? 'EUR/USD: nothing new from the ECB.' : 'EUR/USD suggested: '.$rate->rate);
+
+        $approver = User::query()->whereHas('roles', fn ($q) => $q->where('name', Role::SuperAdmin->value))->where('is_active', true)->orderBy('id')->first();
+
+        if ($rate !== null && $settings->bool('fx.eur_usd_auto_confirm') && $approver !== null) {
+            $fx->confirm($rate, $approver);
+            $this->info('EUR/USD confirmed automatically.');
+        }
+    }
+
+    $this->info('Recurring expenses created: '.$recurring->generateDue());
+
+    if (! $this->option('no-notify')) {
+        $this->info('Overdue-invoice reminders sent for '.$overdue->notify().' branch(es).');
+    }
+})->purpose('Daily exchange rate, recurring expenses and overdue supplier invoice reminders');
+
+Schedule::command('money:daily')->dailyAt('07:00')->timezone($tz)->onOneServer()->withoutOverlapping();

@@ -17,10 +17,12 @@ use App\Models\User;
 use App\Models\WriteOff;
 use App\Models\WriteOffItem;
 use App\Notifications\DocumentEvent;
+use App\Services\Money\FxService;
 use App\Services\Numbering\DocumentNumberGenerator;
 use App\Services\Permissions\BranchScopeResolver;
 use App\Services\Stock\StockMovementService;
 use App\Support\Msg;
+use Brick\Math\BigDecimal;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
@@ -37,6 +39,7 @@ class WriteOffService
         private readonly BranchScopeResolver $scope,
         private readonly DocumentNumberGenerator $numbers,
         private readonly Notifier $notifier,
+        private readonly FxService $fx,
     ) {}
 
     /**
@@ -157,7 +160,17 @@ class WriteOffService
                     : $this->stock->removeFromBatch($item->stockBatch, $item->quantity, MovementType::WriteOff, $by, $writeOff, $group, 'write_offs.approve', $reason);
             }
 
-            $writeOff->forceFill(['status' => WriteOffStatus::Approved, 'approved_by' => $by->id, 'approved_at' => now()])->save();
+            $snapshot = $this->fx->current();
+            $costUsd = $snapshot === null ? null : (string) collect($writeOff->costByCurrency())
+                ->reduce(fn (BigDecimal $sum, $amount, $currency) => $sum->plus($this->fx->converter($snapshot)->toUsd((string) $amount, (string) $currency)), BigDecimal::zero());
+
+            $writeOff->forceFill([
+                'status' => WriteOffStatus::Approved,
+                'approved_by' => $by->id,
+                'approved_at' => now(),
+                'total_cost_usd' => $costUsd,
+                'fx_snapshot_id' => $snapshot?->id,
+            ])->save();
 
             return $writeOff;
         });

@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\StockCounts\Pages;
 
 use App\Enums\StockCountStatus;
 use App\Filament\Admin\Resources\StockCounts\StockCountResource;
+use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\StockCount;
 use App\Services\Movement\StockCountService;
@@ -13,6 +14,8 @@ use Filament\Support\Icons\Heroicon;
 
 class ViewStockCount extends ViewRecord
 {
+    use RefreshesInfolist;
+
     protected static string $resource = StockCountResource::class;
 
     public function getTitle(): string

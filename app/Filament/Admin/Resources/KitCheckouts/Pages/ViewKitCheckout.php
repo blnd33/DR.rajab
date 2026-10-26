@@ -6,6 +6,7 @@ use App\Enums\CheckoutItemKind;
 use App\Enums\KitCheckoutStatus;
 use App\Enums\StockStatus;
 use App\Filament\Admin\Resources\KitCheckouts\KitCheckoutResource;
+use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\KitCheckout;
 use App\Models\KitCheckoutItem;
@@ -23,6 +24,8 @@ use Filament\Support\Icons\Heroicon;
 
 class ViewKitCheckout extends ViewRecord
 {
+    use RefreshesInfolist;
+
     protected static string $resource = KitCheckoutResource::class;
 
     public function getTitle(): string
