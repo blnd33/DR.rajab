@@ -94,6 +94,14 @@ With the demo data (`php artisan migrate:fresh --seed`):
 * **System → Expiry levels** — change colors / day ranges; gaps and overlaps are refused.
 * **Phone app** (`staff`, Sorani) — Stock, Scan, Receive and Recall.
 
+### Try movement (Phase 2)
+
+* **Dashboard → Waiting for action** — the demo has one of everything: an urgent stock request, a write-off, a count to review and open issues.
+* **Operations → Issues** — open the transfer that arrived with a missing unit and *Settle* it; the issue closes by itself.
+* **Operations → Stock requests** — approve the BGW request: one draft transfer per sending branch appears.
+* **Operations → Stock counts** — the EBL count waits for decisions (*Decide* per line, then *Close count*).
+* **Phone app** (`staff`) → **Tasks** — send the draft transfer, scan stock into the running count (works offline; scans sync when the connection is back), report a write-off, record a customer return.
+* **Branches → Move all stock to another branch** — before closing a branch.
 Excel imports run on the queue. The local preview `.env` uses `QUEUE_CONNECTION=sync` (runs at once); on a server keep `redis`/`database` with Horizon or `php artisan queue:work --queue=high,default,imports,pdf`.
 
 Labels print from the browser: the print sheet's page size equals the label size, so pick the thermal printer and "actual size" (no scaling, no margins) in the print dialog.

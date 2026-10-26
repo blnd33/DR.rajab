@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ImportFileController;
 use App\Http\Controllers\LabelPrintController;
@@ -27,4 +28,5 @@ Route::middleware(['auth', 'track.session'])->group(function () {
     Route::get('/labels/print', LabelPrintController::class)->middleware('signed')->name('labels.print');
     Route::get('/imports/{import}/original', [ImportFileController::class, 'original'])->name('imports.original');
     Route::get('/imports/{import}/errors', [ImportFileController::class, 'errors'])->name('imports.errors');
+    Route::get('/attachments/{attachment}', AttachmentController::class)->name('attachments.show');
 });

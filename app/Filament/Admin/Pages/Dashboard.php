@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Pages;
 
 use App\Filament\Admin\Widgets\ExpiryByBranch;
+use App\Filament\Admin\Widgets\PendingWork;
 use App\Filament\Admin\Widgets\StockOverview;
 use App\Filament\Admin\Widgets\SystemOverview;
 use Filament\Pages\Dashboard as BaseDashboard;
@@ -28,6 +29,7 @@ class Dashboard extends BaseDashboard
         return [
             SystemOverview::class,
             StockOverview::class,
+            PendingWork::class,
             ExpiryByBranch::class,
         ];
     }

@@ -92,6 +92,8 @@ final class PermissionRegistry
                 'stock_counts.start' => ['Start a stock count', true],
                 'stock_counts.scan' => ['Scan items in a stock count', true],
                 'stock_counts.review' => ['Review stock count results', true],
+                'issues.view_any' => ['View the issues queue', true],
+                'issues.resolve' => ['Resolve issues', false],
             ],
             'clinical' => [
                 'customers.view_any' => ['View hospitals and customers', false],
@@ -233,7 +235,7 @@ final class PermissionRegistry
                 'branches.view_any', 'activity.view_any',
                 'products.view_any', 'products.export',
                 'stock.view', 'stock.view_cost', 'stock.export', 'stock.recall', 'stock.correct',
-                'transfers.view_any', 'stock_requests.view_any', 'returns.view_any', 'write_offs.view_any', 'stock_counts.view_any',
+                'transfers.view_any', 'stock_requests.view_any', 'returns.view_any', 'write_offs.view_any', 'stock_counts.view_any', 'issues.view_any',
                 'customers.view_any', 'customers.manage',
                 'cash_boxes.view_any', 'cash_boxes.manage', 'cash_boxes.review_closing', 'cash_boxes.transfer',
                 'exchange_rates.view_any', 'exchange_rates.set_usd_iqd', 'exchange_rates.set_eur_usd',

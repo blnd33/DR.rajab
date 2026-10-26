@@ -8,7 +8,7 @@
         <h1 class="text-2xl font-bold">{{ $product->name }}</h1>
         <p class="text-muted-fg">
             <x-code :value="$product->sku" class="font-semibold text-fg" />
-            @if ($product->size) · <bdi>{{ $product->size }}</bdi> @endif
+            @if ($product->size) · <bdi class="whitespace-nowrap">{{ $product->size }}</bdi> @endif
             · {{ $product->tracking_type->getLabel() }}
         </p>
     </header>

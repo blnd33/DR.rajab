@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Pages;
 
 use App\Filament\Admin\Resources\Products\ProductResource;
+use App\Filament\Admin\Resources\StockRequests\StockRequestResource;
 use App\Filament\Admin\Tables\Columns\ProductColumn;
 use App\Models\Branch;
 use App\Models\LowStock;
@@ -114,6 +115,11 @@ class LowStockReport extends Page implements HasTable
                     ->options(fn () => $scope->apply(Branch::query()->active()->orderBy('code'), $user, 'stock.view', 'id')->pluck('code', 'id')),
             ])
             ->recordActions([
+                Action::make('request')
+                    ->label(__('Request from another branch'))
+                    ->icon(Heroicon::OutlinedArrowsRightLeft)
+                    ->visible(fn (LowStock $record) => $user->canInBranch('stock_requests.create', $record->branch_id))
+                    ->url(fn (LowStock $record) => StockRequestResource::getUrl('create', ['branch' => $record->branch_id, 'low' => 1, 'product' => $record->product_id])),
                 Action::make('minimum')
                     ->label(__('Edit minimum'))
                     ->icon(Heroicon::OutlinedPencilSquare)

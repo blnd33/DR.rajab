@@ -88,7 +88,7 @@ class StockBatchResource extends Resource
                     ->toggleable(),
             ])
             ->filters([
-                Filter::make('on_hand')->label(__('Only with quantity'))->default()->query(fn (Builder $q) => $q->where('quantity', '>', 0)),
+                Filter::make('on_hand')->label(__('Only with quantity'))->default()->query(fn (Builder $query) => $query->where('quantity', '>', 0)),
                 SelectFilter::make('branch_id')
                     ->label(__('Branch'))
                     ->options(fn () => $scope->apply(Branch::query()->orderBy('code'), $user, 'stock.view', 'id')->pluck('code', 'id')),

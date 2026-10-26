@@ -1,10 +1,10 @@
-{{-- Max 5 items. Scan sits in the middle as the primary action. Phase 3 swaps Stock/Alerts for Surgery/Tasks as needed. --}}
+{{-- Max 5 items. Scan sits in the middle as the primary action; notifications are on the top-bar bell. --}}
 @php
     $items = [
         ['route' => 'ops.home', 'label' => __('Home'), 'icon' => 'heroicon-o-home'],
         ['route' => 'ops.stock.index', 'label' => __('Stock'), 'icon' => 'heroicon-o-archive-box', 'match' => 'ops.stock.*'],
         ['route' => 'ops.scan', 'label' => __('Scan'), 'icon' => 'heroicon-o-qr-code', 'primary' => true],
-        ['route' => 'ops.notifications', 'label' => __('Alerts'), 'icon' => 'heroicon-o-bell'],
+        ['route' => 'ops.tasks', 'label' => __('Tasks'), 'icon' => 'heroicon-o-clipboard-document-list', 'match' => ['ops.tasks', 'ops.transfers.*', 'ops.requests.*', 'ops.counts.*', 'ops.write-offs.*', 'ops.returns.*']],
         ['route' => 'ops.profile', 'label' => __('Me'), 'icon' => 'heroicon-o-user-circle'],
     ];
 @endphp

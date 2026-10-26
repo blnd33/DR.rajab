@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
                 DemoBranchSeeder::class,
                 DemoUserSeeder::class,
                 DemoCatalogSeeder::class,
+                DemoMovementSeeder::class,
             ]);
         }
     }

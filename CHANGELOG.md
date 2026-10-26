@@ -2,6 +2,42 @@
 
 All notable changes per build phase.
 
+## [Phase 2 — Movement] — 2026-10-26
+
+Plan: [docs/phases/PHASE-2-PLAN.md](docs/phases/PHASE-2-PLAN.md) (decisions P2-1 … P2-10; built straight after Phase 1 at the client's request).
+
+### Added
+- **Transfers:** draft → add units / lot quantities (scan or pick) → send (units *in transit*, lots leave the shelf; still on the sender's books) → receive by scanning. Missing, short and extra lines are recorded, the transfer becomes *received with differences* and an issue opens; the Super Admin settles each line (*found and received*, *returned to the sender*, *written off as lost*) and the issue closes by itself. Cancel before receiving puts everything back. Expired items need *override expired* + a reason. A unit can only sit on one open transfer or write-off.
+- **Stock requests:** a branch asks for products (normal / urgent, needed-by date, preferred source); the approver sets quantity and sending branch per line (suggestion: the branch with the most valid stock); approval creates one draft transfer per sending branch and tells them; the request is *fulfilled* when its transfers arrive. Reject with reason; the requester can cancel while pending.
+- **Write-offs:** report damaged / lost / expired / other with photos → approve or reject. Stock moves only on approval; the cost per currency is shown.
+- **Returns:** customer returns (units out of our stock or lot quantities) — *good* goes back on the shelf, *damaged* goes back and opens a pending write-off; the unit's origin is kept. Supplier returns: draft → send (units *returned to supplier*, lots off the shelf), one currency per return; the credit note follows in Phase 4.
+- **Stock counts:** whole branch / one category / one shelf; snapshot of what should be there; phone scanning with an **offline queue** (IndexedDB, `client_uuid`, `POST /app/sync/count-scans`, replays ignored); lot counts typed in; submit → missing / quantity differs / belongs to another branch / not in the system → decide per line (*adjust* = count adjustment on the ledger, *write off* = pending write-off, *investigating*, *ignore*) → close.
+- **Issues inbox** (admin): transfer and count differences in one list, with links to the document, resolve / dismiss with a note.
+- **Hospitals & customers** master data (Phase 3 kits / surgeries and Phase 4 receivables use it).
+- **Branches:** closing is blocked by open transfers, requests, counts and write-offs; *Move all stock to another branch* sends everything on the shelves in one transfer.
+- **Low stock:** *Request from another branch* per row (pre-filled request).
+- **Dashboard:** *Waiting for action* — write-offs and requests to approve, transfers in transit, counts to review, open issues.
+- **Notifications** (in each user's language): transfer on its way / received / received with differences, request waiting / approved / rejected / transfer to prepare, write-off waiting / decided, count ready for review.
+- **Phone app:** bottom bar Home · Stock · **Scan** · Tasks · Me; Tasks hub (to receive, to send, my requests, counts, write-offs waiting) with new transfer, request, count, write-off and customer-return screens.
+- **Permissions:** `issues.view_any`, `issues.resolve`; attachments are served through a permission check (`/attachments/{id}`).
+- **Demo data:** `DemoMovementSeeder` creates a transfer in transit, one received with a difference, a draft, an urgent request, a write-off, a customer and a supplier return, a running and a submitted count, and three hospitals / clinics — all through the real services.
+- **Tests:** transfers (send, receive, differences, settling, cancel, expired, branch close), requests → transfers → fulfilled, write-offs, both returns, counts (snapshot, idempotent sync endpoint, decisions, scope, live lot counts), every new screen in 3 languages and branch refusals — 185 tests in total.
+
+### Fixed (from Phase 1)
+- Arabic plurals: Laravel picks six Arabic forms (0, 1, 2, 3–10, 11–99, 100+); the two-form strings showed the singular for 3+ items. All plural strings now have six forms.
+- Lots list filter *Only with quantity* did nothing (Filament passes the query by argument **name** — closures must use `$query`).
+- Phone: the hint inside code fields uses the normal font (Kurdish / Arabic letters were split by the code font); product sizes no longer break across lines.
+
+### Changed from the plan
+- Stock-movement methods are split per item type (`sendUnit` / `sendBatch`, …) instead of the generic names in the plan.
+- `issues.title` added (readable summary) next to `details`.
+- `transfer_assets` (kits on transfers) moves to Phase 3 with kits (P2-8, as planned).
+- `phpunit.xml` raises `memory_limit` to 1G for the full suite.
+
+### Known gaps / to review
+- Supplier credit notes, write-off cost in one currency and `fx_snapshot_id` columns arrive with Phase 4.
+- Arabic and Sorani texts for Phase 2 were written by the developer — native-speaker review needed before go-live.
+- Offline queue covers stock-count scans; offline transfer receiving stays online-only (receive needs the server's verdict per unit).
 ## [Phase 1 — Core Inventory] — 2026-10-26
 
 Plan: [docs/phases/PHASE-1-PLAN.md](docs/phases/PHASE-1-PLAN.md) (approved P1-1 … P1-6).
@@ -36,7 +72,7 @@ Plan: [docs/phases/PHASE-1-PLAN.md](docs/phases/PHASE-1-PLAN.md) (approved P1-1 
 - Local preview `.env` runs queued jobs immediately (`QUEUE_CONNECTION=sync`); servers keep the queue + worker.
 
 ### Known gaps / to review
-- One-click "Transfer all stock to branch X" (closing) and "Request from another branch" (low stock) arrive with transfers and stock requests in Phase 2 (P1-4).
+- ~~One-click "Transfer all stock to branch X" and "Request from another branch"~~ — done in Phase 2.
 - Stock value in one currency arrives with exchange rates in Phase 4 (P1-3).
 - Arabic and Sorani texts for Phase 1 were written by the developer — native-speaker review needed before go-live.
 - Real box labels from the client have not been scanned yet; add them to `tests/fixtures/gs1-vectors.json` when they arrive.

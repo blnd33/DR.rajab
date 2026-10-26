@@ -106,6 +106,18 @@ class StockUnit extends Model
         return $this->hasMany(StockMovement::class);
     }
 
+    /** @return HasMany<TransferItem, $this> */
+    public function transferItems(): HasMany
+    {
+        return $this->hasMany(TransferItem::class);
+    }
+
+    /** @return HasMany<WriteOffItem, $this> */
+    public function writeOffItems(): HasMany
+    {
+        return $this->hasMany(WriteOffItem::class);
+    }
+
     /** @param Builder<StockUnit> $query */
     public function scopeOnHand(Builder $query): void
     {

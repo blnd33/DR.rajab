@@ -7,11 +7,13 @@ import { Alpine, Livewire } from '../../../vendor/livewire/livewire/dist/livewir
 import { installDigitNormalizer } from '../shared/digits'
 import { registerServiceWorker } from '../shared/service-worker'
 import connectivity from './components/connectivity'
+import countQueue from './components/count-queue'
 import installPrompt from './components/install-prompt'
 import scanner from './scanner/scanner'
 import toasts from './components/toasts'
 
 Alpine.data('connectivity', connectivity)
+Alpine.data('countQueue', countQueue)
 Alpine.data('installPrompt', installPrompt)
 Alpine.data('scanner', scanner)
 Alpine.data('toasts', toasts)

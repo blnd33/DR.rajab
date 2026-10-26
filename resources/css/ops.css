@@ -69,6 +69,16 @@
         letter-spacing: 0.01em;
     }
 
+    /* The hint inside a code field is a sentence in the user's language, not a code. */
+    .ot-code::placeholder {
+        font-family: var(--font-sans);
+        letter-spacing: normal;
+    }
+
+    [dir='rtl'] input.ot-code:placeholder-shown {
+        direction: rtl;
+    }
+
     .ot-card {
         background-color: var(--color-card);
         border: 1px solid var(--color-border);

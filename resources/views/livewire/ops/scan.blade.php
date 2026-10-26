@@ -73,7 +73,7 @@
                             <p class="text-xs font-semibold uppercase tracking-wide text-muted-fg">{{ __('Serial unit') }}</p>
                             <x-code :value="$unit['serial']" class="block break-all text-lg font-bold" />
                             @if ($card['product'])
-                                <p class="text-sm"><x-code :value="$card['product']['sku']" /> · {{ $card['product']['name'] }}@if ($card['product']['size']) · <bdi>{{ $card['product']['size'] }}</bdi> @endif</p>
+                                <p class="text-sm"><x-code :value="$card['product']['sku']" /> · {{ $card['product']['name'] }}@if ($card['product']['size']) · <bdi class="whitespace-nowrap">{{ $card['product']['size'] }}</bdi> @endif</p>
                             @endif
                         </div>
                         <x-ops.status-chip :label="$unit['status_label']" :color="$unit['status_color']" :icon="$unit['status_icon']" class="shrink-0" />
@@ -116,7 +116,7 @@
                             {{ $card['kind'] === 'new_unit' ? __('New unit (not in stock yet)') : __('Product') }}
                         </p>
                         <p class="text-lg font-bold">{{ $product['name'] }}</p>
-                        <p class="text-sm"><x-code :value="$product['sku']" />@if ($product['size']) · <bdi>{{ $product['size'] }}</bdi> @endif</p>
+                        <p class="text-sm"><x-code :value="$product['sku']" />@if ($product['size']) · <bdi class="whitespace-nowrap">{{ $product['size'] }}</bdi> @endif</p>
                     </div>
 
                     @if ($card['lots'])

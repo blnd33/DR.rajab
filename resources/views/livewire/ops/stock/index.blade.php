@@ -72,7 +72,7 @@
                         @svg($row['type'] === 'unit' ? 'heroicon-o-finger-print' : 'heroicon-o-square-3-stack-3d', 'size-5')
                     </span>
                     <div class="min-w-0 flex-1 space-y-1">
-                        <p class="font-semibold">{{ $row['product']->name }}@if ($row['product']->size) · <bdi>{{ $row['product']->size }}</bdi> @endif</p>
+                        <p class="font-semibold">{{ $row['product']->name }}@if ($row['product']->size) · <bdi class="whitespace-nowrap">{{ $row['product']->size }}</bdi> @endif</p>
                         <p class="text-sm">
                             <x-code :value="$row['code']" class="font-semibold" />
                             @if ($row['type'] === 'unit' && $row['lot'])
@@ -89,7 +89,7 @@
                 @php($isLow = $row['min'] > 0 && $row['available'] < $row['min'])
                 <a href="{{ route('ops.stock.product', $product) }}" wire:navigate class="ot-card flex items-start gap-3 p-4 hover:bg-subtle">
                     <div class="min-w-0 flex-1 space-y-1">
-                        <p class="font-semibold">{{ $product->name }}@if ($product->size) · <bdi>{{ $product->size }}</bdi> @endif</p>
+                        <p class="font-semibold">{{ $product->name }}@if ($product->size) · <bdi class="whitespace-nowrap">{{ $product->size }}</bdi> @endif</p>
                         <p class="text-sm text-muted-fg"><x-code :value="$product->sku" /></p>
                         @if ($row['next_expiry'])
                             <x-expiry-chip :date="$row['next_expiry']" compact />

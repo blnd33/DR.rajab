@@ -430,6 +430,308 @@ class StockMovementService
 
     /*
     |--------------------------------------------------------------------------
+    | Moving stock (Phase 2: transfers, write-offs, returns, counts)
+    |--------------------------------------------------------------------------
+    | Called by the document services (TransferService, WriteOffService…) inside their own
+    | transaction; every method still locks its rows, checks the permission in the branch
+    | and writes the ledger row. $group ties all rows of one document action together.
+    */
+
+    /**
+     * Shelf → in transit to another branch (the unit stays on the sender's books until received).
+     */
+    public function sendUnit(StockUnit $unit, Branch $to, User $by, Model $reference, string $group, ?string $overrideReason = null): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, 'transfers.send', $unit->branch_id);
+
+        if ($unit->status !== StockStatus::InStock) {
+            throw new StockRuleViolation(__('Unit :serial is :status and cannot be sent.', ['serial' => $unit->serial, 'status' => $unit->status->getLabel()]), 'serial');
+        }
+
+        $override = $this->assertUsable($unit, $by, $overrideReason);
+
+        return $this->changeUnit($unit, StockStatus::InTransit, null, MovementType::TransferSend, $by, $reference, $group, [
+            'to_branch_id' => $to->id,
+            'is_override' => $override,
+            'override_reason' => $override ? $overrideReason : null,
+        ]);
+    }
+
+    /**
+     * Take a lot quantity off the sender's shelf onto a transfer.
+     */
+    public function sendBatch(StockBatch $batch, int $quantity, Branch $to, User $by, Model $reference, string $group, ?string $overrideReason = null): StockMovement
+    {
+        $batch = $this->lockBatch($batch);
+        $this->authorize($by, 'transfers.send', $batch->branch_id);
+        $override = $this->assertUsable($batch, $by, $overrideReason);
+
+        return $this->takeFromBatch($batch, $quantity, MovementType::TransferSend, $by, $reference, $group, [
+            'to_branch_id' => $to->id,
+            'is_override' => $override,
+            'override_reason' => $override ? $overrideReason : null,
+        ]);
+    }
+
+    /**
+     * In transit → on the receiver's shelf.
+     */
+    public function receiveUnit(StockUnit $unit, Branch $to, User $by, Model $reference, string $group, string $permission = 'transfers.receive'): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, $permission, $to);
+
+        if ($unit->status !== StockStatus::InTransit) {
+            throw new StockRuleViolation(__('Unit :serial is not in transit.', ['serial' => $unit->serial]), 'serial');
+        }
+
+        $from = $unit->branch_id;
+
+        return $this->changeUnit($unit, StockStatus::InStock, $to->id, MovementType::TransferReceive, $by, $reference, $group, [
+            'from_branch_id' => $from,
+        ]);
+    }
+
+    /**
+     * Put a lot quantity that travelled on a transfer into the receiver's matching bucket
+     * (same lot, expiry and cost layer as the source).
+     */
+    public function receiveBatch(StockBatch $source, int $quantity, Branch $to, User $by, Model $reference, string $group, string $permission = 'transfers.receive'): StockBatch
+    {
+        $this->authorize($by, $permission, $to);
+
+        return $this->putIntoBucket($source, $to->id, $quantity, MovementType::TransferReceive, $by, $reference, $group, [
+            'from_branch_id' => $source->branch_id,
+        ]);
+    }
+
+    /**
+     * Transfer cancelled (or a missing line sent back): in transit → sender's shelf again.
+     */
+    public function returnUnitToSender(StockUnit $unit, User $by, Model $reference, string $group, string $permission = 'transfers.cancel'): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, $permission, $unit->branch_id);
+
+        if ($unit->status !== StockStatus::InTransit) {
+            throw new StockRuleViolation(__('Unit :serial is not in transit.', ['serial' => $unit->serial]), 'serial');
+        }
+
+        return $this->changeUnit($unit, StockStatus::InStock, null, MovementType::TransferCancel, $by, $reference, $group);
+    }
+
+    public function returnBatchToSender(StockBatch $source, int $quantity, User $by, Model $reference, string $group, string $permission = 'transfers.cancel'): StockBatch
+    {
+        $this->authorize($by, $permission, $source->branch_id);
+
+        return $this->putIntoBucket($source, $source->branch_id, $quantity, MovementType::TransferCancel, $by, $reference, $group);
+    }
+
+    /**
+     * A unit leaves our stock for good: written off (damaged / lost / expired),
+     * returned to the supplier, or adjusted after a count.
+     */
+    public function moveUnitOut(StockUnit $unit, StockStatus $target, MovementType $type, User $by, Model $reference, string $group, string $permission, ?string $reason = null): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, $permission, $unit->branch_id);
+
+        if (! $unit->status->isOnHand()) {
+            throw new StockRuleViolation(__('Unit :serial is :status — it is no longer in our stock.', ['serial' => $unit->serial, 'status' => $unit->status->getLabel()]), 'serial');
+        }
+
+        return $this->changeUnit($unit, $target, null, $type, $by, $reference, $group, ['reason' => $reason]);
+    }
+
+    /**
+     * Remove a lot quantity for good (write-off, supplier return, count adjustment).
+     */
+    public function removeFromBatch(StockBatch $batch, int $quantity, MovementType $type, User $by, Model $reference, string $group, string $permission, ?string $reason = null): StockMovement
+    {
+        $batch = $this->lockBatch($batch);
+        $this->authorize($by, $permission, $batch->branch_id);
+
+        return $this->takeFromBatch($batch, $quantity, $type, $by, $reference, $group, ['reason' => $reason]);
+    }
+
+    /**
+     * Add quantity to an existing bucket (count found more than expected).
+     */
+    public function addToBatch(StockBatch $batch, int $quantity, MovementType $type, User $by, Model $reference, string $group, string $permission, ?string $reason = null): StockBatch
+    {
+        $this->authorize($by, $permission, $batch->branch_id);
+
+        return $this->putIntoBucket($batch, $batch->branch_id, $quantity, $type, $by, $reference, $group, ['reason' => $reason]);
+    }
+
+    /**
+     * A unit that had left our stock (at a hospital, used, sold) comes back onto a shelf.
+     */
+    public function restockUnit(StockUnit $unit, Branch $branch, MovementType $type, User $by, Model $reference, string $group, string $permission, ?string $reason = null): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, $permission, $branch);
+
+        if (in_array($unit->status, [StockStatus::InStock, StockStatus::InTransit, StockStatus::InKit], true)) {
+            throw new StockRuleViolation(__('Unit :serial is already in our stock (:status).', ['serial' => $unit->serial, 'status' => $unit->status->getLabel()]), 'serial');
+        }
+
+        return $this->changeUnit($unit, StockStatus::InStock, $branch->id, $type, $by, $reference, $group, [
+            'from_branch_id' => $unit->branch_id,
+            'reason' => $reason,
+        ]);
+    }
+
+    /**
+     * A lot quantity that left the sender on a transfer and never arrived: written off as lost.
+     * The bucket was already reduced when it was sent, so only the ledger row is written.
+     */
+    public function recordLossInTransit(StockBatch $source, int $quantity, User $by, Model $reference, string $group, string $reason): StockMovement
+    {
+        $this->authorize($by, 'stock.adjust', $source->branch_id);
+
+        return $this->record($group, MovementType::WriteOff, $by, now(), [
+            'product_id' => $source->product_id,
+            'from_batch_id' => $source->id,
+            'quantity' => $quantity,
+            'from_branch_id' => $source->branch_id,
+            'from_location_type' => LocationType::Transit,
+            'unit_cost' => $source->unit_cost,
+            'cost_currency' => $source->cost_currency,
+            'reason' => $reason,
+        ], $reference);
+    }
+
+    /**
+     * A status change of one unit with its ledger row ($toBranchId = new owner, null = same).
+     *
+     * @param  array<string, mixed>  $extra
+     */
+    private function changeUnit(StockUnit $unit, StockStatus $to, ?int $toBranchId, MovementType $type, User $by, Model $reference, string $group, array $extra = []): StockMovement
+    {
+        $fromStatus = $unit->status;
+        $fromLocation = $unit->location_type;
+        $fromBranch = $unit->branch_id;
+
+        $unit->status = $to;
+        $unit->location_type = $to->locationType();
+        $unit->branch_id = $toBranchId ?? $unit->branch_id;
+
+        if ($unit->location_type !== LocationType::Shelf || $toBranchId !== null) {
+            $unit->branch_location_id = null;
+        }
+
+        $unit->lock_version++;
+        $unit->save();
+
+        return $this->record($group, $type, $by, now(), array_merge([
+            'product_id' => $unit->product_id,
+            'stock_unit_id' => $unit->id,
+            'quantity' => 1,
+            'from_branch_id' => $fromBranch,
+            'to_branch_id' => $unit->branch_id,
+            'from_status' => $fromStatus,
+            'to_status' => $to,
+            'from_location_type' => $fromLocation,
+            'to_location_type' => $unit->location_type,
+            'unit_cost' => $unit->unit_cost,
+            'cost_currency' => $unit->cost_currency,
+        ], array_filter($extra, fn ($v) => $v !== null)), $reference);
+    }
+
+    /**
+     * @param  array<string, mixed>  $extra
+     */
+    private function takeFromBatch(StockBatch $batch, int $quantity, MovementType $type, User $by, Model $reference, string $group, array $extra = []): StockMovement
+    {
+        if ($quantity < 1) {
+            throw new StockRuleViolation(__('Quantity must be at least 1.'), 'quantity');
+        }
+
+        if ($quantity > $batch->quantity) {
+            throw new StockRuleViolation(__('Only :available of lot :lot are on the shelf (asked: :asked).', [
+                'available' => $batch->quantity,
+                'lot' => $batch->lot ?? '—',
+                'asked' => $quantity,
+            ]), 'quantity');
+        }
+
+        $batch->quantity -= $quantity;
+        $batch->save();
+
+        return $this->record($group, $type, $by, now(), array_merge([
+            'product_id' => $batch->product_id,
+            'from_batch_id' => $batch->id,
+            'quantity' => $quantity,
+            'from_branch_id' => $batch->branch_id,
+            'from_location_type' => $batch->location_type,
+            'unit_cost' => $batch->unit_cost,
+            'cost_currency' => $batch->cost_currency,
+        ], array_filter($extra, fn ($v) => $v !== null)), $reference);
+    }
+
+    /**
+     * Find-or-create the bucket like $source (lot, expiry, cost layer) in a branch's shelf
+     * stock and add the quantity.
+     *
+     * @param  array<string, mixed>  $extra
+     */
+    private function putIntoBucket(StockBatch $source, int $branchId, int $quantity, MovementType $type, User $by, Model $reference, string $group, array $extra = []): StockBatch
+    {
+        if ($quantity < 1) {
+            throw new StockRuleViolation(__('Quantity must be at least 1.'), 'quantity');
+        }
+
+        $sameShelf = $branchId === $source->branch_id;
+
+        $target = $this->lockBucket([
+            'product_id' => $source->product_id,
+            'branch_id' => $branchId,
+            'lot' => $source->lot,
+            'expiry_date' => $source->expiry_date?->toDateString(),
+            'location_type' => LocationType::Shelf->value,
+            'branch_location_id' => $sameShelf ? $source->branch_location_id : null,
+            'unit_cost' => $source->unit_cost,
+            'cost_currency' => $source->cost_currency,
+        ], [
+            'production_date' => $source->production_date?->toDateString(),
+            'base_unit_cost' => $source->base_unit_cost,
+            'landed_unit_cost' => $source->landed_unit_cost,
+            'supplier_id' => $source->supplier_id,
+            'last_expiry_level_id' => $source->last_expiry_level_id,
+        ]);
+
+        $target->quantity += $quantity;
+        $target->save();
+
+        $this->record($group, $type, $by, now(), array_merge([
+            'product_id' => $source->product_id,
+            'to_batch_id' => $target->id,
+            'quantity' => $quantity,
+            'to_branch_id' => $branchId,
+            'to_location_type' => LocationType::Shelf,
+            'unit_cost' => $target->unit_cost,
+            'cost_currency' => $target->cost_currency,
+        ], array_filter($extra, fn ($v) => $v !== null)), $reference);
+
+        return $target;
+    }
+
+    private function lockUnit(StockUnit $unit): StockUnit
+    {
+        /** @var StockUnit */
+        return StockUnit::query()->lockForUpdate()->findOrFail($unit->id);
+    }
+
+    private function lockBatch(StockBatch $batch): StockBatch
+    {
+        /** @var StockBatch */
+        return StockBatch::query()->lockForUpdate()->findOrFail($batch->id);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | Internals
     |--------------------------------------------------------------------------
     */

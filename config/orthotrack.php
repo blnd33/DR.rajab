@@ -4,6 +4,7 @@ use App\Services\Barcode\Parsers\Gs1Parser;
 use App\Services\Barcode\Parsers\InternalLabelParser;
 use App\Services\Barcode\Parsers\PlainCodeParser;
 use App\Services\Branches\Checks\DocumentsCheck;
+use App\Services\Branches\Checks\MovementCheck;
 use App\Services\Branches\Checks\StockCheck;
 use App\Services\Branches\Checks\UsersCheck;
 
@@ -41,6 +42,7 @@ return [
         UsersCheck::class,
         DocumentsCheck::class,
         StockCheck::class,
+        MovementCheck::class,
     ],
 
     /*

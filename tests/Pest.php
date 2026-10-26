@@ -3,6 +3,8 @@
 use App\Enums\Role;
 use App\Models\Branch;
 use App\Models\User;
+use App\Services\Stock\Data\ReceiveLine;
+use App\Services\Stock\StockMovementService;
 use Database\Seeders\CurrencySeeder;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -53,4 +55,19 @@ function branch(string $code = 'DHK', array $attributes = []): Branch
 {
     return Branch::query()->where('code', $code)->first()
         ?? Branch::factory()->create(['code' => $code] + $attributes);
+}
+
+/**
+ * Put stock on a shelf through the real receive flow.
+ *
+ * @param  list<array<string, mixed>>  $lines  ReceiveLine fields; product_id required
+ */
+function stockIn(Branch $branch, User $by, array $lines): void
+{
+    app(StockMovementService::class)->receive($branch, array_map(fn (array $line) => ReceiveLine::fromArray($line + [
+        'quantity' => 1,
+        'expiry_date' => now()->addYear()->toDateString(),
+        'unit_cost' => '100',
+        'cost_currency' => 'USD',
+    ]), $lines), $by);
 }

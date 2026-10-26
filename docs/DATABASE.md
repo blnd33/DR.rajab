@@ -294,6 +294,8 @@ Index (data_import_id, action).
 
 ## Phase 2 — Movement
 
+> **As built (2026-10-26):** `issues` also has `title` (readable one-line summary, in the language of the user who caused it). `write_offs` keeps cost per item (`write_off_items.unit_cost` + `cost_currency`); `total_cost_usd` stays empty and the `fx_snapshot_id` / `credit_note_id` columns are added by Phase 4 with exchange rates and credit notes. `transfer_assets` is created in Phase 3 with kits and instruments (P2-8). `v_stock_on_hand.qty_in_transit` now also counts lot quantities on transfers in transit (for the sending branch).
+
 ### transfers
 | id | number | from_branch_id, to_branch_id FK | status (`draft`,`in_transit`,`received`,`received_with_discrepancy`,`cancelled`) | stock_request_id FK NULL | carrier_note text NULL | notes | created_by | sent_by, sent_at | received_by, received_at | cancelled_by, cancelled_at, cancel_reason | timestamps |
 CHECK from_branch_id <> to_branch_id. Index (to_branch_id, status), (from_branch_id, status).

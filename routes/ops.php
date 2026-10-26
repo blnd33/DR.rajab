@@ -1,8 +1,18 @@
 <?php
 
 use App\Http\Controllers\Ops\BranchSwitchController;
+use App\Http\Controllers\Ops\CountScanSyncController;
 use App\Http\Controllers\Ops\PushSubscriptionController;
 use App\Livewire\Ops\Home;
+use App\Livewire\Ops\Movement\CountShow;
+use App\Livewire\Ops\Movement\CountStart;
+use App\Livewire\Ops\Movement\RequestCreate;
+use App\Livewire\Ops\Movement\RequestShow;
+use App\Livewire\Ops\Movement\ReturnCreate;
+use App\Livewire\Ops\Movement\Tasks;
+use App\Livewire\Ops\Movement\TransferCreate;
+use App\Livewire\Ops\Movement\TransferShow;
+use App\Livewire\Ops\Movement\WriteOffCreate;
 use App\Livewire\Ops\Notifications;
 use App\Livewire\Ops\Profile;
 use App\Livewire\Ops\Recall;
@@ -31,6 +41,20 @@ Route::livewire('/stock/receive', Receive::class)->name('stock.receive');
 Route::livewire('/stock/products/{product}', ProductShow::class)->name('stock.product');
 Route::livewire('/stock/units/{unit}', UnitShow::class)->name('stock.unit');
 Route::livewire('/recall', Recall::class)->name('recall');
+
+// Movement (Phase 2)
+Route::livewire('/tasks', Tasks::class)->name('tasks');
+Route::livewire('/transfers/new', TransferCreate::class)->name('transfers.create');
+Route::livewire('/transfers/{transfer}', TransferShow::class)->name('transfers.show');
+Route::livewire('/requests/new', RequestCreate::class)->name('requests.create');
+Route::livewire('/requests/{stockRequest}', RequestShow::class)->name('requests.show');
+Route::livewire('/counts/new', CountStart::class)->name('counts.create');
+Route::livewire('/counts/{count}', CountShow::class)->name('counts.show');
+Route::livewire('/write-offs/new', WriteOffCreate::class)->name('write-offs.create');
+Route::livewire('/returns/new', ReturnCreate::class)->name('returns.create');
+
+// Offline-tolerant sync: stock count scans queued on the phone (idempotent by client_uuid).
+Route::post('/sync/count-scans', CountScanSyncController::class)->middleware('throttle:sync')->name('sync.count-scans');
 
 Route::post('/branch', BranchSwitchController::class)->name('branch.switch');
 

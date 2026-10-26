@@ -10,7 +10,7 @@ use App\Services\Permissions\PermissionRegistry;
 function usedTranslationKeys(): array
 {
     $keys = [];
-    $pattern = '/(?:\b__|\btrans_choice)\(\s*\'((?:[^\'\\\\]|\\\\.)*)\'/';
+    $pattern = '/(?:\b__|\btrans_choice|Msg::key)\(\s*\'((?:[^\'\\\\]|\\\\.)*)\'/';
 
     foreach (['app', 'resources/views'] as $dir) {
         $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(base_path($dir)));

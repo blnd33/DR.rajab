@@ -32,7 +32,7 @@
                 @foreach ($matches as $match)
                     <li>
                         <button type="button" wire:click="addProduct({{ $match->id }})" class="flex min-h-12 w-full items-center justify-between gap-3 px-3 py-2 text-start hover:bg-subtle">
-                            <span class="min-w-0"><x-code :value="$match->sku" class="font-semibold" /> <span class="text-sm text-muted-fg">{{ $match->name }}@if ($match->size) · <bdi>{{ $match->size }}</bdi> @endif</span></span>
+                            <span class="min-w-0"><x-code :value="$match->sku" class="font-semibold" /> <span class="text-sm text-muted-fg">{{ $match->name }}@if ($match->size) · <bdi class="whitespace-nowrap">{{ $match->size }}</bdi> @endif</span></span>
                             @svg('heroicon-o-plus-circle', 'size-6 shrink-0 text-primary')
                         </button>
                     </li>
@@ -52,7 +52,7 @@
             <article wire:key="line-{{ $key }}" class="ot-card space-y-3 p-4">
                 <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0">
-                        <p class="font-semibold">{{ $line['name'] }}@if ($line['size']) · <bdi>{{ $line['size'] }}</bdi> @endif</p>
+                        <p class="font-semibold">{{ $line['name'] }}@if ($line['size']) · <bdi class="whitespace-nowrap">{{ $line['size'] }}</bdi> @endif</p>
                         <x-code :value="$line['sku']" class="text-sm text-muted-fg" />
                     </div>
                     <button type="button" wire:click="removeLine('{{ $key }}')" class="-m-2 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-muted-fg hover:bg-subtle" aria-label="{{ __('Remove') }}">

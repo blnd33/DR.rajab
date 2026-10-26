@@ -4,14 +4,18 @@ namespace App\Filament\Admin\Resources\Branches\Tables;
 
 use App\Enums\BranchStatus;
 use App\Exceptions\Domain\BranchClosureBlocked;
+use App\Filament\Admin\Resources\Transfers\TransferResource;
+use App\Filament\Admin\Support\ServiceAction;
 use App\Filament\Admin\Tables\Columns\CodeColumn;
 use App\Models\Branch;
 use App\Models\User;
 use App\Services\Branches\BranchService;
+use App\Services\Movement\TransferService;
 use App\Support\Database\Pg;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
@@ -53,6 +57,7 @@ class BranchesTable
             ->recordActions([
                 EditAction::make(),
                 ActionGroup::make([
+                    self::transferAllAction(),
                     self::closeAction(),
                     self::reopenAction(),
                     self::deleteAction(),
@@ -60,6 +65,29 @@ class BranchesTable
             ])
             ->emptyStateHeading(__('No branches yet'))
             ->emptyStateDescription(__('Add your first branch to start.'));
+    }
+
+    /** Before closing: send every unit and lot on the shelves to another branch in one transfer. */
+    private static function transferAllAction(): Action
+    {
+        return Action::make('transfer_all')
+            ->label(__('Move all stock to another branch'))
+            ->icon(Heroicon::OutlinedTruck)
+            ->color('warning')
+            ->visible(fn (Branch $record) => $record->status === BranchStatus::Active && Auth::user()?->can('branches.close') && Auth::user()->canInBranch('transfers.create', $record->id))
+            ->modalHeading(fn (Branch $record) => __('Move all stock out of :code?', ['code' => $record->code]))
+            ->modalDescription(__('One transfer is created and sent with everything on the shelves. The receiving branch scans it in as usual.'))
+            ->schema(fn (Branch $record) => [
+                Select::make('to_branch_id')->label(__('To branch'))->required()->native(false)
+                    ->options(fn () => collect(ServiceAction::branchOptions('transfers.create'))->except([$record->id])->all()),
+            ])
+            ->action(function (Branch $record, array $data, Action $action) {
+                $transfer = ServiceAction::run($action, fn ($u) => app(TransferService::class)->transferAll($record, Branch::query()->findOrFail($data['to_branch_id']), $u), __('All stock is on its way.'));
+
+                if ($transfer !== null) {
+                    $action->redirect(TransferResource::getUrl('view', ['record' => $transfer]));
+                }
+            });
     }
 
     private static function closeAction(): Action

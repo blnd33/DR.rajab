@@ -7,7 +7,7 @@
     <header class="space-y-2">
         <p class="text-xs font-semibold uppercase tracking-wide text-muted-fg">{{ __('Serial unit') }}</p>
         <h1 class="break-all text-2xl font-bold"><x-code :value="$unit->serial" /></h1>
-        <p class="text-muted-fg">{{ $unit->product->name }}@if ($unit->product->size) · <bdi>{{ $unit->product->size }}</bdi> @endif</p>
+        <p class="text-muted-fg">{{ $unit->product->name }}@if ($unit->product->size) · <bdi class="whitespace-nowrap">{{ $unit->product->size }}</bdi> @endif</p>
         <x-ops.status-chip :label="$unit->status->getLabel()" :color="$unit->status->getColor()" :icon="$unit->status->getIcon()" />
     </header>
 
