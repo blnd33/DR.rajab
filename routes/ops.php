@@ -2,7 +2,14 @@
 
 use App\Http\Controllers\Ops\BranchSwitchController;
 use App\Http\Controllers\Ops\CountScanSyncController;
+use App\Http\Controllers\Ops\PatientLookupController;
 use App\Http\Controllers\Ops\PushSubscriptionController;
+use App\Http\Controllers\Ops\SurgerySyncController;
+use App\Livewire\Ops\Clinical\KitIndex;
+use App\Livewire\Ops\Clinical\KitShow;
+use App\Livewire\Ops\Clinical\SurgeryCreate;
+use App\Livewire\Ops\Clinical\SurgeryIndex;
+use App\Livewire\Ops\Clinical\SurgeryShow;
 use App\Livewire\Ops\Home;
 use App\Livewire\Ops\Movement\CountShow;
 use App\Livewire\Ops\Movement\CountStart;
@@ -53,8 +60,17 @@ Route::livewire('/counts/{count}', CountShow::class)->name('counts.show');
 Route::livewire('/write-offs/new', WriteOffCreate::class)->name('write-offs.create');
 Route::livewire('/returns/new', ReturnCreate::class)->name('returns.create');
 
+// Clinical (Phase 3)
+Route::livewire('/surgeries', SurgeryIndex::class)->name('surgeries.index');
+Route::livewire('/surgeries/new', SurgeryCreate::class)->name('surgeries.create');
+Route::livewire('/surgeries/{surgery}', SurgeryShow::class)->name('surgeries.show');
+Route::livewire('/kits', KitIndex::class)->name('kits.index');
+Route::livewire('/kits/{kit}', KitShow::class)->name('kits.show');
+Route::get('/lookup/patients', PatientLookupController::class)->name('lookup.patients');
+
 // Offline-tolerant sync: stock count scans queued on the phone (idempotent by client_uuid).
 Route::post('/sync/count-scans', CountScanSyncController::class)->middleware('throttle:sync')->name('sync.count-scans');
+Route::post('/sync/surgeries', SurgerySyncController::class)->middleware('throttle:sync')->name('sync.surgeries');
 
 Route::post('/branch', BranchSwitchController::class)->name('branch.switch');
 

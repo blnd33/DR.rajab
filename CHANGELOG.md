@@ -2,6 +2,34 @@
 
 All notable changes per build phase.
 
+## [Phase 3 — Clinical & assets] — 2026-10-26
+
+Plan: [docs/phases/PHASE-3-PLAN.md](docs/phases/PHASE-3-PLAN.md) (decisions P3-1 … P3-12; built straight after Phase 2).
+
+### Added
+- **Patients** (sensitive): file number (generated or typed), name, phone and notes **encrypted at rest**, phone found through a hash (`0750…` and `+964 750…` match), age or date of birth, gender, primary doctor. Doctors see only their own patients (primary doctor or operated) unless they have *View all patients*; every opening of a file is in the activity log; never deleted. Surgery history with the serials used, for follow-ups and recalls.
+- **Surgery logging**: type (configurable, translatable list), date, branch, hospital, lead surgeon + assistants, patient (pick or new), side, kit checkout, notes, photos of the implant stickers. *Complete* takes everything out of stock in one transaction (units → used in surgery at that hospital, lots reduced, `surgery_use` rows with cost). Units from another branch or another kit are allowed with a warning on the line (and a notification); expired items need *override expired* + a reason; a serial can be used in one live surgery only. *Cancel* (with reason) puts every item back on the branch shelf (`surgery_reversal`).
+- **Offline surgery drafts** (phone): the form lives in the browser — every change is kept in IndexedDB, Save / Complete queues the draft, it is sent to `POST /app/sync/surgeries` now or when the connection is back (from any page). The server updates the same draft for the same `client_uuid`, ignores replays of a completed surgery, reuses a patient with the same phone and name, and keeps anything that blocks (missing hospital, unknown code, used serial, expired without permission) as a draft with the reasons to fix online. *My surgeries* shows drafts still only on the phone.
+- **Kits & instruments**: kit types with a template (instrument types + implant sizes, required / optional), physical kits (`KIT-<branch>-0001` code + barcode, home and current branch, status, photo), instruments (`INS-…`, maker serial, holder, maintenance, missing / found, retire). Implants in a kit stay stock of the branch (units *in a kit*, lots in the kit's own bucket). Kit and instrument changes go through `AssetMovementService` into an append-only `asset_movements` ledger (history tab).
+- **Kit flow**: prepare / refill by scanning (instrument labels, serials, lot boxes — FEFO) with a live comparison against the template; check out to a hospital (doctor, planned date, optional patient; due back after the *overdue-kit days* setting); surgeries take implants from the kit at the hospital; return by scanning — every line reconciled as *returned*, *used in surgery* (found through the logged surgery) or *unaccounted*; missing / damaged instruments flagged. Unaccounted items open one critical issue and notify the Super Admin, who settles each: found (back in the kit), used (surgery logged now) or lost (written off).
+- **Kits on transfers**: an available kit travels with everything in it (kit, instruments, implants change branch on receive); loose instruments too. *Move all stock* (branch closing) includes kits and instruments; closing is blocked while kits, instruments, kits out or draft surgeries remain.
+- **Overdue kits**: daily in `stock:alerts` (notification per branch), badges and filters, dashboard count.
+- **Hospitals**: detail page with kits lent, surgeries and returns.
+- **Dashboard**: *Surgeries and kits* — surgeries today / this month, kits out (overdue), unaccounted implants.
+- **Phone app**: Tasks gets *New surgery*, *My surgeries*, *Kits*, surgery drafts and kits out; kit screens (contents vs template, prepare / refill by scan, check out, return by scan); reusable `<x-ops.scan-box>`.
+- **Demo data**: `DemoClinicalSeeder` — 4 surgery types, 4 instrument types, knee and hip kit types with templates, 3 kits (one complete, one out at Rizgary and overdue, one only instruments), 5 instruments, 4 patients, a surgery from the shelf, a surgery from the kit, a draft missing its hospital.
+- **Tests**: surgeries (complete, drafts with problems, idempotent replay, patient reuse, warnings, expired + override, cancel, permissions, sync endpoint), patients (encryption, phone hash, own vs all, view log), kit flow (template, prepare, checkout → surgery from kit → return → unaccounted → resolve, damaged instruments, kit transfer, overdue reminder, instruments in kits), live screens in 3 languages and privacy between doctors — 213 tests in total.
+
+### Changed from the plan
+- Unaccounted items settled as *lost* are written off at once (the Super Admin's decision is the approval) instead of opening a pending write-off.
+- `surgeries.problems` (jsonb) and `surgery_items.used_at` added; the serial uniqueness index covers used lines only, so two drafts may hold the same serial until one completes.
+- Kit / instrument codes have no year (`KIT-DHK-0001`).
+- Printed surgery reports and kit checklists come with Phase 5 (PDFs), as planned.
+
+### Known gaps / to review
+- Native date fields on the phone show the device's date format; the chosen date is echoed as YYYY-MM-DD on the surgery form — the other phone date fields get the same treatment in Phase 5.
+- Surgery photos are added online (not stored offline).
+- Arabic and Sorani texts for Phase 3 were written by the developer — native-speaker review needed before go-live.
 ## [Phase 2 — Movement] — 2026-10-26
 
 Plan: [docs/phases/PHASE-2-PLAN.md](docs/phases/PHASE-2-PLAN.md) (decisions P2-1 … P2-10; built straight after Phase 1 at the client's request).

@@ -9,6 +9,8 @@ use App\Exceptions\Domain\StockRuleViolation;
 use App\Models\Branch;
 use App\Models\BranchLocation;
 use App\Models\Currency;
+use App\Models\Customer;
+use App\Models\Kit;
 use App\Models\Product;
 use App\Models\StockBatch;
 use App\Models\StockMovement;
@@ -127,6 +129,7 @@ class StockMovementService
                         'expiry_date' => $line->expiryDate,
                         'location_type' => LocationType::Shelf->value,
                         'branch_location_id' => $line->locationId,
+                        'kit_id' => null,
                         'unit_cost' => $cost,
                         'cost_currency' => $line->costCurrency,
                     ], [
@@ -309,6 +312,7 @@ class StockMovementService
                 'expiry_date' => $new['expiry_date'],
                 'location_type' => $source->location_type->value,
                 'branch_location_id' => $new['branch_location_id'],
+                'kit_id' => $source->kit_id,
                 'unit_cost' => $unitCost,
                 'cost_currency' => $new['cost_currency'],
             ], [
@@ -603,19 +607,271 @@ class StockMovementService
         ], $reference);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Kits and surgeries (Phase 3)
+    |--------------------------------------------------------------------------
+    | Implants in a kit stay stock of the branch (units in_kit, lots in a kit bucket). A kit
+    | out at a hospital takes them along (units out_at_hospital, lots in a hospital bucket of
+    | the kit). Surgery use takes them out of our stock for good; cancelling puts them back.
+    */
+
+    /**
+     * Branch shelf → inside a kit of the same branch.
+     */
+    public function loadUnitIntoKit(StockUnit $unit, Kit $kit, User $by, Model $reference, string $group): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, 'kits.prepare', $kit->branch_id);
+
+        if ($unit->status !== StockStatus::InStock || $unit->branch_id !== $kit->branch_id) {
+            throw new StockRuleViolation(__('Unit :serial is not on a shelf in :branch.', ['serial' => $unit->serial, 'branch' => $kit->branch->code]), 'serial');
+        }
+
+        $this->assertUsable($unit, $by);
+
+        return $this->changeUnit($unit, StockStatus::InKit, null, MovementType::KitLoad, $by, $reference, $group, set: ['kit_id' => $kit->id]);
+    }
+
+    /**
+     * Inside a kit → back on the branch shelf.
+     */
+    public function unloadUnitFromKit(StockUnit $unit, User $by, Model $reference, string $group): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, 'kits.prepare', $unit->branch_id);
+
+        if ($unit->status !== StockStatus::InKit) {
+            throw new StockRuleViolation(__('Unit :serial is not in a kit.', ['serial' => $unit->serial]), 'serial');
+        }
+
+        return $this->changeUnit($unit, StockStatus::InStock, null, MovementType::KitUnload, $by, $reference, $group);
+    }
+
+    /**
+     * A lot quantity from the branch shelf into a kit (its own bucket in the kit).
+     */
+    public function loadBatchIntoKit(StockBatch $batch, int $quantity, Kit $kit, User $by, Model $reference, string $group): StockBatch
+    {
+        $batch = $this->lockBatch($batch);
+        $this->authorize($by, 'kits.prepare', $kit->branch_id);
+
+        if ($batch->location_type !== LocationType::Shelf || $batch->branch_id !== $kit->branch_id) {
+            throw new StockRuleViolation(__('This lot is not on a shelf in :from.', ['from' => $kit->branch->code]), 'lot');
+        }
+
+        $this->assertUsable($batch, $by);
+        $this->takeFromBatch($batch, $quantity, MovementType::KitLoad, $by, $reference, $group, ['to_kit_id' => $kit->id]);
+
+        return $this->putIntoBucket($batch, $kit->branch_id, $quantity, MovementType::KitLoad, $by, $reference, $group, location: LocationType::Kit, kitId: $kit->id);
+    }
+
+    /**
+     * A lot quantity out of a kit, back on the branch shelf.
+     */
+    public function unloadBatchFromKit(StockBatch $kitBatch, int $quantity, User $by, Model $reference, string $group): StockBatch
+    {
+        $kitBatch = $this->lockBatch($kitBatch);
+        $this->authorize($by, 'kits.prepare', $kitBatch->branch_id);
+
+        if ($kitBatch->location_type !== LocationType::Kit) {
+            throw new StockRuleViolation(__('This lot is not in a kit.'), 'lot');
+        }
+
+        $this->takeFromBatch($kitBatch, $quantity, MovementType::KitUnload, $by, $reference, $group);
+
+        return $this->putIntoBucket($kitBatch, $kitBatch->branch_id, $quantity, MovementType::KitUnload, $by, $reference, $group);
+    }
+
+    /**
+     * Kit checked out: a unit inside it goes to the hospital with the kit.
+     */
+    public function checkoutKitUnit(StockUnit $unit, Customer $hospital, User $by, Model $reference, string $group): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, 'kits.checkout', $unit->branch_id);
+
+        if ($unit->status !== StockStatus::InKit) {
+            throw new StockRuleViolation(__('Unit :serial is not in a kit.', ['serial' => $unit->serial]), 'serial');
+        }
+
+        return $this->changeUnit($unit, StockStatus::OutAtHospital, null, MovementType::KitCheckout, $by, $reference, $group, set: ['customer_id' => $hospital->id]);
+    }
+
+    /**
+     * Kit checked out: its lot bucket moves to the hospital bucket of the kit.
+     */
+    public function checkoutKitBatch(StockBatch $kitBatch, Customer $hospital, User $by, Model $reference, string $group): StockBatch
+    {
+        $kitBatch = $this->lockBatch($kitBatch);
+        $this->authorize($by, 'kits.checkout', $kitBatch->branch_id);
+
+        if ($kitBatch->location_type !== LocationType::Kit) {
+            throw new StockRuleViolation(__('This lot is not in a kit.'), 'lot');
+        }
+
+        $quantity = $kitBatch->quantity;
+        $this->takeFromBatch($kitBatch, $quantity, MovementType::KitCheckout, $by, $reference, $group, ['customer_id' => $hospital->id]);
+
+        return $this->putIntoBucket($kitBatch, $kitBatch->branch_id, $quantity, MovementType::KitCheckout, $by, $reference, $group,
+            location: LocationType::Hospital, kitId: $kitBatch->kit_id, customerId: $hospital->id);
+    }
+
+    /**
+     * Kit back from the hospital (or an unaccounted unit found): the unit is in the kit again.
+     */
+    public function returnKitUnit(StockUnit $unit, Kit $kit, User $by, Model $reference, string $group, string $permission = 'kits.return'): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, $permission, $kit->branch_id);
+
+        if ($unit->status !== StockStatus::OutAtHospital) {
+            throw new StockRuleViolation(__('Unit :serial is not out at a hospital.', ['serial' => $unit->serial]), 'serial');
+        }
+
+        return $this->changeUnit($unit, StockStatus::InKit, $kit->branch_id, MovementType::KitReturn, $by, $reference, $group, set: ['kit_id' => $kit->id]);
+    }
+
+    /**
+     * Kit back from the hospital: a lot quantity goes back into the kit's bucket.
+     */
+    public function returnKitBatch(StockBatch $hospitalBatch, int $quantity, Kit $kit, User $by, Model $reference, string $group, string $permission = 'kits.return'): StockBatch
+    {
+        $hospitalBatch = $this->lockBatch($hospitalBatch);
+        $this->authorize($by, $permission, $kit->branch_id);
+
+        if ($hospitalBatch->location_type !== LocationType::Hospital) {
+            throw new StockRuleViolation(__('This lot is not out at a hospital.'), 'lot');
+        }
+
+        $this->takeFromBatch($hospitalBatch, $quantity, MovementType::KitReturn, $by, $reference, $group);
+
+        return $this->putIntoBucket($hospitalBatch, $kit->branch_id, $quantity, MovementType::KitReturn, $by, $reference, $group, location: LocationType::Kit, kitId: $kit->id);
+    }
+
+    /**
+     * Implanted in a surgery: the unit leaves our stock for good (linked to the hospital).
+     * Usable from a shelf, a kit or a kit at the hospital; expired needs an allowed override.
+     */
+    public function useUnitInSurgery(StockUnit $unit, Branch $surgeryBranch, ?Customer $hospital, User $by, Model $reference, string $group, ?string $overrideReason = null): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, 'surgeries.create', $surgeryBranch);
+
+        if (! in_array($unit->status, [StockStatus::InStock, StockStatus::InKit, StockStatus::OutAtHospital], true)) {
+            throw new StockRuleViolation(__('Unit :serial is :status and cannot be used.', ['serial' => $unit->serial, 'status' => $unit->status->getLabel()]), 'serial');
+        }
+
+        $override = $this->assertUsable($unit, $by, $overrideReason);
+
+        return $this->changeUnit($unit, StockStatus::UsedInSurgery, null, MovementType::SurgeryUse, $by, $reference, $group, [
+            'is_override' => $override,
+            'override_reason' => $override ? $overrideReason : null,
+        ], set: ['customer_id' => $hospital?->id]);
+    }
+
+    /**
+     * A lot quantity used in a surgery (from a shelf, a kit or a kit at the hospital).
+     */
+    public function useBatchInSurgery(StockBatch $batch, int $quantity, Branch $surgeryBranch, ?Customer $hospital, User $by, Model $reference, string $group, ?string $overrideReason = null): StockMovement
+    {
+        $batch = $this->lockBatch($batch);
+        $this->authorize($by, 'surgeries.create', $surgeryBranch);
+        $override = $this->assertUsable($batch, $by, $overrideReason);
+
+        return $this->takeFromBatch($batch, $quantity, MovementType::SurgeryUse, $by, $reference, $group, [
+            'customer_id' => $hospital?->id,
+            'is_override' => $override,
+            'override_reason' => $override ? $overrideReason : null,
+        ]);
+    }
+
+    /**
+     * Surgery cancelled: the unit is back on the surgery branch's shelf.
+     */
+    public function reverseSurgeryUnit(StockUnit $unit, Branch $branch, User $by, Model $reference, string $group, string $reason): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, 'surgeries.cancel', $branch);
+
+        if ($unit->status !== StockStatus::UsedInSurgery) {
+            throw new StockRuleViolation(__('Unit :serial is :status, not used in a surgery.', ['serial' => $unit->serial, 'status' => $unit->status->getLabel()]), 'serial');
+        }
+
+        return $this->changeUnit($unit, StockStatus::InStock, $branch->id, MovementType::SurgeryReversal, $by, $reference, $group, [
+            'from_branch_id' => $unit->branch_id,
+            'reason' => $reason,
+        ]);
+    }
+
+    /**
+     * Surgery cancelled: a lot quantity goes back onto the surgery branch's shelf.
+     */
+    public function reverseSurgeryBatch(StockBatch $source, int $quantity, Branch $branch, User $by, Model $reference, string $group, string $reason): StockBatch
+    {
+        $this->authorize($by, 'surgeries.cancel', $branch);
+
+        return $this->putIntoBucket($source, $branch->id, $quantity, MovementType::SurgeryReversal, $by, $reference, $group, ['reason' => $reason]);
+    }
+
+    /**
+     * A kit received on a transfer: the unit inside it now belongs to the receiving branch.
+     */
+    public function moveKitUnitToBranch(StockUnit $unit, Branch $to, User $by, Model $reference, string $group): StockMovement
+    {
+        $unit = $this->lockUnit($unit);
+        $this->authorize($by, 'transfers.receive', $to);
+
+        if ($unit->status !== StockStatus::InKit) {
+            throw new StockRuleViolation(__('Unit :serial is not in a kit.', ['serial' => $unit->serial]), 'serial');
+        }
+
+        return $this->changeUnit($unit, StockStatus::InKit, $to->id, MovementType::TransferReceive, $by, $reference, $group, [
+            'from_branch_id' => $unit->branch_id,
+        ]);
+    }
+
+    /**
+     * A kit received on a transfer: its lot bucket moves to the receiving branch.
+     */
+    public function moveKitBatchToBranch(StockBatch $kitBatch, Branch $to, User $by, Model $reference, string $group): StockBatch
+    {
+        $kitBatch = $this->lockBatch($kitBatch);
+        $this->authorize($by, 'transfers.receive', $to);
+
+        $quantity = $kitBatch->quantity;
+        $this->takeFromBatch($kitBatch, $quantity, MovementType::TransferSend, $by, $reference, $group, ['to_branch_id' => $to->id]);
+
+        return $this->putIntoBucket($kitBatch, $to->id, $quantity, MovementType::TransferReceive, $by, $reference, $group,
+            ['from_branch_id' => $kitBatch->branch_id], LocationType::Kit, $kitBatch->kit_id);
+    }
+
     /**
      * A status change of one unit with its ledger row ($toBranchId = new owner, null = same).
+     * $set: attributes applied with the change (kit, hospital).
      *
      * @param  array<string, mixed>  $extra
+     * @param  array<string, mixed>  $set
      */
-    private function changeUnit(StockUnit $unit, StockStatus $to, ?int $toBranchId, MovementType $type, User $by, Model $reference, string $group, array $extra = []): StockMovement
+    private function changeUnit(StockUnit $unit, StockStatus $to, ?int $toBranchId, MovementType $type, User $by, Model $reference, string $group, array $extra = [], array $set = []): StockMovement
     {
         $fromStatus = $unit->status;
         $fromLocation = $unit->location_type;
         $fromBranch = $unit->branch_id;
 
+        $fromKit = $unit->kit_id;
+        $unit->forceFill($set);
+
         $unit->status = $to;
         $unit->location_type = $to->locationType();
+
+        if (! in_array($to, [StockStatus::InKit, StockStatus::OutAtHospital], true)) {
+            $unit->kit_id = null;
+        }
+
+        if (! in_array($to, [StockStatus::OutAtHospital, StockStatus::UsedInSurgery, StockStatus::Sold], true)) {
+            $unit->customer_id = null;
+        }
         $unit->branch_id = $toBranchId ?? $unit->branch_id;
 
         if ($unit->location_type !== LocationType::Shelf || $toBranchId !== null) {
@@ -635,6 +891,9 @@ class StockMovementService
             'to_status' => $to,
             'from_location_type' => $fromLocation,
             'to_location_type' => $unit->location_type,
+            'from_kit_id' => $fromKit,
+            'to_kit_id' => $unit->kit_id,
+            'customer_id' => $unit->customer_id,
             'unit_cost' => $unit->unit_cost,
             'cost_currency' => $unit->cost_currency,
         ], array_filter($extra, fn ($v) => $v !== null)), $reference);
@@ -666,32 +925,45 @@ class StockMovementService
             'quantity' => $quantity,
             'from_branch_id' => $batch->branch_id,
             'from_location_type' => $batch->location_type,
+            'from_kit_id' => $batch->kit_id,
             'unit_cost' => $batch->unit_cost,
             'cost_currency' => $batch->cost_currency,
         ], array_filter($extra, fn ($v) => $v !== null)), $reference);
     }
 
     /**
-     * Find-or-create the bucket like $source (lot, expiry, cost layer) in a branch's shelf
-     * stock and add the quantity.
+     * Find-or-create the bucket like $source (lot, expiry, cost layer) at a location of a branch
+     * (shelf by default; a kit, or a kit out at a hospital) and add the quantity.
      *
      * @param  array<string, mixed>  $extra
      */
-    private function putIntoBucket(StockBatch $source, int $branchId, int $quantity, MovementType $type, User $by, Model $reference, string $group, array $extra = []): StockBatch
-    {
+    private function putIntoBucket(
+        StockBatch $source,
+        int $branchId,
+        int $quantity,
+        MovementType $type,
+        User $by,
+        Model $reference,
+        string $group,
+        array $extra = [],
+        LocationType $location = LocationType::Shelf,
+        ?int $kitId = null,
+        ?int $customerId = null,
+    ): StockBatch {
         if ($quantity < 1) {
             throw new StockRuleViolation(__('Quantity must be at least 1.'), 'quantity');
         }
 
-        $sameShelf = $branchId === $source->branch_id;
+        $sameShelf = $location === LocationType::Shelf && $branchId === $source->branch_id && $source->location_type === LocationType::Shelf;
 
         $target = $this->lockBucket([
             'product_id' => $source->product_id,
             'branch_id' => $branchId,
             'lot' => $source->lot,
             'expiry_date' => $source->expiry_date?->toDateString(),
-            'location_type' => LocationType::Shelf->value,
+            'location_type' => $location->value,
             'branch_location_id' => $sameShelf ? $source->branch_location_id : null,
+            'kit_id' => $location === LocationType::Shelf ? null : $kitId,
             'unit_cost' => $source->unit_cost,
             'cost_currency' => $source->cost_currency,
         ], [
@@ -703,6 +975,7 @@ class StockMovementService
         ]);
 
         $target->quantity += $quantity;
+        $target->customer_id = $location === LocationType::Hospital ? $customerId : null;
         $target->save();
 
         $this->record($group, $type, $by, now(), array_merge([
@@ -710,7 +983,9 @@ class StockMovementService
             'to_batch_id' => $target->id,
             'quantity' => $quantity,
             'to_branch_id' => $branchId,
-            'to_location_type' => LocationType::Shelf,
+            'to_location_type' => $location,
+            'to_kit_id' => $target->kit_id,
+            'customer_id' => $target->customer_id,
             'unit_cost' => $target->unit_cost,
             'cost_currency' => $target->cost_currency,
         ], array_filter($extra, fn ($v) => $v !== null)), $reference);

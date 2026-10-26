@@ -8,6 +8,24 @@
 
     {{-- Start something --}}
     <section aria-label="{{ __('New') }}" class="grid grid-cols-2 gap-3">
+        @if ($canSurgery)
+            <a href="{{ route('ops.surgeries.create') }}" class="ot-card flex min-h-20 flex-col justify-between gap-2 p-4 hover:bg-subtle">
+                @svg('heroicon-o-heart', 'size-7 text-primary')
+                <span class="font-semibold">{{ __('New surgery') }}</span>
+            </a>
+        @endif
+        @if ($canSurgeries)
+            <a href="{{ route('ops.surgeries.index') }}" wire:navigate class="ot-card flex min-h-20 flex-col justify-between gap-2 p-4 hover:bg-subtle">
+                @svg('heroicon-o-clipboard-document-list', 'size-7 text-primary')
+                <span class="font-semibold">{{ __('My surgeries') }}</span>
+            </a>
+        @endif
+        @if ($canKits)
+            <a href="{{ route('ops.kits.index') }}" wire:navigate class="ot-card flex min-h-20 flex-col justify-between gap-2 p-4 hover:bg-subtle">
+                @svg('heroicon-o-briefcase', 'size-7 text-primary')
+                <span class="font-semibold">{{ __('Kits') }}</span>
+            </a>
+        @endif
         @if ($canCreateTransfer)
             <a href="{{ route('ops.transfers.create') }}" wire:navigate class="ot-card flex min-h-20 flex-col justify-between gap-2 p-4 hover:bg-subtle">
                 @svg('heroicon-o-truck', 'size-7 text-primary')
@@ -39,6 +57,40 @@
             </a>
         @endif
     </section>
+
+    @if ($surgeryDrafts->isNotEmpty())
+        <section class="space-y-3">
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('Surgery drafts to finish') }}</h2>
+            @foreach ($surgeryDrafts as $surgery)
+                <a href="{{ route('ops.surgeries.show', $surgery) }}" wire:navigate wire:key="sd-{{ $surgery->id }}" class="ot-card flex items-center justify-between gap-3 p-4 hover:bg-subtle">
+                    <div class="min-w-0 space-y-1">
+                        <x-code :value="$surgery->number" class="font-semibold" />
+                        <p class="text-sm text-muted-fg"><x-date :value="$surgery->surgery_date" /></p>
+                    </div>
+                    <x-ops.status-chip :label="$surgery->status->getLabel()" :color="$surgery->status->getColor()" :icon="$surgery->status->getIcon()" class="shrink-0" />
+                </a>
+            @endforeach
+        </section>
+    @endif
+
+    @if ($kitsOut->isNotEmpty())
+        <section class="space-y-3">
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('Kits out at hospitals') }}</h2>
+            @foreach ($kitsOut as $kit)
+                <a href="{{ route('ops.kits.show', $kit) }}" wire:navigate wire:key="ko-{{ $kit->id }}" class="ot-card flex items-center justify-between gap-3 p-4 hover:bg-subtle">
+                    <div class="min-w-0 space-y-1">
+                        <x-code :value="$kit->code" class="font-semibold" />
+                        <p class="text-sm text-muted-fg">{{ $kit->customer?->code }}</p>
+                    </div>
+                    @if ($kit->isOverdue())
+                        <x-ops.status-chip :label="__('Overdue')" color="danger" icon="heroicon-m-clock" class="shrink-0" />
+                    @else
+                        <x-ops.status-chip :label="$kit->status->getLabel()" :color="$kit->status->getColor()" :icon="$kit->status->getIcon()" class="shrink-0" />
+                    @endif
+                </a>
+            @endforeach
+        </section>
+    @endif
 
     @php($sections = [
         ['title' => __('To receive'), 'items' => $incoming, 'empty' => __('Nothing on its way to this branch.'), 'kind' => 'incoming'],

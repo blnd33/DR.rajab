@@ -2,13 +2,17 @@
 
 namespace App\Livewire\Ops\Movement;
 
+use App\Enums\KitStatus;
 use App\Enums\StockCountStatus;
 use App\Enums\StockRequestStatus;
+use App\Enums\SurgeryStatus;
 use App\Enums\TransferStatus;
 use App\Enums\WriteOffStatus;
 use App\Livewire\Ops\Concerns\RunsStockActions;
+use App\Models\Kit;
 use App\Models\StockCount;
 use App\Models\StockRequest;
+use App\Models\Surgery;
 use App\Models\Transfer;
 use App\Models\WriteOff;
 use App\Support\CurrentBranch;
@@ -57,6 +61,15 @@ class Tasks extends Component
             'canCount' => $can('stock_counts.start'),
             'canWriteOff' => $can('write_offs.report'),
             'canReturn' => $can('returns.customer'),
+            'canSurgery' => $can('surgeries.create'),
+            'canSurgeries' => $can('surgeries.view_any') || $can('surgeries.create'),
+            'canKits' => $can('kits.view_any'),
+            'surgeryDrafts' => $can('surgeries.create')
+                ? Surgery::query()->where('created_by', $user->id)->where('status', SurgeryStatus::Draft)->latest()->limit(5)->get()
+                : collect(),
+            'kitsOut' => $can('kits.view_any')
+                ? Kit::query()->with(['customer', 'currentCheckout'])->where('branch_id', $branchId)->where('status', KitStatus::OutAtHospital)->get()
+                : collect(),
         ])->title(__('Tasks'));
     }
 }

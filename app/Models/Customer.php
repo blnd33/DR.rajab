@@ -7,6 +7,7 @@ use App\Models\Concerns\HasCleanTranslations;
 use App\Models\Concerns\TracksAuthor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
@@ -63,6 +64,30 @@ class Customer extends Model
     public function scopeActive(Builder $query): void
     {
         $query->where('is_active', true);
+    }
+
+    /** @return HasMany<Kit, $this> */
+    public function kits(): HasMany
+    {
+        return $this->hasMany(Kit::class);
+    }
+
+    /** @return HasMany<KitCheckout, $this> */
+    public function kitCheckouts(): HasMany
+    {
+        return $this->hasMany(KitCheckout::class);
+    }
+
+    /** @return HasMany<Surgery, $this> */
+    public function surgeries(): HasMany
+    {
+        return $this->hasMany(Surgery::class);
+    }
+
+    /** @return HasMany<CustomerReturn, $this> */
+    public function returns(): HasMany
+    {
+        return $this->hasMany(CustomerReturn::class);
     }
 
     public function label(): string

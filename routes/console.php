@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\IdempotencyKey;
+use App\Services\Assets\OverdueKitNotifier;
 use App\Services\Expiry\ExpiryTransitionNotifier;
 use App\Services\Stock\LowStockDetector;
 use Illuminate\Support\Facades\Artisan;
@@ -34,16 +35,18 @@ Schedule::call(fn () => IdempotencyKey::query()->where('created_at', '<', now()-
 Schedule::command('auth:clear-resets')->daily();
 
 /*
-| Stock alerts (Phase 1): items entering a new expiry level, products below minimum.
+| Stock alerts (Phase 1): items entering a new expiry level, products below minimum;
+| overdue kits (Phase 3).
 | Run by hand: php artisan stock:alerts
 */
-Artisan::command('stock:alerts {--no-notify : Update expiry levels without sending notifications}', function (ExpiryTransitionNotifier $expiry, LowStockDetector $lowStock) {
+Artisan::command('stock:alerts {--no-notify : Update expiry levels without sending notifications}', function (ExpiryTransitionNotifier $expiry, LowStockDetector $lowStock, OverdueKitNotifier $overdueKits) {
     $entered = $expiry->run(notify: ! $this->option('no-notify'));
     $this->info('Expiry levels updated: '.array_sum(array_map('array_sum', $entered)).' items entered a new level.');
 
     if (! $this->option('no-notify')) {
         $this->info('Low-stock digests sent for '.$lowStock->notify().' branch(es).');
+        $this->info('Overdue-kit reminders sent for '.$overdueKits->notify().' branch(es).');
     }
-})->purpose('Daily expiry-level and low-stock alerts');
+})->purpose('Daily expiry-level, low-stock and overdue-kit alerts');
 
 Schedule::command('stock:alerts')->dailyAt(config('orthotrack.stock_alerts_time'))->timezone($tz)->onOneServer()->withoutOverlapping();

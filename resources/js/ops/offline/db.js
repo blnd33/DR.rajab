@@ -51,6 +51,10 @@ export async function remove(store, clientUuid) {
     notifyChange()
 }
 
+export async function all(store) {
+    return (await db()).getAll(store)
+}
+
 export async function pending(store) {
     return (await db()).getAllFromIndex(store, 'by_status', 'pending')
 }

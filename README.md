@@ -102,6 +102,13 @@ With the demo data (`php artisan migrate:fresh --seed`):
 * **Operations → Stock counts** — the EBL count waits for decisions (*Decide* per line, then *Close count*).
 * **Phone app** (`staff`) → **Tasks** — send the draft transfer, scan stock into the running count (works offline; scans sync when the connection is back), report a write-off, record a customer return.
 * **Branches → Move all stock to another branch** — before closing a branch.
+### Try clinical & kits (Phase 3)
+
+* **Clinical → Kits** — `KIT-DHK-0002` is out at Rizgary and overdue: open its checkout, *Return the kit*, leave the cup unticked → it becomes unaccounted and an issue for the Super Admin (*Settle*).
+* **Clinical → Surgeries** — two completed surgeries (one from the kit) and a draft that still needs its hospital.
+* **Clinical → Patients** — only the patients you may see; every opening is logged.
+* **Phone app** (`doctor`) → **Tasks → New surgery** — scan implants, add a new patient, *Save draft* or *Complete*; the draft is kept on the phone if the connection drops (see *My surgeries → Saved on this phone*).
+* **Phone app** (`staff`) → **Tasks → Kits** — prepare / refill by scanning, check out, return by scanning.
 Excel imports run on the queue. The local preview `.env` uses `QUEUE_CONNECTION=sync` (runs at once); on a server keep `redis`/`database` with Horizon or `php artisan queue:work --queue=high,default,imports,pdf`.
 
 Labels print from the browser: the print sheet's page size equals the label size, so pick the thermal printer and "actual size" (no scaling, no margins) in the print dialog.

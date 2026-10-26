@@ -29,6 +29,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property StockStatus $status
  * @property LocationType $location_type
  * @property ?int $branch_location_id
+ * @property ?int $kit_id
+ * @property ?int $customer_id
  * @property string $base_unit_cost
  * @property string $landed_unit_cost
  * @property string $unit_cost
@@ -98,6 +100,18 @@ class StockUnit extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /** @return BelongsTo<Kit, $this> */
+    public function kit(): BelongsTo
+    {
+        return $this->belongsTo(Kit::class);
+    }
+
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     /** @return HasMany<StockMovement, $this> */

@@ -79,6 +79,12 @@ class Transfer extends Model
         return $this->hasMany(TransferItem::class);
     }
 
+    /** @return HasMany<TransferAsset, $this> */
+    public function assets(): HasMany
+    {
+        return $this->hasMany(TransferAsset::class);
+    }
+
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {

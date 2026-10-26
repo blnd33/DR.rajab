@@ -160,6 +160,21 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         return $this->hasRole(Role::SuperAdmin->value);
     }
 
+    /**
+     * Active users who may log surgeries (for doctor pickers).
+     *
+     * @return array<int, string>
+     */
+    public static function doctorOptions(): array
+    {
+        return static::query()
+            ->where('is_active', true)
+            ->where(fn ($q) => $q->permission('surgeries.create')->orWhereHas('roles', fn ($r) => $r->where('name', Role::SuperAdmin->value)))
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->all();
+    }
+
     public function primaryRole(): ?Role
     {
         foreach (Role::cases() as $role) {

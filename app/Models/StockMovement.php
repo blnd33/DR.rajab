@@ -30,6 +30,9 @@ use LogicException;
  * @property ?StockStatus $to_status
  * @property ?LocationType $from_location_type
  * @property ?LocationType $to_location_type
+ * @property ?int $from_kit_id
+ * @property ?int $to_kit_id
+ * @property ?int $customer_id
  * @property ?string $unit_cost
  * @property ?string $cost_currency
  * @property ?string $reason

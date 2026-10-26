@@ -5,6 +5,10 @@ namespace App\Filament\Admin\Resources\Customers;
 use App\Enums\CustomerType;
 use App\Filament\Admin\Forms\TranslatableInput;
 use App\Filament\Admin\Resources\Customers\Pages\ManageCustomers;
+use App\Filament\Admin\Resources\Customers\Pages\ViewCustomer;
+use App\Filament\Admin\Resources\Customers\RelationManagers\CustomerKitCheckoutsRelationManager;
+use App\Filament\Admin\Resources\Customers\RelationManagers\CustomerReturnsRelationManager;
+use App\Filament\Admin\Resources\Customers\RelationManagers\CustomerSurgeriesRelationManager;
 use App\Filament\Admin\Tables\Columns\CodeColumn;
 use App\Models\Currency;
 use App\Models\Customer;
@@ -12,6 +16,7 @@ use App\Support\Database\Pg;
 use BackedEnum;
 use Filament\Actions\CreateAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -91,13 +96,25 @@ class CustomerResource extends Resource
                 SelectFilter::make('type')->label(__('Type'))->options(CustomerType::options()),
                 TernaryFilter::make('is_active')->label(__('Active'))->default(true),
             ])
-            ->recordActions([EditAction::make()])
+            ->recordActions([ViewAction::make(), EditAction::make()])
             ->headerActions([CreateAction::make()])
             ->emptyStateHeading(__('No hospitals or customers yet'));
     }
 
     public static function getPages(): array
     {
-        return ['index' => ManageCustomers::route('/')];
+        return [
+            'index' => ManageCustomers::route('/'),
+            'view' => ViewCustomer::route('/{record}'),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            CustomerKitCheckoutsRelationManager::class,
+            CustomerSurgeriesRelationManager::class,
+            CustomerReturnsRelationManager::class,
+        ];
     }
 }

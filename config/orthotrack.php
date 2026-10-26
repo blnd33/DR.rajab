@@ -3,6 +3,7 @@
 use App\Services\Barcode\Parsers\Gs1Parser;
 use App\Services\Barcode\Parsers\InternalLabelParser;
 use App\Services\Barcode\Parsers\PlainCodeParser;
+use App\Services\Branches\Checks\ClinicalCheck;
 use App\Services\Branches\Checks\DocumentsCheck;
 use App\Services\Branches\Checks\MovementCheck;
 use App\Services\Branches\Checks\StockCheck;
@@ -43,6 +44,7 @@ return [
         DocumentsCheck::class,
         StockCheck::class,
         MovementCheck::class,
+        ClinicalCheck::class,
     ],
 
     /*

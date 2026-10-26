@@ -349,6 +349,8 @@ Index (status, type, branch_id). Feeds dashboard alerts.
 
 ## Phase 3 — Clinical & assets
 
+> **As built (2026-10-26):** `stock_units` / `stock_batches` got `kit_id` + `customer_id`; the lot bucket key now includes `kit_id` (a kit's lots are their own bucket; a kit at a hospital keeps its bucket with `location_type = hospital`). `stock_movements` got `from_kit_id`, `to_kit_id`, `customer_id` (foreign keys on PostgreSQL; plain columns on the SQLite preview, which would otherwise rebuild the append-only table). `surgeries` also has `problems` (jsonb: why a synced draft is still a draft); `surgery_items.used_at` marks lines taken out of stock — the "one live surgery per serial" unique index covers used, non-reversed lines (drafts may share a serial until one completes). `kit_checkout_items` also has `resolved_by` / `resolved_at`. `instruments` keep a purchase cost (asset value) — payables arrive with Phase 4. Price lists (open question 6) are not created yet. The stock views live in `App\Support\Database\StockViews` so migrations that rebuild stock tables recreate them.
+
 ### customers *(hospitals and other customers — created in Phase 2, documented here)*
 | id | code varchar(32) UNIQUE | type (`hospital`,`clinic`,`distributor`,`individual`) | name jsonb **tr** | city jsonb **tr** NULL | address, phone, email, contact_person | tax_number NULL | default_currency | credit_enabled bool default false | credit_limit money NULL | price_list_id FK NULL | notes | is_active | timestamps |
 Customer receivables are ready for Phase 4 via `party_ledger_entries`. `credit_enabled` stays false until the open question is answered.

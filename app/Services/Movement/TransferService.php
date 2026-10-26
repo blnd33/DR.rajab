@@ -2,8 +2,10 @@
 
 namespace App\Services\Movement;
 
+use App\Enums\InstrumentStatus;
 use App\Enums\IssueSeverity;
 use App\Enums\IssueType;
+use App\Enums\KitStatus;
 use App\Enums\LocationType;
 use App\Enums\MovementType;
 use App\Enums\ScanContext;
@@ -15,6 +17,8 @@ use App\Enums\TransferStatus;
 use App\Enums\WriteOffStatus;
 use App\Exceptions\Domain\StockRuleViolation;
 use App\Models\Branch;
+use App\Models\Instrument;
+use App\Models\Kit;
 use App\Models\StockBatch;
 use App\Models\StockRequest;
 use App\Models\StockUnit;
@@ -23,6 +27,7 @@ use App\Models\TransferItem;
 use App\Models\User;
 use App\Models\WriteOffItem;
 use App\Notifications\DocumentEvent;
+use App\Services\Assets\AssetTransferService;
 use App\Services\Barcode\ScanResolver;
 use App\Services\Barcode\ScanResult;
 use App\Services\Barcode\ScanResultKind;
@@ -48,6 +53,7 @@ class TransferService
         private readonly DocumentNumberGenerator $numbers,
         private readonly IssueService $issues,
         private readonly Notifier $notifier,
+        private readonly AssetTransferService $assetTransfers,
     ) {}
 
     public function createDraft(Branch $from, Branch $to, User $by, ?string $notes = null, ?StockRequest $request = null): Transfer
@@ -217,7 +223,7 @@ class TransferService
             $transfer = Transfer::query()->with(['items.stockUnit', 'items.fromBatch', 'toBranch'])->lockForUpdate()->findOrFail($transfer->id);
             $this->assertDraft($transfer);
 
-            if ($transfer->items->isEmpty()) {
+            if ($transfer->items->isEmpty() && $transfer->assets()->doesntExist()) {
                 throw new StockRuleViolation(__('Add at least one item.'));
             }
 
@@ -231,6 +237,8 @@ class TransferService
                     $this->stock->sendBatch($item->fromBatch, $item->quantity_sent, $transfer->toBranch, $by, $transfer, $group, $overrideReason);
                 }
             }
+
+            $this->assetTransfers->sendAll($transfer, $by, $group);
 
             $transfer->forceFill(['status' => TransferStatus::InTransit, 'sent_by' => $by->id, 'sent_at' => now()])->save();
 
@@ -311,6 +319,10 @@ class TransferService
                     continue;
                 }
 
+                if ($unit === null && $transfer->items->isEmpty()) {
+                    continue; // only kits on this transfer: nothing to attach an unknown code to
+                }
+
                 $transfer->items()->create([
                     'product_id' => $unit !== null ? $unit->product_id : $transfer->items->first()->product_id,
                     'stock_unit_id' => $unit?->id,
@@ -321,6 +333,8 @@ class TransferService
                 ]);
                 $differences++;
             }
+
+            $this->assetTransfers->receiveAll($transfer, $by, $group);
 
             $transfer->forceFill([
                 'status' => $differences > 0 ? TransferStatus::ReceivedWithDiscrepancy : TransferStatus::Received,
@@ -446,6 +460,8 @@ class TransferService
                         ? $this->stock->returnUnitToSender($item->stockUnit, $by, $transfer, $group)
                         : $this->stock->returnBatchToSender($item->fromBatch, $item->quantity_sent, $by, $transfer, $group);
                 }
+
+                $this->assetTransfers->cancelAll($transfer, $by, $group);
             }
 
             $transfer->forceFill([
@@ -479,7 +495,16 @@ class TransferService
                 fn (StockBatch $batch) => $transfer->items()->create(['product_id' => $batch->product_id, 'from_batch_id' => $batch->id, 'quantity_sent' => $batch->quantity]),
             );
 
-            if ($transfer->items()->doesntExist()) {
+            // Kits travel with everything in them; loose instruments too.
+            Kit::query()->where('branch_id', $from->id)->where('status', KitStatus::Available)->each(
+                fn (Kit $kit) => $this->assetTransfers->addKit($transfer, $kit, $by),
+            );
+
+            Instrument::query()->where('branch_id', $from->id)->whereNull('kit_id')->where('status', InstrumentStatus::Available)->each(
+                fn (Instrument $instrument) => $this->assetTransfers->addInstrument($transfer, $instrument, $by),
+            );
+
+            if ($transfer->items()->doesntExist() && $transfer->assets()->doesntExist()) {
                 throw new StockRuleViolation(__('There is no stock on the shelves of :branch.', ['branch' => $from->code]));
             }
 

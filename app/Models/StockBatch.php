@@ -26,6 +26,8 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $branch_id
  * @property LocationType $location_type
  * @property ?int $branch_location_id
+ * @property ?int $kit_id
+ * @property ?int $customer_id
  * @property int $quantity
  * @property string $base_unit_cost
  * @property string $landed_unit_cost
@@ -92,6 +94,18 @@ class StockBatch extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /** @return BelongsTo<Kit, $this> */
+    public function kit(): BelongsTo
+    {
+        return $this->belongsTo(Kit::class);
+    }
+
+    /** @return BelongsTo<Customer, $this> */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     /**
