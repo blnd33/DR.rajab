@@ -41,7 +41,7 @@ class CreatePurchase extends CreateRecord
                     ->afterStateUpdated(fn ($state, Set $set) => $set('currency', Supplier::query()->find($state)->default_currency ?? 'USD')),
                 TextInput::make('supplier_invoice_number')->label(__('Supplier invoice no.'))->required()->maxLength(64)->extraInputAttributes(['dir' => 'ltr', 'class' => 'ot-code']),
                 Select::make('branch_id')->label(__('Receiving branch'))->options(fn () => ServiceAction::branchOptions('purchases.create'))->required()->native(false),
-                DatePicker::make('invoice_date')->label(__('Invoice date'))->native(false)->displayFormat('Y-m-d')->default(now())->required(),
+                DatePicker::make('invoice_date')->label(__('Invoice date'))->native(false)->displayFormat('Y-m-d')->default(fn () => now(config('orthotrack.timezone'))->toDateString())->required(),
                 DatePicker::make('due_date')->label(__('Due date'))->native(false)->displayFormat('Y-m-d')
                     ->helperText(__('Empty = invoice date + the supplier\'s payment terms.')),
                 Select::make('currency')->label(__('Currency'))->options(fn () => Currency::options())->default('USD')->required()->native(false)->live(),

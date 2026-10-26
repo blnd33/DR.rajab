@@ -1,7 +1,7 @@
 <div x-data="scanner({ method: 'handleScan', serverFeedback: true })" class="space-y-5">
     <a href="{{ route('ops.cash') }}" wire:navigate class="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-primary">
         @svg('heroicon-o-chevron-left', 'size-5 rtl:rotate-180')
-        <span>{{ __('Cash') }}</span>
+        <span>{{ __('Cash desk') }}</span>
     </a>
 
     <header>

@@ -49,7 +49,7 @@ class CreateExpense extends CreateRecord
                 ->options(fn () => app(CashBoxService::class)->options($user, 'expenses.create')),
             TextInput::make('amount')->label(fn (Get $get) => __('Amount (:currency)', ['currency' => CashBox::query()->find($get('cash_box_id'))->currency ?? '…']))
                 ->numeric()->minValue(0)->required(),
-            DatePicker::make('expense_date')->label(__('Date'))->native(false)->displayFormat('Y-m-d')->default(now())->required(),
+            DatePicker::make('expense_date')->label(__('Date'))->native(false)->displayFormat('Y-m-d')->default(fn () => now(config('orthotrack.timezone'))->toDateString())->required(),
             TextInput::make('payee')->label(__('Paid to'))->maxLength(150),
             Textarea::make('description')->label(__('Description'))->rows(2)->columnSpanFull(),
             Toggle::make('split')->label(__('Split over several branches'))->live()->columnSpanFull(),

@@ -11,7 +11,7 @@
         @if ($canCash)
             <a href="{{ route('ops.cash') }}" wire:navigate class="ot-card flex min-h-20 flex-col justify-between gap-2 p-4 hover:bg-subtle">
                 @svg('heroicon-o-wallet', 'size-7 text-primary')
-                <span class="font-semibold">{{ __('Cash') }}</span>
+                <span class="font-semibold">{{ __('Cash desk') }}</span>
             </a>
         @endif
         @if ($canSurgery)

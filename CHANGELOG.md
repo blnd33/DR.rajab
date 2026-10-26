@@ -29,6 +29,11 @@ Plan: [docs/phases/PHASE-4-PLAN.md](docs/phases/PHASE-4-PLAN.md) (decisions P4-1
 
 ### Fixed
 - Cash box list totals summed balances as floats — now summed in the database (decimal).
+- View pages (transfers, counts, requests, write-offs, returns, kits, surgeries, purchases…) showed old values after an action until the page was reloaded — Filament kept the infolist built with the previous record; `RefreshesInfolist` rebuilds it.
+- Receiving a purchase by scan took a product barcode / SKU as the serial of a serial-tracked item; only a real serial counts now (otherwise the scan asks for it).
+- Pay on a purchase prefilled the open amount in the invoice currency; it now fills it in the chosen box's currency at today's rate, keeping the method and date defaults.
+- Date fields defaulted to the server's (UTC) day; they use the business time zone (Asia/Baghdad).
+- Phone exchange screen: the reference rate kept 8 decimals (IQD → USD was rounded to 0.0007) and starts from the USD box.
 
 ### Changed from the plan
 - No `shipments` table yet (landed costs hang on the purchase); approvals cover supplier payments, expenses and commission payouts — write-offs and stock requests keep their own Phase 2 flows.

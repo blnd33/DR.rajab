@@ -50,7 +50,7 @@ class CreateSurgery extends CreateRecord
             Section::make(__('Surgery'))->columns(3)->schema([
                 Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('surgeries.create'))->required()->live()->native(false)
                     ->default(fn () => ServiceAction::user()->primary_branch_id),
-                DatePicker::make('surgery_date')->label(__('Date'))->default(now())->required()->native(false)->displayFormat('Y-m-d')->maxDate(now()->addDay()),
+                DatePicker::make('surgery_date')->label(__('Date'))->default(fn () => now(config('orthotrack.timezone'))->toDateString())->required()->native(false)->displayFormat('Y-m-d')->maxDate(now()->addDay()),
                 Select::make('surgery_type_id')->label(__('Surgery'))->options(fn () => SurgeryType::options())->required()->native(false),
                 Select::make('customer_id')->label(__('Hospital'))->options(fn () => Customer::options())->searchable()->required()->native(false),
                 ToggleButtons::make('laterality')->label(__('Side'))->options(Laterality::options())->default(Laterality::NotApplicable->value)->inline(),

@@ -97,7 +97,7 @@ class SupplierPaymentResource extends Resource
                 ->helperText($purchase ? __('Open on this invoice: :amount', ['amount' => Display::money(app(PurchaseService::class)->open($purchase), $purchase->currency)]) : __('Allocated to the oldest open invoices first.')),
             Select::make('method')->label(__('Method'))->options(PaymentMethod::options())->default(PaymentMethod::BankWire->value)->required()->native(false),
             TextInput::make('reference')->label(__('Reference (wire / hawala no.)'))->maxLength(120)->extraInputAttributes(['dir' => 'ltr']),
-            DatePicker::make('paid_at')->label(__('Paid on'))->native(false)->displayFormat('Y-m-d')->default(now())->required(),
+            DatePicker::make('paid_at')->label(__('Paid on'))->native(false)->displayFormat('Y-m-d')->default(fn () => now(config('orthotrack.timezone'))->toDateString())->required(),
             Textarea::make('notes')->label(__('Notes'))->rows(2),
         ]));
     }

@@ -50,7 +50,7 @@ class CreateSalesInvoice extends CreateRecord
                     ->options(fn (Get $get) => filled($get('branch_id'))
                         ? app(CashBoxService::class)->options(ServiceAction::user(), 'sales.create', (string) $get('currency'), (int) $get('branch_id'))
                         : []),
-                DatePicker::make('due_date')->label(__('Due date'))->native(false)->displayFormat('Y-m-d')->visible($isCredit)->default(now()->addDays(30)),
+                DatePicker::make('due_date')->label(__('Due date'))->native(false)->displayFormat('Y-m-d')->visible($isCredit)->default(fn () => now(config('orthotrack.timezone'))->addDays(30)->toDateString()),
             ]),
             Section::make(__('Items'))->columnSpanFull()->schema([
                 Repeater::make('items')

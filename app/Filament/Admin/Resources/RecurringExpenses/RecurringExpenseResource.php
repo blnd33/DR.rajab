@@ -70,7 +70,7 @@ class RecurringExpenseResource extends Resource
                 ->numeric()->minValue(0)->required(),
             TextInput::make('payee')->label(__('Paid to'))->maxLength(150),
             TextInput::make('day_of_month')->label(__('Day of the month (1–28)'))->numeric()->integer()->minValue(1)->maxValue(28)->default(1)->required(),
-            DatePicker::make('starts_on')->label(__('From'))->native(false)->displayFormat('Y-m-d')->default(now())->required(),
+            DatePicker::make('starts_on')->label(__('From'))->native(false)->displayFormat('Y-m-d')->default(fn () => now(config('orthotrack.timezone'))->toDateString())->required(),
             DatePicker::make('ends_on')->label(__('Until (optional)'))->native(false)->displayFormat('Y-m-d'),
             Textarea::make('description')->label(__('Description'))->rows(2)->columnSpanFull(),
             Toggle::make('auto_post')->label(__('Post automatically (no approval)')),

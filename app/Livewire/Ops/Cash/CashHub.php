@@ -69,6 +69,6 @@ class CashHub extends Component
             'canExpense' => $can('expenses.create'),
             'canExchange' => $can('currency_exchange.create') && $boxes->pluck('currency')->unique()->count() > 1,
             'canClose' => $can('cash_boxes.close_day'),
-        ])->title(__('Cash'));
+        ])->title(__('Cash desk'));
     }
 }

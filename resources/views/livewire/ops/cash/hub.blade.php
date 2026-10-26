@@ -1,6 +1,6 @@
 <div class="space-y-6">
     <header>
-        <h1 class="text-2xl font-bold">{{ __('Cash') }}</h1>
+        <h1 class="text-2xl font-bold">{{ __('Cash desk') }}</h1>
         @if ($branch)
             <p class="mt-1 text-muted-fg">{{ $branch->code }} — {{ $branch->name }}</p>
         @endif

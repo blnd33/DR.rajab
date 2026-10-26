@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Role;
+use App\Filament\Admin\Resources\Purchases\Pages\ViewPurchase;
 use App\Livewire\Ops\Cash\CloseDay;
 use App\Livewire\Ops\Cash\SaleCreate;
 use App\Models\CashBox;
@@ -161,4 +162,20 @@ it('sells a scanned implant at the counter into the branch box', function () {
 
     expect((string) BigDecimal::of($box->fresh()->current_balance)->minus($before))->toBe('800.0000')
         ->and($unit->fresh()->status->value)->toBe('sold');
+});
+
+it('offers what is still open on an invoice in the currency of the chosen box', function () {
+    $purchase = Purchase::query()->where('currency', 'EUR')->firstOrFail();
+    $bank = CashBox::query()->whereNull('branch_id')->firstOrFail();
+
+    $screen = Livewire\Livewire::test(ViewPurchase::class, ['record' => $purchase->getRouteKey()])
+        ->mountAction('pay')
+        ->setActionData(['cash_box_id' => $bank->id]);
+
+    // EUR 2,035.19 open × 1.08 = USD 2,198.00; method and date keep their defaults.
+    expect((string) BigDecimal::of((string) $screen->instance()->mountedActions[0]['data']['amount'])->toScale(2))->toBe('2198.00')
+        ->and($screen->instance()->mountedActions[0]['data']['method'])->toBe('bank_wire');
+
+    $screen->callMountedAction()->assertHasNoActionErrors();
+    expect($purchase->fresh()->payment_status->value)->toBe('paid');
 });
