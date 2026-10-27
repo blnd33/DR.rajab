@@ -65,7 +65,7 @@
             </label>
             <label class="block space-y-1">
                 <span class="text-sm font-medium">{{ __('Planned surgery date') }}</span>
-                <input type="date" wire:model="plannedDate" class="ot-input" dir="ltr">
+                <x-ops.date-input wire:model="plannedDate" />
             </label>
             <button type="button" wire:click="checkout" wire:loading.attr="disabled" class="ot-btn ot-btn-primary w-full">
                 @svg('heroicon-o-arrow-up-tray', 'size-5')

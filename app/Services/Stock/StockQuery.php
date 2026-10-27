@@ -57,8 +57,46 @@ class StockQuery
     }
 
     /**
+     * Stock value (true cost) and item count per branch and cost currency (nightly snapshot, reports).
+     *
+     * @param  list<int>|null  $branchIds  null = all
+     * @return array<int, array<string, array{value: string, units: int}>>
+     */
+    public function valueByBranchAndCurrency(?array $branchIds = null): array
+    {
+        $units = StockUnit::query()
+            ->whereIn('status', StockStatus::onHand())
+            ->when($branchIds !== null, fn ($q) => $q->whereIn('branch_id', $branchIds))
+            ->groupBy('branch_id', 'cost_currency')
+            ->selectRaw('branch_id, cost_currency, SUM(unit_cost) AS total, COUNT(*) AS items')
+            ->toBase()->get();
+
+        $batches = StockBatch::query()
+            ->where('quantity', '>', 0)
+            ->when($branchIds !== null, fn ($q) => $q->whereIn('branch_id', $branchIds))
+            ->groupBy('branch_id', 'cost_currency')
+            ->selectRaw('branch_id, cost_currency, SUM(quantity * unit_cost) AS total, SUM(quantity) AS items')
+            ->toBase()->get();
+
+        $result = [];
+
+        foreach ($units->concat($batches) as $row) {
+            $branch = (int) $row->branch_id;
+            $currency = (string) ($row->cost_currency ?? 'USD');
+            $current = $result[$branch][$currency] ?? ['value' => '0', 'units' => 0];
+            $result[$branch][$currency] = [
+                'value' => (string) BigDecimal::of($current['value'])->plus(BigDecimal::of((string) ($row->total ?? '0')))->toScale(4, RoundingMode::HalfUp),
+                'units' => $current['units'] + (int) $row->items,
+            ];
+        }
+
+        ksort($result);
+
+        return $result;
+    }
+
+    /**
      * Stock value (true cost) per cost currency, e.g. ['USD' => '12400.0000', 'EUR' => '3100.0000'].
-     * One currency only arrives in Phase 4 with stored exchange rates.
      *
      * @param  list<int>|null  $branchIds  null = all
      * @return array<string, string>

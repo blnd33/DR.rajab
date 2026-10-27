@@ -60,7 +60,7 @@
                         </div>
                         <div class="col-span-1">
                             <label class="mb-1 block text-xs font-semibold text-muted-fg" for="re-{{ $key }}">{{ __('Expiry') }}</label>
-                            <input id="re-{{ $key }}" type="date" wire:model="items.{{ $key }}.expiry_date" class="ot-input" dir="ltr">
+                            <x-ops.date-input id="re-{{ $key }}" wire:model="items.{{ $key }}.expiry_date" />
                         </div>
                         <div class="col-span-1">
                             <label class="mb-1 block text-xs font-semibold text-muted-fg" for="rq-{{ $key }}">{{ __('Qty') }}</label>

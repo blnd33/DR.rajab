@@ -78,7 +78,7 @@
         </fieldset>
         <div>
             <label for="needed" class="mb-1 block text-sm font-semibold">{{ __('Needed by (optional)') }}</label>
-            <input id="needed" type="date" wire:model="neededBy" class="ot-input" dir="ltr">
+            <x-ops.date-input id="needed" wire:model="neededBy" />
         </div>
         <div>
             <label for="req-notes" class="mb-1 block text-sm font-semibold">{{ __('Note (optional)') }}</label>

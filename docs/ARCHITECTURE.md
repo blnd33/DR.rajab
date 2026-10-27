@@ -197,7 +197,7 @@ orthotrack/
 | `brick/math` | Exact decimal arithmetic for money/rates (never float) | 0 |
 | `tecnickcom/tc-lib-barcode` | Code128 / GS1-128 / DataMatrix / QR label generation (D4) | 1 |
 | `maatwebsite/excel` ^3.1 | Excel import/export (queued chunks) | 1 |
-| `spatie/browsershot` | PDFs via headless Chrome (correct Arabic/Kurdish shaping) | 1 (labels), 5 (docs) |
+| `spatie/browsershot` ^5.4 + npm `puppeteer` (no bundled Chromium) | PDFs via headless Chrome (correct Arabic/Kurdish shaping); labels stayed HTML print | 5 (documents, reports) |
 | `spatie/laravel-backup` ^9 | Encrypted off-site backups | 5 (configured in 0) |
 | `league/flysystem-aws-s3-v3` | S3-compatible disk (Backblaze B2) for backups + uploads | 0 |
 | `spatie/laravel-health` *(optional, D8)* | Health check page for Coda admin | 5 |

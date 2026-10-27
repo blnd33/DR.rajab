@@ -2,17 +2,23 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Filament\Admin\Widgets\Charts\SalesTrendChart;
+use App\Filament\Admin\Widgets\Charts\StockValueTrendChart;
+use App\Filament\Admin\Widgets\Charts\SurgeriesTrendChart;
 use App\Filament\Admin\Widgets\ClinicalOverview;
 use App\Filament\Admin\Widgets\ExpiryByBranch;
 use App\Filament\Admin\Widgets\MoneyOverview;
 use App\Filament\Admin\Widgets\PendingWork;
 use App\Filament\Admin\Widgets\StockOverview;
+use App\Filament\Admin\Widgets\SystemAlerts;
 use App\Filament\Admin\Widgets\SystemOverview;
+use App\Filament\Admin\Widgets\TopImplants;
 use Filament\Pages\Dashboard as BaseDashboard;
 
 /**
- * Admin dashboard. Phase 0 shows system status; Phase 5 adds the full
- * Super Admin dashboard (surgeries, stock value, debts, approvals, alerts).
+ * Admin dashboard (Module 26): system alerts and status, stock, money, waiting work, clinical,
+ * expiry per branch, then the trends (sales, surgeries, stock value) and the most used implants.
+ * Each widget shows only what the user may see.
  */
 class Dashboard extends BaseDashboard
 {
@@ -29,12 +35,17 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         return [
+            SystemAlerts::class,
             SystemOverview::class,
             StockOverview::class,
             MoneyOverview::class,
             PendingWork::class,
             ClinicalOverview::class,
             ExpiryByBranch::class,
+            SalesTrendChart::class,
+            SurgeriesTrendChart::class,
+            StockValueTrendChart::class,
+            TopImplants::class,
         ];
     }
 

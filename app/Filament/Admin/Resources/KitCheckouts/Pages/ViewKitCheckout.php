@@ -6,6 +6,7 @@ use App\Enums\CheckoutItemKind;
 use App\Enums\KitCheckoutStatus;
 use App\Enums\StockStatus;
 use App\Filament\Admin\Resources\KitCheckouts\KitCheckoutResource;
+use App\Filament\Admin\Support\PrintAction;
 use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\KitCheckout;
@@ -36,6 +37,7 @@ class ViewKitCheckout extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            PrintAction::make('kit-checkout', fn () => $this->checkout()),
             Action::make('return')
                 ->label(__('Return the kit'))
                 ->icon(Heroicon::OutlinedArrowDownTray)

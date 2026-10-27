@@ -68,6 +68,12 @@ return [
     // Daily expiry / low-stock check (business timezone).
     'stock_alerts_time' => '06:00',
 
+    // PDF downloads of print pages (Phase 5): headless Chrome via Browsershot. Empty path = auto-detect.
+    'pdf' => [
+        'enabled' => (bool) env('PDF_ENABLED', true),
+        'chrome_path' => env('PDF_CHROME_PATH'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Default settings

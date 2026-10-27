@@ -73,7 +73,7 @@
                     </div>
                     <div>
                         <label for="exp-{{ $key }}" class="mb-1 block text-xs font-semibold text-muted-fg">{{ __('Expiry') }}{{ $line['requires_expiry'] ? ' *' : '' }}</label>
-                        <input id="exp-{{ $key }}" type="date" wire:model.blur="lines.{{ $key }}.expiry_date" class="ot-input" dir="ltr">
+                        <x-ops.date-input id="exp-{{ $key }}" wire:model.blur="lines.{{ $key }}.expiry_date" />
                     </div>
                     @unless ($line['serial_tracked'])
                         <div class="col-span-2 flex items-center justify-between gap-3">

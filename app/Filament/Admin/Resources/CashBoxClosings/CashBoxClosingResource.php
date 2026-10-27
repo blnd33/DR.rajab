@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\CashBoxClosings;
 
 use App\Enums\ClosingStatus;
 use App\Filament\Admin\Resources\CashBoxClosings\Pages\ManageCashBoxClosings;
+use App\Filament\Admin\Support\PrintAction;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Filament\Admin\Tables\Columns\LocalDateTimeColumn;
 use App\Models\CashBox;
@@ -85,6 +86,7 @@ class CashBoxClosingResource extends Resource
             ])
             ->filters([SelectFilter::make('status')->label(__('Status'))->options(ClosingStatus::options())])
             ->recordActions([
+                PrintAction::make('cash-closing')->iconButton()->visible(fn (CashBoxClosing $r) => $r->status !== ClosingStatus::Draft),
                 Action::make('count')
                     ->label(__('Count and submit'))
                     ->icon(Heroicon::OutlinedCalculator)

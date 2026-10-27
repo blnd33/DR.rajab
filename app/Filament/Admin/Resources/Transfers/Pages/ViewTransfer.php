@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Transfers\Pages;
 
 use App\Enums\TransferStatus;
 use App\Filament\Admin\Resources\Transfers\TransferResource;
+use App\Filament\Admin\Support\PrintAction;
 use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\Transfer;
@@ -34,6 +35,7 @@ class ViewTransfer extends ViewRecord
         $user = ServiceAction::user();
 
         return [
+            PrintAction::make('transfer', fn () => $this->transfer()),
             Action::make('send')
                 ->label(__('Send'))
                 ->icon(Heroicon::OutlinedTruck)

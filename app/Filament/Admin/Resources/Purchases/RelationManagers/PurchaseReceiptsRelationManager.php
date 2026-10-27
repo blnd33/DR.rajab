@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Purchases\RelationManagers;
 
+use App\Filament\Admin\Support\PrintAction;
 use App\Filament\Admin\Tables\Columns\CodeColumn;
 use App\Filament\Admin\Tables\Columns\LocalDateTimeColumn;
 use App\Support\Locale\Display;
@@ -43,6 +44,7 @@ class PurchaseReceiptsRelationManager extends RelationManager
                 TextColumn::make('receiver.name')->label(__('By')),
                 TextColumn::make('notes')->label(__('Notes'))->placeholder('—')->wrap()->toggleable(),
             ])
+            ->recordActions([PrintAction::make('goods-received')])
             ->emptyStateHeading(__('Nothing received yet'));
     }
 }

@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Suppliers\Pages;
 
 use App\Filament\Admin\Resources\SupplierPayments\SupplierPaymentResource;
 use App\Filament\Admin\Resources\Suppliers\SupplierResource;
+use App\Filament\Admin\Support\PrintAction;
 use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\Supplier;
@@ -50,6 +51,7 @@ class ViewSupplier extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            PrintAction::make('supplier-statement', fn () => $this->supplier()),
             Action::make('pay')
                 ->label(__('Pay'))
                 ->icon(Heroicon::OutlinedBanknotes)

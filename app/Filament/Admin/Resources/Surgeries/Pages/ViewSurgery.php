@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Surgeries\Pages;
 
 use App\Enums\SurgeryStatus;
 use App\Filament\Admin\Resources\Surgeries\SurgeryResource;
+use App\Filament\Admin\Support\PrintAction;
 use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\Surgery;
@@ -33,6 +34,7 @@ class ViewSurgery extends ViewRecord
         $user = ServiceAction::user();
 
         return [
+            PrintAction::make('surgery', fn () => $this->surgery()),
             Action::make('complete')
                 ->label(__('Complete surgery'))
                 ->icon(Heroicon::OutlinedCheck)

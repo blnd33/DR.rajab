@@ -109,6 +109,13 @@ With the demo data (`php artisan migrate:fresh --seed`):
 * **Clinical → Patients** — only the patients you may see; every opening is logged.
 * **Phone app** (`doctor`) → **Tasks → New surgery** — scan implants, add a new patient, *Save draft* or *Complete*; the draft is kept on the phone if the connection drops (see *My surgeries → Saved on this phone*).
 * **Phone app** (`staff`) → **Tasks → Kits** — prepare / refill by scanning, check out, return by scanning.
+### Try reports and documents (Phase 5)
+
+* **Reports** menu — nine reports; change the period, branch, *Show amounts in* (USD / IQD / EUR) and *Group by*; *Export to Excel*, *Print / PDF*.
+* **Purchases → a purchase → Deliveries → Print / PDF** (goods received note); the same button on sales, transfers, surgeries, kit checkouts, suppliers (statement) and daily closings.
+* **Dashboard** — sales and surgeries per month, stock value trend (run `php artisan reports:snapshot` for today's point), most used implants.
+* **System → System health** — backups, daily jobs, disk, exchange rates; problems also show on the dashboard.
+
 ### Try money (Phase 4)
 
 * **Finance → Exchange rates** — USD → IQD 1,460 and EUR → USD 1.08 are set; set a new rate or fetch the ECB one (a suggestion to confirm).
@@ -123,7 +130,9 @@ Excel imports run on the queue. The local preview `.env` uses `QUEUE_CONNECTION=
 
 Labels print from the browser: the print sheet's page size equals the label size, so pick the thermal printer and "actual size" (no scaling, no margins) in the print dialog.
 
-Daily stock alerts (expiry levels, low stock) run at 06:00 via the scheduler; run them by hand with `php artisan stock:alerts`. Money jobs (ECB rate suggestion, recurring expenses, overdue supplier invoices) run at 07:00: `php artisan money:daily`.
+Daily stock alerts (expiry levels, low stock) run at 06:00 via the scheduler; run them by hand with `php artisan stock:alerts`. Money jobs (ECB rate suggestion, recurring expenses, overdue supplier invoices) run at 07:00: `php artisan money:daily`. The nightly stock value snapshot runs at 23:50: `php artisan reports:snapshot`. Every daily job records a heartbeat for the System health page.
+
+On Windows, stop the preview server before `composer require` / `composer dump-autoload` — the running server keeps the autoload files open and Composer silently fails to rewrite them.
 
 ### Quality checks
 
@@ -137,7 +146,7 @@ vendor/bin/pint --test
 
 ## Production (Ubuntu 24.04 VPS — 2 vCPU / 4 GB to start)
 
-1. **Packages:** Nginx, PHP-FPM 8.3 (`pgsql redis intl gd mbstring xml zip bcmath curl`), PostgreSQL 16+, Redis, Supervisor, Node 22, Chrome/Chromium (for Browsershot PDFs, Phase 5), Certbot.
+1. **Packages:** Nginx, PHP-FPM 8.3 (`pgsql redis intl gd mbstring xml zip bcmath curl`), PostgreSQL 16+, Redis, Supervisor, Node 22, Chrome/Chromium (for PDF downloads — `npm ci` installs puppeteer without its own Chromium; set `PDF_CHROME_PATH` if Chrome is not in a standard place), Certbot.
 2. **Database:** create role + database with a strong password (`deploy/local/create-local-db.sql` shows the statements).
 3. **Code:** clone to `/var/www/orthotrack` (owner: `deploy`; `storage/` and `bootstrap/cache/` writable by PHP-FPM).
 4. **.env:** `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://…`, `SESSION_SECURE_COOKIE=true`, `ORTHOTRACK_REQUIRE_ADMIN_MFA=true`, `REDIS_CLIENT=phpredis`, DB/Redis/mail credentials, `BACKUP_*`, `VAPID_*` (`php artisan webpush:vapid`).

@@ -1,6 +1,6 @@
 # Phase 5 — Insight & polish · Plan
 
-> Status: **Building** — straight after Phase 4 (the client asked on 2026-10-26 to run the remaining phases back-to-back); this plan records the scope and the decisions taken.
+> Status: **Built and verified** (2026-10-27) — straight after Phase 4 (the client asked on 2026-10-26 to run the remaining phases back-to-back); this plan records the scope and the decisions taken. What changed from the plan: see CHANGELOG § Phase 5.
 > Brief scope: *Reports (Excel + PDF), printed documents, full dashboards, backups & system health, performance pass, translation review, final QA.* Modules 24 (reports), 26 (dashboards), 27 (printing), 28 (backups & health) + the open polish items from Phases 1–4.
 > Tables: [DATABASE.md](../DATABASE.md) § Phase 5.
 

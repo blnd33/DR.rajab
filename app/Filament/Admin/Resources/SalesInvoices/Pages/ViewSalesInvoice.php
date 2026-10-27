@@ -7,6 +7,7 @@ use App\Enums\PaymentTerms;
 use App\Enums\SalesInvoiceStatus;
 use App\Filament\Admin\Resources\CustomerPayments\CustomerPaymentResource;
 use App\Filament\Admin\Resources\SalesInvoices\SalesInvoiceResource;
+use App\Filament\Admin\Support\PrintAction;
 use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Models\SalesInvoice;
@@ -27,6 +28,7 @@ class ViewSalesInvoice extends ViewRecord
         $user = ServiceAction::user();
 
         return [
+            PrintAction::make('sales-invoice', fn () => $this->invoice()),
             Action::make('collect')
                 ->label(__('Receive payment'))
                 ->icon(Heroicon::OutlinedBanknotes)

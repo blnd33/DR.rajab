@@ -6,8 +6,10 @@ use App\Models\User;
 use App\Services\Assets\OverdueKitNotifier;
 use App\Services\Expenses\RecurringExpenseService;
 use App\Services\Expiry\ExpiryTransitionNotifier;
+use App\Services\Health\Heartbeat;
 use App\Services\Money\FxService;
 use App\Services\Purchasing\OverduePayablesNotifier;
+use App\Services\Reports\StockValueSnapshotter;
 use App\Services\Settings\SettingsRepository;
 use App\Services\Stock\LowStockDetector;
 use Illuminate\Support\Facades\Artisan;
@@ -23,9 +25,9 @@ use Illuminate\Support\Facades\Schedule;
 $tz = config('orthotrack.timezone');
 
 // Encrypted off-site backup (DB + uploads) at 02:00, cleanup at 03:00, health check at 08:00.
-Schedule::command('backup:run')->dailyAt('02:00')->timezone($tz)->onOneServer()->withoutOverlapping();
+Heartbeat::track(Schedule::command('backup:run')->dailyAt('02:00')->timezone($tz)->onOneServer()->withoutOverlapping(), 'backup:run');
 Schedule::command('backup:clean')->dailyAt('03:00')->timezone($tz)->onOneServer();
-Schedule::command('backup:monitor')->dailyAt('08:00')->timezone($tz)->onOneServer();
+Heartbeat::track(Schedule::command('backup:monitor')->dailyAt('08:00')->timezone($tz)->onOneServer(), 'backup:monitor');
 
 // Horizon metrics.
 Schedule::command('horizon:snapshot')->everyFiveMinutes();
@@ -54,7 +56,7 @@ Artisan::command('stock:alerts {--no-notify : Update expiry levels without sendi
     }
 })->purpose('Daily expiry-level, low-stock and overdue-kit alerts');
 
-Schedule::command('stock:alerts')->dailyAt(config('orthotrack.stock_alerts_time'))->timezone($tz)->onOneServer()->withoutOverlapping();
+Heartbeat::track(Schedule::command('stock:alerts')->dailyAt(config('orthotrack.stock_alerts_time'))->timezone($tz)->onOneServer()->withoutOverlapping(), 'stock:alerts');
 
 /*
 | Money (Phase 4): ECB EUR/USD suggestion (confirmed by a person unless auto-confirm is on),
@@ -81,4 +83,14 @@ Artisan::command('money:daily {--no-notify : Do the work without sending reminde
     }
 })->purpose('Daily exchange rate, recurring expenses and overdue supplier invoice reminders');
 
-Schedule::command('money:daily')->dailyAt('07:00')->timezone($tz)->onOneServer()->withoutOverlapping();
+Heartbeat::track(Schedule::command('money:daily')->dailyAt('07:00')->timezone($tz)->onOneServer()->withoutOverlapping(), 'money:daily');
+
+/*
+| Reports (Phase 5): stock value per branch and currency at the end of each day.
+| Run by hand: php artisan reports:snapshot
+*/
+Artisan::command('reports:snapshot', function (StockValueSnapshotter $snapshotter) {
+    $this->info('Stock value rows written: '.$snapshotter->snapshot());
+})->purpose('Nightly stock value snapshot per branch and currency');
+
+Heartbeat::track(Schedule::command('reports:snapshot')->dailyAt('23:50')->timezone($tz)->onOneServer()->withoutOverlapping(), 'reports:snapshot');

@@ -536,7 +536,14 @@ Seed: rent, salaries, transport, utilities, shipping, customs, hospitality, othe
 
 ## Phase 5 — Insight & ops
 
-No new core tables. Additions:
+> Built 2026-10-27 (`database/migrations/2026_10_30_*`). Instead of PostgreSQL views (they would not run on the SQLite preview), reports are PHP query classes in `app/Services/Reports` that convert each row with its own `fx_snapshot_id`; the nightly history is a table:
+>
+> * **stock_value_snapshots** — id, snapshot_date date, branch_id FK, currency, value money, value_usd money NULL, units int, fx_snapshot_id FK NULL, created_at; UNIQUE(snapshot_date, branch_id, currency). Written by `reports:snapshot` (23:50); re-running a day replaces it.
+> * **scheduler_heartbeats** — name PK (job name), last_started_at, last_finished_at, last_status (`ok`,`failed`), last_output, updated_at. Read by the System health page.
+> * Indexes: expenses (expense_date, expense_category_id), surgeries (surgery_date, status).
+> * No `spatie/laravel-health` tables (D8 not taken — the health page reads its checks live).
+
+Planned (kept for reference):
 * **Reporting views/materialized views** — `mv_daily_stock_value` (branch × day, refreshed nightly), `v_profit_lines` (sale/surgery item revenue − true cost, joined to snapshots for any display currency), `v_supplier_balances`, `v_overdue_purchases`, `v_kits_overdue`.
 * `spatie/laravel-health` result tables *(if D8 approved)*.
 * Backups: no tables (spatie/laravel-backup; notifications to Coda admin mail).

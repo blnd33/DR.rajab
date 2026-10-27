@@ -2,6 +2,33 @@
 
 All notable changes per build phase.
 
+## [Phase 5 — Insight & polish] — 2026-10-27
+
+Plan: [docs/phases/PHASE-5-PLAN.md](docs/phases/PHASE-5-PLAN.md) (decisions P5-1 … P5-10; built straight after Phase 4).
+
+### Added
+- **Reports** (new *Reports* menu, `reports.view`, branches in the user's scope): stock value (branch × category, or the nightly history), expiry levels, stock movements, sales and profit, surgeries, supplier aging (not due / 1–30 / 31–60 / 61–90 / 90+ days), cash (start, in, out, closing differences, end per box), expenses (category / branch / month, split costs counted per branch share) and kits. Filters above the table (period, branch, display currency, grouping), sortable columns, a totals line. Every amount converts with the rates it was booked with, so a report never moves when rates change; cost, profit and margin need `reports.profit`.
+- **Excel export** of every report (`reports.export`) with the totals line, codes and dates as text, right-to-left sheets in Arabic and Sorani.
+- **Printed documents** (A4, company name, address and logo from Settings, RTL in Arabic / Sorani, codes LTR): sales invoice, goods received note, transfer note, surgery report (implants with serials and lots), kit checklist, supplier statement, cash closing sheet — and every report. *Print / PDF* opens the print page; **Download PDF** renders the same page with headless Chrome (Browsershot) so Arabic and Sorani shaping is exact. Each document needs the same permission as its screen.
+- **Nightly stock value history** (`stock_value_snapshots`, `php artisan reports:snapshot` at 23:50).
+- **Dashboard**: sales vs cost per month (12 months, cost only with `reports.profit`), surgeries per month, stock value trend (90 nights), most used implants (90 days), and a *Needs attention* strip for system problems. Chart colours were checked with the palette validator (colour-blind safe, both themes).
+- **System health** (System → System health, `system.health`): backups (last backup, size, storage reachable), every daily job (last run, failed, late — scheduler heartbeats), queue (failed jobs), disk space, exchange-rate age, versions; *Run a backup now*. Problems show on the dashboard and as a menu badge.
+- **Phone date fields** show the chosen date as YYYY-MM-DD under the field (device formats differ).
+- **Translation glossary** ([docs/i18n-GLOSSARY.md](docs/i18n-GLOSSARY.md)) — one Arabic and one Sorani word per business term, generated from the language files.
+- **Tests**: every report opens, prints and exports in 3 languages; hand-checked totals (supplier aging, expense shares, sales); profit columns and branch scope; nightly snapshot; every document prints in 3 languages with the right direction and refuses other branches; health checks (late / failed jobs, missing rates); dashboard widgets in 3 languages; a **permission sweep** (a panel-only user is refused on every resource, report, print page and the health page); a **query budget** for 26 main screens; no Arabic / Sorani string left in English.
+
+### Fixed
+- Composer could not rewrite the autoloader while the local preview server was running (Windows keeps the files open) — new packages looked installed but were not loadable. Stop the preview server before `composer require` / `dump-autoload`.
+
+### Changed from the plan
+- Report Excel exports run straight away (they take well under a second at this size) instead of on the queue.
+- Lazy loading was already forbidden outside production since Phase 0; the performance pass measured every main screen instead (2–32 queries) and fixed the budget in a test.
+
+### Known gaps / to review
+- PDF downloads need Chrome / Chromium on the server (`PDF_CHROME_PATH`, or auto-detected) and `npm install` (puppeteer, without its own Chromium); without them the print page's *Save as PDF* is the fallback.
+- Chart axis numbers use Western digits (Chart.js); labels and tooltips' titles follow the language.
+- Arabic and Sorani texts for Phase 5 were written by the developer — native-speaker review needed before go-live (the glossary is the place to start).
+
 ## [Phase 4 — Money] — 2026-10-26
 
 Plan: [docs/phases/PHASE-4-PLAN.md](docs/phases/PHASE-4-PLAN.md) (decisions P4-1 … P4-17; built straight after Phase 3).
