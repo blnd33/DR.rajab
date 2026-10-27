@@ -18,6 +18,7 @@ use Database\Seeders\DemoMoneySeeder;
 use Database\Seeders\DemoMovementSeeder;
 use Database\Seeders\ExpenseCategorySeeder;
 use Database\Seeders\InventoryBaseSeeder;
+use Spatie\Activitylog\Models\Activity;
 
 /*
  * System health (P5-6) and the full dashboard (P5-5).
@@ -73,3 +74,47 @@ it('draws the full dashboard with charts in every language', function (string $l
 
     $this->get('/admin')->assertOk();
 })->with(['en', 'ar', 'ckb']);
+
+it('lets the super admin dismiss the alerts until a problem is new or changes level', function () {
+    $health = Mockery::mock(SystemHealth::class);
+    $problems = [['key' => 'disk', 'group' => 'Server', 'label' => 'Disk space', 'status' => SystemHealth::WARNING, 'detail' => '15 GB free']];
+    $health->shouldReceive('problems')->andReturnUsing(function () use (&$problems) {
+        return $problems;
+    });
+    app()->instance(SystemHealth::class, $health);
+
+    expect(SystemAlerts::canView())->toBeTrue();
+
+    Livewire\Livewire::test(SystemAlerts::class)
+        ->assertSee('Disk space')
+        ->call('dismiss')
+        ->assertSet('dismissed', true)
+        ->assertDontSee('Disk space')
+        ->assertNotified();
+
+    expect(SystemAlerts::canView())->toBeFalse()
+        ->and(Activity::query()->where('event', 'system_alerts_dismissed')->where('causer_id', $this->admin->id)->exists())->toBeTrue();
+
+    // Only the details changed: still hidden. A solved problem doesn't bring it back either.
+    $problems[0]['detail'] = '14 GB free';
+    expect(SystemAlerts::canView())->toBeFalse();
+
+    // Another super admin still sees it.
+    $this->actingAs(userWithRole(Role::SuperAdmin, [branch('DHK')]));
+    expect(SystemAlerts::canView())->toBeTrue();
+    $this->actingAs($this->admin);
+
+    // Worse level, or a new problem: back again.
+    $problems[0]['status'] = SystemHealth::CRITICAL;
+    expect(SystemAlerts::canView())->toBeTrue();
+
+    Livewire\Livewire::test(SystemAlerts::class)->call('dismiss');
+    $problems[] = ['key' => 'queue', 'group' => 'Queue', 'label' => 'Background jobs', 'status' => SystemHealth::WARNING, 'detail' => '2 failed jobs'];
+    expect(SystemAlerts::canView())->toBeTrue();
+
+    // And after 24 hours even the same problems show again.
+    Livewire\Livewire::test(SystemAlerts::class)->call('dismiss');
+    expect(SystemAlerts::canView())->toBeFalse();
+    $this->travel(25)->hours();
+    expect(SystemAlerts::canView())->toBeTrue();
+});
