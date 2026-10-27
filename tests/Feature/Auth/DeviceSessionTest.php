@@ -1,9 +1,11 @@
 <?php
 
+use App\Enums\Panel;
 use App\Enums\Role;
 use App\Models\UserSession;
 use App\Services\Auth\SessionRegistry;
 use App\Services\Users\UserService;
+use Illuminate\Http\Request;
 
 it('registers the device on the first authenticated request', function () {
     $doctor = userWithRole(Role::Doctor, [branch('DHK')]);
@@ -53,4 +55,21 @@ it('logs out after the inactivity timeout', function () {
 
     $this->get('/app')->assertRedirect(route('login'));
     $this->assertGuest();
+});
+
+it('keeps one device row when requests of the same session arrive together', function () {
+    $admin = userWithRole(Role::SuperAdmin, [branch('DHK')]);
+    $registry = app(SessionRegistry::class);
+    $request = Request::create('/admin');
+    $request->setLaravelSession($session = app('session')->driver());
+    $session->start();
+
+    $first = $registry->ensure($request, $admin, Panel::Admin);
+
+    // A parallel request read the session before the first one saved its row id.
+    $session->forget('ot.user_session_id');
+    $second = $registry->ensure($request, $admin, Panel::Admin);
+
+    expect($second->id)->toBe($first->id)
+        ->and(UserSession::query()->where('user_id', $admin->id)->count())->toBe(1);
 });

@@ -6,6 +6,7 @@ use App\Enums\Panel;
 use App\Models\User;
 use App\Models\UserSession;
 use App\Support\DeviceLabel;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -39,15 +40,33 @@ class SessionRegistry
             }
         }
 
-        $row = UserSession::query()->create([
-            'user_id' => $user->id,
-            'session_id_hash' => hash('sha256', $request->session()->getId()),
-            'panel' => $panel,
-            'device_label' => DeviceLabel::fromUserAgent($request->userAgent()),
-            'user_agent' => mb_substr((string) $request->userAgent(), 0, 1000),
-            'ip_address' => $request->ip(),
-            'last_activity_at' => now(),
-        ]);
+        // Requests that arrive together (a page and its lazy widgets) share one session but
+        // read it before the first one saved the row id: find the row by the session itself,
+        // and if a parallel request inserts it first, use that one.
+        $hash = hash('sha256', $request->session()->getId());
+        $row = UserSession::query()->where('session_id_hash', $hash)->first();
+
+        if ($row === null) {
+            try {
+                $row = UserSession::query()->create([
+                    'user_id' => $user->id,
+                    'session_id_hash' => $hash,
+                    'panel' => $panel,
+                    'device_label' => DeviceLabel::fromUserAgent($request->userAgent()),
+                    'user_agent' => mb_substr((string) $request->userAgent(), 0, 1000),
+                    'ip_address' => $request->ip(),
+                    'last_activity_at' => now(),
+                ]);
+            } catch (UniqueConstraintViolationException) {
+                $row = UserSession::query()->where('session_id_hash', $hash)->firstOrFail();
+            }
+        }
+
+        if ($row->user_id !== $user->id) {
+            // Laravel gives a new session id on every login, so this only happens if one was
+            // reused: the device row follows the session to its new user.
+            $row->forceFill(['user_id' => $user->id, 'revoked_at' => null, 'revoked_by' => null, 'last_activity_at' => now()])->save();
+        }
 
         $request->session()->put(self::SESSION_KEY, $row->id);
         $request->session()->put(self::TOUCH_KEY, now()->getTimestamp());
