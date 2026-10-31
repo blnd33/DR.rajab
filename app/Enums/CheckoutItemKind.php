@@ -40,7 +40,7 @@ enum CheckoutItemKind: string implements HasColor, HasIcon, HasLabel
     {
         return match ($this) {
             self::Instrument => 'heroicon-m-wrench',
-            self::Unit => 'heroicon-m-qr-code',
+            self::Unit => 'ot-barcode',
             self::Batch => 'heroicon-m-squares-2x2',
         };
     }

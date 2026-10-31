@@ -53,7 +53,7 @@ enum IssueType: string implements HasColor, HasIcon, HasLabel
             self::CountDiscrepancy => 'heroicon-m-clipboard-document-check',
             self::CashDifference => 'heroicon-m-banknotes',
             self::ExpiredOverride => 'heroicon-m-no-symbol',
-            self::UnknownScan => 'heroicon-m-qr-code',
+            self::UnknownScan => 'ot-barcode',
         };
     }
 }

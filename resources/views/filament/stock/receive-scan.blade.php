@@ -1,9 +1,9 @@
 {{-- Scan box for admin stock screens: USB/Bluetooth scanners type the code and press Enter.
      A div (not a form): this sits inside the page's Filament form. --}}
-<x-filament::section icon="heroicon-o-qr-code" :heading="__('Scan')" :description="__('Click the field and scan a box label. GS1 codes fill product, lot, expiry and serial.')">
+<x-filament::section icon="ot-barcode" :heading="__('Scan')" :description="__('Click the field and scan a box label. GS1 codes fill product, lot, expiry and serial.')">
     <div class="flex flex-col gap-2 sm:flex-row" role="search">
         <label for="receive-scan" class="sr-only">{{ __('Code (scanner or keyboard)') }}</label>
-        <x-filament::input.wrapper class="flex-1" prefix-icon="heroicon-m-qr-code">
+        <x-filament::input.wrapper class="flex-1" prefix-icon="ot-barcode">
             <x-filament::input
                 id="receive-scan"
                 type="text"

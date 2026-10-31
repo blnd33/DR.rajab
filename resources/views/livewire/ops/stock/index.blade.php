@@ -7,7 +7,7 @@
             @endif
         </div>
         <a href="{{ route('ops.scan') }}" wire:navigate class="ot-btn ot-btn-secondary shrink-0" aria-label="{{ __('Scan') }}">
-            @svg('heroicon-o-qr-code', 'size-5')
+            @svg('ot-barcode', 'size-5')
             <span class="sr-only sm:not-sr-only">{{ __('Scan') }}</span>
         </a>
     </header>

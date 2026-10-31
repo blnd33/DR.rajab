@@ -39,7 +39,7 @@ enum ReceiptMethod: string implements HasColor, HasIcon, HasLabel
     public function getIcon(): string
     {
         return match ($this) {
-            self::Scan => 'heroicon-m-qr-code',
+            self::Scan => 'ot-barcode',
             self::Manual => 'heroicon-m-pencil',
             self::Excel => 'heroicon-m-table-cells',
         };

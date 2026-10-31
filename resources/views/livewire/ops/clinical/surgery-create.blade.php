@@ -113,7 +113,7 @@
         <template x-for="(item, index) in form.items" :key="index">
             <div class="ot-card flex items-center gap-3 p-3">
                 <div class="min-w-0 flex-1">
-                    <p class="truncate font-semibold ot-code" dir="ltr" x-text="item.raw || item.label"></p>
+                    <p class="truncate font-semibold ot-code" dir="ltr" x-text="String(item.raw || item.label || '').replace(/^\][A-Za-z][0-9A-Za-z]/, '')"></p>
                 </div>
                 <label class="flex items-center gap-1 text-sm">
                     <span class="sr-only">{{ __('Quantity') }}</span>
@@ -125,7 +125,7 @@
                 </button>
             </div>
         </template>
-        <div x-show="form.items.length === 0" class="ot-card"><x-ops.empty-state icon="heroicon-o-qr-code" :title="__('Nothing scanned yet')" /></div>
+        <div x-show="form.items.length === 0" class="ot-card"><x-ops.empty-state icon="ot-barcode" :title="__('Nothing scanned yet')" /></div>
     </section>
 
     {{-- Optional: kit, doctors, notes. Opens by itself when something needs fixing or is filled in. --}}

@@ -122,7 +122,7 @@
                 @endif
             </article>
         @empty
-            <div class="ot-card"><x-ops.empty-state icon="heroicon-o-qr-code" :title="__('No items yet')" :description="__('Scan the units and lot boxes to send.')" /></div>
+            <div class="ot-card"><x-ops.empty-state icon="ot-barcode" :title="__('No items yet')" :description="__('Scan the units and lot boxes to send.')" /></div>
         @endforelse
 
         @if ($canReceive && $extra)

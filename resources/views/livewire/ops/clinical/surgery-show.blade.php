@@ -62,7 +62,7 @@
                 @endif
             </article>
         @empty
-            <div class="ot-card"><x-ops.empty-state icon="heroicon-o-qr-code" :title="__('Nothing scanned yet')" /></div>
+            <div class="ot-card"><x-ops.empty-state icon="ot-barcode" :title="__('Nothing scanned yet')" /></div>
         @endforelse
     </section>
 

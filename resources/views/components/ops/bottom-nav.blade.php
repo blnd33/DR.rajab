@@ -3,7 +3,7 @@
     $items = [
         ['route' => 'ops.home', 'label' => __('Home'), 'icon' => 'heroicon-o-home'],
         ['route' => 'ops.stock.index', 'label' => __('Stock'), 'icon' => 'heroicon-o-archive-box', 'match' => 'ops.stock.*'],
-        ['route' => 'ops.scan', 'label' => __('Scan'), 'icon' => 'heroicon-o-qr-code', 'primary' => true],
+        ['route' => 'ops.scan', 'label' => __('Scan'), 'icon' => 'ot-barcode', 'primary' => true],
         ['route' => 'ops.tasks', 'label' => __('Tasks'), 'icon' => 'heroicon-o-clipboard-document-list', 'match' => ['ops.tasks', 'ops.transfers.*', 'ops.requests.*', 'ops.counts.*', 'ops.write-offs.*', 'ops.returns.*', 'ops.surgeries.*', 'ops.kits.*', 'ops.cash', 'ops.cash.*']],
         ['route' => 'ops.profile', 'label' => __('Me'), 'icon' => 'heroicon-o-user-circle'],
     ];

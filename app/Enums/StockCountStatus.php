@@ -45,7 +45,7 @@ enum StockCountStatus: string implements HasColor, HasIcon, HasLabel
     public function getIcon(): string
     {
         return match ($this) {
-            self::InProgress => 'heroicon-m-qr-code',
+            self::InProgress => 'ot-barcode',
             self::Submitted => 'heroicon-m-clock',
             self::Reviewed => 'heroicon-m-clipboard-document-check',
             self::Closed => 'heroicon-m-check-circle',

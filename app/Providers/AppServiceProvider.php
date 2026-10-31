@@ -15,6 +15,7 @@ use App\Services\Stock\AlertRecipients;
 use App\Support\Locale\DigitConverter;
 use App\Support\Locale\LocaleRegistry;
 use App\Support\Locale\NumberLocale;
+use BladeUI\Icons\Factory as IconFactory;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse as LoginResponseContract;
 use Filament\Auth\Http\Responses\Contracts\LogoutResponse as LogoutResponseContract;
 use Filament\Schemas\Schema;
@@ -46,6 +47,9 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(LoginResponseContract::class, LoginResponse::class);
         $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
+
+        // Our own icons (resources/svg), e.g. @svg('ot-barcode').
+        $this->callAfterResolving(IconFactory::class, fn (IconFactory $icons) => $icons->add('orthotrack', ['path' => resource_path('svg'), 'prefix' => 'ot']));
     }
 
     public function boot(): void

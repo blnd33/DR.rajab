@@ -10,7 +10,9 @@
                    x-show="cameraOn" aria-label="{{ __('Camera preview') }}"></video>
 
             {{-- Aiming frame --}}
-            <div x-show="cameraOn" class="pointer-events-none absolute inset-10 rounded-2xl border-4 border-white/80"></div>
+            <div x-show="cameraOn" class="pointer-events-none absolute inset-x-6 top-1/2 h-2/5 -translate-y-1/2 rounded-2xl border-4 border-white/80">
+                <div class="absolute inset-x-3 top-1/2 h-0.5 -translate-y-1/2 bg-danger"></div>
+            </div>
 
             <div x-show="!cameraOn" class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-6 text-center text-white">
                 @svg('heroicon-o-camera', 'size-12 opacity-80')
@@ -206,7 +208,7 @@
             </article>
         @empty
             <div class="ot-card">
-                <x-ops.empty-state icon="heroicon-o-qr-code" :title="__('Nothing scanned yet')" />
+                <x-ops.empty-state icon="ot-barcode" :title="__('Nothing scanned yet')" />
             </div>
         @endforelse
     </section>

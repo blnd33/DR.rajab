@@ -50,7 +50,7 @@
     @else
         <a href="{{ route('ops.scan') }}" wire:navigate
            class="ot-btn ot-btn-primary w-full gap-3 py-5 text-lg">
-            @svg('heroicon-o-qr-code', 'size-7')
+            @svg('ot-barcode', 'size-7')
             <span>{{ __('Scan anything') }}</span>
         </a>
 

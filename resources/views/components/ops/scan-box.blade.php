@@ -6,7 +6,9 @@
     @endif
     <div class="relative aspect-video w-full overflow-hidden rounded-lg bg-fg" wire:ignore x-show="cameraOn" x-cloak>
         <video x-ref="video" class="h-full w-full object-cover" playsinline muted aria-label="{{ __('Camera preview') }}"></video>
-        <div class="pointer-events-none absolute inset-6 rounded-xl border-4 border-white/80"></div>
+        <div class="pointer-events-none absolute inset-x-6 top-1/2 h-1/2 -translate-y-1/2 rounded-xl border-4 border-white/80">
+            <div class="absolute inset-x-3 top-1/2 h-0.5 -translate-y-1/2 bg-danger"></div>
+        </div>
     </div>
     <button type="button" class="ot-btn w-full" :class="cameraOn ? 'ot-btn-secondary' : 'ot-btn-primary'" @click="toggleCamera()" :disabled="starting">
         @svg('heroicon-o-camera', 'size-5')

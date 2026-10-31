@@ -9,7 +9,7 @@
  * (`scan-feedback` event: success = found, error = unknown / not allowed).
  */
 import { feedback } from './feedback'
-import { stripSymbologyId } from './symbology'
+import { isGs1Symbology, stripSymbologyId } from './symbology'
 
 const WEDGE_MAX_GAP_MS = 35 // scanners type much faster than people
 const WEDGE_MIN_LENGTH = 4
@@ -51,17 +51,27 @@ export default (options = {}) => ({
                 import('@zxing/library'),
             ])
 
+            // Implant labels are mostly linear barcodes (GS1-128 / HIBC Code 128 or 39, EAN/UPC,
+            // ITF-14 on cartons, GS1 DataBar), with GS1 DataMatrix on newer UDI labels.
+            // (DataBar Expanded is left out: ZXing marks that reader as not production-ready.)
             const hints = new Map()
             hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-                BarcodeFormat.DATA_MATRIX,
-                BarcodeFormat.QR_CODE,
                 BarcodeFormat.CODE_128,
                 BarcodeFormat.EAN_13,
                 BarcodeFormat.EAN_8,
                 BarcodeFormat.UPC_A,
+                BarcodeFormat.UPC_E,
                 BarcodeFormat.CODE_39,
+                BarcodeFormat.CODE_93,
+                BarcodeFormat.ITF,
+                BarcodeFormat.CODABAR,
+                BarcodeFormat.RSS_14,
+                BarcodeFormat.DATA_MATRIX,
+                BarcodeFormat.QR_CODE,
             ])
             hints.set(DecodeHintType.TRY_HARDER, true)
+            // GS1-128: keep the FNC1 marks (as "]C1" + GS separators) so lot and serial don't run together.
+            hints.set(DecodeHintType.ASSUME_GS1, true)
 
             const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 120 })
 
@@ -74,10 +84,23 @@ export default (options = {}) => ({
             )
 
             this.cameraOn = true
+            this.keepFocusing()
         } catch (error) {
             this.cameraError = error?.name === 'NotAllowedError' ? 'denied' : 'unavailable'
         } finally {
             this.starting = false
+        }
+    },
+
+    // Thin barcode bars need a sharp picture: keep autofocus running where the phone allows it.
+    keepFocusing() {
+        try {
+            const capabilities = this._controls?.streamVideoCapabilitiesGet?.(() => true) ?? {}
+            if (capabilities.focusMode?.includes('continuous')) {
+                this._controls.streamVideoConstraintsApply({ advanced: [{ focusMode: 'continuous' }] })?.catch?.(() => {})
+            }
+        } catch {
+            // Not supported on this browser — the camera's default focus is used.
         }
     },
 
@@ -135,11 +158,15 @@ export default (options = {}) => ({
 
         if (!this.serverFeedback) feedback('success')
 
-        const detail = { raw: value, symbology: symbology ?? format, source }
+        // Keep the GS1 marker: without it the server can't tell a second label barcode
+        // like "17260131 10ABC123" (expiry + lot) from a plain code.
+        const code = isGs1Symbology(symbology) ? `]${symbology}${value}` : value
+
+        const detail = { raw: code, symbology: symbology ?? format, source }
         this.$dispatch('scanned', detail)
 
         if (this.method && this.$wire?.[this.method]) {
-            this.$wire[this.method](value, source)
+            this.$wire[this.method](code, source)
         }
     },
 })
