@@ -2,7 +2,6 @@
     <header class="flex items-start justify-between gap-3">
         <div>
             <h1 class="text-2xl font-bold">{{ __('My surgeries') }}</h1>
-            <p class="mt-1 text-muted-fg">{{ __('Drafts, and the surgeries you logged or operated.') }}</p>
         </div>
         @if ($canCreate)
             <a href="{{ route('ops.surgeries.create') }}" class="ot-btn ot-btn-primary shrink-0">

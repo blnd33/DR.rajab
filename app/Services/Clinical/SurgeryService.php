@@ -96,7 +96,8 @@ class SurgeryService
                 'surgery_date' => $payload['surgery_date'] ?? now()->toDateString(),
                 'surgery_type_id' => $payload['surgery_type_id'] ?? null,
                 'customer_id' => $payload['customer_id'] ?? null,
-                'patient_id' => $this->patientId($payload, $branch, $by, $existing),
+                'patient_id' => $this->chosenPatientId($payload, $by),
+                'patient_details' => filled($payload['patient_id'] ?? null) ? null : $this->typedPatient($payload),
                 'laterality' => Laterality::tryFrom((string) ($payload['laterality'] ?? '')) ?? Laterality::NotApplicable,
                 'kit_checkout_id' => $payload['kit_checkout_id'] ?? null,
                 'notes' => $payload['notes'] ?? null,
@@ -175,6 +176,13 @@ class SurgeryService
 
             if ($surgery->items->isEmpty()) {
                 throw new StockRuleViolation(__('Add at least one implant or product.'));
+            }
+
+            if ($surgery->patient_id === null) {
+                $details = (array) $surgery->patient_details;
+                $patient = $this->patients->findByPhone($details['phone'] ?? null, $details['full_name'] ?? null)
+                    ?? $this->patients->create($surgery->branch, $details, $by);
+                $surgery->forceFill(['patient_id' => $patient->id, 'patient_details' => null])->save();
             }
 
             $group = (string) Str::uuid();
@@ -495,38 +503,49 @@ class SurgeryService
         return array_values(array_filter([
             $surgery->surgery_type_id === null ? __('Choose the surgery type.') : null,
             $surgery->customer_id === null ? __('Choose the hospital.') : null,
-            $surgery->patient_id === null ? __('Choose or add the patient.') : null,
+            $surgery->patient_id === null && blank($surgery->patient_details['full_name'] ?? null) ? __('Enter the patient name.') : null,
         ]));
     }
 
     /**
+     * A patient picked from the list (admin screen, or a draft from before patients were typed
+     * inline). Typed patients are only made into a patient file when the surgery is completed.
+     *
      * @param  array<string, mixed>  $payload
      */
-    private function patientId(array $payload, Branch $branch, User $by, ?Surgery $existing = null): ?int
+    private function chosenPatientId(array $payload, User $by): ?int
     {
-        if (filled($payload['patient_id'] ?? null)) {
-            $patient = Patient::query()->find($payload['patient_id']);
-
-            if ($patient !== null && ! $this->patients->canSee($by, $patient)) {
-                throw new AuthorizationException(__('This patient is not one of yours.'));
-            }
-
-            return $patient?->id;
+        if (blank($payload['patient_id'] ?? null)) {
+            return null;
         }
 
+        $patient = Patient::query()->find($payload['patient_id']);
+
+        if ($patient !== null && ! $this->patients->canSee($by, $patient)) {
+            throw new AuthorizationException(__('This patient is not one of yours.'));
+        }
+
+        return $patient?->id;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     * @return array{full_name: string, phone: ?string, age: ?int, gender: ?string}|null
+     */
+    private function typedPatient(array $payload): ?array
+    {
         $new = (array) ($payload['new_patient'] ?? []);
 
         if (blank($new['full_name'] ?? null)) {
             return null;
         }
 
-        // A re-sent draft keeps the patient its first send created.
-        if ($existing?->patient_id !== null && mb_strtolower(trim((string) $existing->patient?->full_name)) === mb_strtolower(trim((string) $new['full_name']))) {
-            return $existing->patient_id;
-        }
-
-        // An offline "new" patient may already exist (same phone and name).
-        return ($this->patients->findByPhone($new['phone'] ?? null, $new['full_name']) ?? $this->patients->create($branch, $new, $by))->id;
+        return [
+            'full_name' => trim((string) $new['full_name']),
+            'phone' => filled($new['phone'] ?? null) ? trim((string) $new['phone']) : null,
+            'age' => filled($new['age'] ?? null) ? (int) $new['age'] : null,
+            'gender' => filled($new['gender'] ?? null) ? (string) $new['gender'] : null,
+        ];
     }
 
     /**

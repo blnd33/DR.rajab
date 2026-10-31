@@ -6,7 +6,6 @@
 
     <header>
         <h1 class="text-2xl font-bold">{{ __('Request stock') }}</h1>
-        <p class="mt-1 text-muted-fg">{{ __('For :branch — an admin approves and picks the sending branch.', ['branch' => $branch?->code]) }}</p>
     </header>
 
     @if ($lowCount > 0)

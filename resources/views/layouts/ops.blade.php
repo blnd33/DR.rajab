@@ -28,7 +28,7 @@
             <template x-if="!online">
                 <span class="flex items-center gap-2">
                     @svg('heroicon-o-signal-slash', 'size-5 shrink-0')
-                    <span>{{ __('You are offline. Drafts are saved on this phone.') }}</span>
+                    <span>{{ __('Offline — saved on this phone') }}</span>
                 </span>
             </template>
             <template x-if="online && pending > 0">

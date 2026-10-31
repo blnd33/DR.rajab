@@ -1,7 +1,6 @@
 <div x-data="scanner({ method: 'handleScan' })" class="space-y-5">
     <header>
         <h1 class="text-2xl font-bold">{{ __('Recall search') }}</h1>
-        <p class="mt-1 text-muted-fg">{{ __('Scan or type a lot number to see where every item of that lot is now.') }}</p>
     </header>
 
     <div role="search" class="ot-card space-y-2 p-4">

@@ -43,7 +43,6 @@
             </form>
             <p class="text-sm text-muted-fg" role="status">
                 <span x-show="queued > 0" x-cloak class="font-semibold text-info" x-text="@js(__('Waiting to sync:')) + ' ' + queued"></span>
-                <span x-show="queued === 0">{{ __('Scans also work without internet; they are sent when the connection is back.') }}</span>
             </p>
         </section>
     @endif

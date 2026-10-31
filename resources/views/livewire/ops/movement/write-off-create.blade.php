@@ -6,7 +6,6 @@
 
     <header>
         <h1 class="text-2xl font-bold">{{ __('Report damaged / lost') }}</h1>
-        <p class="mt-1 text-muted-fg">{{ __('Scan each item. Nothing leaves stock until it is approved.') }}</p>
     </header>
 
     <section class="ot-card space-y-3 p-4" aria-label="{{ __('Scan') }}">

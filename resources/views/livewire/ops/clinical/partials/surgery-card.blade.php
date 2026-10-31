@@ -3,7 +3,7 @@
         <p class="font-semibold">{{ $surgery->type?->name ?? __('Surgery draft') }}</p>
         <p class="text-sm text-muted-fg">
             <x-date :value="$surgery->surgery_date" />
-            @if ($surgery->patient) · {{ $surgery->patient->full_name }} @endif
+            @if ($surgery->patientName()) · {{ $surgery->patientName() }} @endif
             @if ($surgery->customer) · {{ $surgery->customer->code }} @endif
         </p>
         <p class="text-xs text-muted-fg"><x-code :value="$surgery->number" /> · {{ trans_choice(':count item|:count items', $surgery->live_items_count ?? 0, ['count' => \App\Support\Locale\Display::number($surgery->live_items_count ?? 0)]) }}</p>

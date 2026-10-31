@@ -82,7 +82,10 @@ it('keeps a draft with the reasons when something is missing, and completes once
 
     expect($surgery->status)->toBe(SurgeryStatus::Draft)
         ->and($surgery->problems)->toHaveCount(2)
-        ->and(StockUnit::query()->where('serial', 'SN-1')->value('status'))->toBe(StockStatus::InStock);
+        ->and(StockUnit::query()->where('serial', 'SN-1')->value('status'))->toBe(StockStatus::InStock)
+        // The typed patient waits on the draft; no patient file yet.
+        ->and(Patient::query()->count())->toBe(0)
+        ->and($surgery->patientName())->toBe('Ahmad Karim');
 
     // Same draft, fixed (same client_uuid): updated, not duplicated.
     $surgery = $this->surgeries->sync(['customer_id' => $this->hospital->id, 'items' => [['raw' => 'SN-1']]] + $payload, $this->doctor);
@@ -90,6 +93,14 @@ it('keeps a draft with the reasons when something is missing, and completes once
     expect($surgery->status)->toBe(SurgeryStatus::Completed)
         ->and(Surgery::query()->count())->toBe(1)
         ->and(Patient::query()->count())->toBe(1);
+});
+
+it('needs the patient name to complete', function () {
+    $surgery = $this->surgeries->sync(surgeryPayload($this, ['new_patient' => ['full_name' => ''], 'complete' => true]), $this->doctor);
+
+    expect($surgery->status)->toBe(SurgeryStatus::Draft)
+        ->and($surgery->problems)->toBe(['Enter the patient name.'])
+        ->and(Patient::query()->count())->toBe(0);
 });
 
 it('ignores a replay of a completed surgery', function () {

@@ -1,7 +1,6 @@
 <div x-data="scanner({ method: 'handleScan', serverFeedback: true })" class="space-y-5">
     <header>
         <h1 class="text-2xl font-bold">{{ __('Scan anything') }}</h1>
-        <p class="mt-1 text-muted-fg">{{ __('Point the camera at a box, or use a barcode scanner.') }}</p>
     </header>
 
     {{-- Camera --}}
@@ -41,7 +40,6 @@
                    enterkeyhint="search" placeholder="0108712345678906 10ABC123">
             <button type="submit" class="ot-btn ot-btn-primary shrink-0">{{ __('Look up') }}</button>
         </div>
-        <p class="text-xs text-muted-fg">{{ __('A USB or Bluetooth scanner works anywhere on this page.') }}</p>
     </form>
 
     {{-- Results --}}
@@ -208,7 +206,7 @@
             </article>
         @empty
             <div class="ot-card">
-                <x-ops.empty-state icon="heroicon-o-qr-code" :title="__('Nothing scanned yet')" :description="__('Scan a box label, a serial number or a lot number.')" />
+                <x-ops.empty-state icon="heroicon-o-qr-code" :title="__('Nothing scanned yet')" />
             </div>
         @endforelse
     </section>

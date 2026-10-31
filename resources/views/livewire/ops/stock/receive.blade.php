@@ -1,7 +1,6 @@
 <div x-data="scanner({ method: 'handleScan', serverFeedback: true })" class="space-y-5">
     <header>
         <h1 class="text-2xl font-bold">{{ __('Receive stock') }}</h1>
-        <p class="mt-1 text-muted-fg">{{ __('Scan each box into :branch, check the list, then confirm.', ['branch' => $branch?->code]) }}</p>
     </header>
 
     {{-- Scan: camera or hardware scanner --}}

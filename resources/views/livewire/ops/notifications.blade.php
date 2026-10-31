@@ -32,7 +32,7 @@
         </article>
     @empty
         <div class="ot-card">
-            <x-ops.empty-state icon="heroicon-o-bell-slash" :title="__('No notifications yet')" :description="__('Transfers, approvals and alerts will appear here.')" />
+            <x-ops.empty-state icon="heroicon-o-bell-slash" :title="__('No notifications yet')" />
         </div>
     @endforelse
 

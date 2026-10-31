@@ -31,7 +31,7 @@
 
     <section class="ot-card divide-y divide-border">
         <dl class="grid grid-cols-2 gap-3 p-4 text-sm">
-            <div><dt class="text-muted-fg">{{ __('Patient') }}</dt><dd class="font-semibold">{{ $surgery->patient?->full_name ?? '—' }}</dd></div>
+            <div><dt class="text-muted-fg">{{ __('Patient') }}</dt><dd class="font-semibold">{{ $surgery->patientName() ?? '—' }}</dd></div>
             <div><dt class="text-muted-fg">{{ __('Hospital') }}</dt><dd class="font-semibold">{{ $surgery->customer?->name ?? '—' }}</dd></div>
             <div><dt class="text-muted-fg">{{ __('Side') }}</dt><dd class="font-semibold">{{ $surgery->laterality->getLabel() }}</dd></div>
             <div><dt class="text-muted-fg">{{ __('Branch') }}</dt><dd class="font-semibold">{{ $surgery->branch->code }}</dd></div>
@@ -90,7 +90,7 @@
     @if ($canComplete)
         <section class="ot-card space-y-3 p-4">
             <label class="block space-y-1">
-                <span class="text-sm font-medium">{{ __('Reason to use expired items (only if there are any)') }}</span>
+                <span class="text-sm font-medium">{{ __('Reason for expired items') }}</span>
                 <input type="text" wire:model="overrideReason" class="ot-input" maxlength="500">
             </label>
             <button type="button" wire:click="complete" wire:loading.attr="disabled" class="ot-btn ot-btn-primary w-full"

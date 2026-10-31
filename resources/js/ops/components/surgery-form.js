@@ -1,7 +1,8 @@
 /**
  * Phone surgery form (Module 10, P3-4): every change is kept in IndexedDB so nothing is lost
  * when the connection drops. Save / Complete hands the draft to the sync queue.
- * Usage: <form x-data="surgeryForm({ initial, patientLookup, strings })" @scanned.window="onScan($event.detail.raw)">
+ * The patient is typed in the form (a draft from before may still carry a chosen patient_id).
+ * Usage: <form x-data="surgeryForm({ initial, strings })" @scanned.window="onScan($event.detail.raw)">
  */
 import { feedback } from '../scanner/feedback'
 import { get, newClientUuid, put, remove } from '../offline/db'
@@ -17,11 +18,7 @@ export default (options = {}) => ({
         new_patient: emptyPatient(),
         ...(options.initial ?? {}),
     },
-    patientMode: options.initial?.patient_id ? 'pick' : 'new',
     patientLabel: options.initial?.patient_label ?? '',
-    patientQuery: '',
-    patientResults: [],
-    searching: false,
     sending: false,
     message: null,
     problems: options.initial?.problems ?? [],
@@ -36,7 +33,6 @@ export default (options = {}) => ({
 
                 if (saved?.payload) {
                     this.form = { ...this.form, ...saved.payload }
-                    this.patientMode = saved.payload.patient_id ? 'pick' : 'new'
                     this.patientLabel = saved.payload.patient_label ?? ''
                 }
             } catch {
@@ -67,7 +63,7 @@ export default (options = {}) => ({
     },
 
     title() {
-        return [this.form.surgery_date, this.patientMode === 'new' ? this.form.new_patient?.full_name : this.patientLabel].filter(Boolean).join(' · ')
+        return [this.form.surgery_date, this.form.patient_id ? this.patientLabel : this.form.new_patient?.full_name].filter(Boolean).join(' · ')
     },
 
     payload(complete) {
@@ -75,10 +71,10 @@ export default (options = {}) => ({
         data.complete = complete
         data.patient_label = this.patientLabel
 
-        if (this.patientMode === 'new') {
-            data.patient_id = null
-        } else {
+        if (data.patient_id) {
             data.new_patient = null
+        } else {
+            data.patient_id = null
         }
 
         data.items = (data.items ?? []).filter((i) => String(i.raw ?? '').trim() !== '' || i.stock_batch_id || i.product_id)
@@ -105,36 +101,6 @@ export default (options = {}) => ({
 
     removeItem(index) {
         this.form.items.splice(index, 1)
-    },
-
-    async searchPatients() {
-        const q = this.patientQuery.trim()
-
-        if (q.length < 2 || !navigator.onLine) {
-            this.patientResults = []
-            return
-        }
-
-        this.searching = true
-
-        try {
-            const response = await fetch(`${options.patientLookup}?q=${encodeURIComponent(q)}`, {
-                credentials: 'same-origin',
-                headers: { Accept: 'application/json' },
-            })
-            this.patientResults = response.ok ? await response.json() : []
-        } catch {
-            this.patientResults = []
-        } finally {
-            this.searching = false
-        }
-    },
-
-    pickPatient(patient) {
-        this.form.patient_id = patient.id
-        this.patientLabel = patient.label
-        this.patientResults = []
-        this.patientQuery = ''
     },
 
     async submit(complete) {

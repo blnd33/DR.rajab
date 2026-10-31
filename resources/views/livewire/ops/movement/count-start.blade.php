@@ -6,7 +6,6 @@
 
     <header>
         <h1 class="text-2xl font-bold">{{ __('Count stock') }}</h1>
-        <p class="mt-1 text-muted-fg">{{ __('The system keeps a snapshot of what should be in :branch now; then you scan what is really there.', ['branch' => $branch?->code]) }}</p>
     </header>
 
     <form wire:submit="start" class="space-y-4">

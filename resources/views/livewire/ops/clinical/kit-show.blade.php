@@ -30,7 +30,7 @@
     </nav>
 
     @if ($mode === 'prepare' && $canPrepare)
-        <x-ops.scan-box id="kit-prepare-code" :hint="__('Scan instruments, serial implants or lot boxes (1 per scan). They come from this branch\'s shelf.')">
+        <x-ops.scan-box id="kit-prepare-code" :hint="__('Scan each item')">
             <button type="button" wire:click="markPrepared" class="ot-btn ot-btn-secondary w-full">
                 @svg('heroicon-o-clipboard-document-check', 'size-5')
                 <span>{{ __('Mark as prepared') }}</span>
@@ -75,7 +75,7 @@
     @endif
 
     @if ($mode === 'return' && $canReturn)
-        <x-ops.scan-box id="kit-return-code" :hint="__('Scan every implant and instrument that came back.')" />
+        <x-ops.scan-box id="kit-return-code" :hint="__('Scan what came back')" />
 
         <section class="space-y-3" aria-labelledby="return-title">
             <h2 id="return-title" class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('What went out') }} · <x-code :value="$checkout->number" /></h2>

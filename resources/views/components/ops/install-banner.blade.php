@@ -3,7 +3,7 @@
     <div x-show="showAndroid" x-transition.opacity
          class="ot-card mx-auto flex max-w-screen-md items-center gap-3 p-3">
         @svg('heroicon-o-device-phone-mobile', 'size-8 shrink-0 text-primary')
-        <p class="flex-1 text-sm">{{ __('Install the app on this phone for faster access and offline drafts.') }}</p>
+        <p class="flex-1 text-sm">{{ __('Install the app on this phone') }}</p>
         <button type="button" class="ot-btn ot-btn-primary" @click="install()">{{ __('Install') }}</button>
         <button type="button" class="ot-btn ot-btn-secondary px-3" @click="dismiss()" aria-label="{{ __('Not now') }}">
             @svg('heroicon-o-x-mark', 'size-5')

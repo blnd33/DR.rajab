@@ -6,7 +6,6 @@
 
     <header>
         <h1 class="text-2xl font-bold">{{ __('Record an expense') }}</h1>
-        <p class="mt-1 text-muted-fg">{{ __('Large amounts wait for approval before the money leaves the box.') }}</p>
     </header>
 
     <form wire:submit="submit" class="space-y-4">

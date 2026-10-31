@@ -79,6 +79,7 @@ class SurgeryCreate extends Component
             'customer_id' => $draft->customer_id,
             'patient_id' => $draft->patient_id,
             'patient_label' => $draft->patient?->label(),
+            'new_patient' => $draft->patient_details ?? ['full_name' => '', 'phone' => '', 'age' => null, 'gender' => ''],
             'laterality' => $draft->laterality->value,
             'kit_checkout_id' => $draft->kit_checkout_id,
             'lead_doctor_id' => $draft->leadDoctor()->id ?? $this->user()->id,

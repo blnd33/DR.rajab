@@ -39,7 +39,7 @@
     @if ($canEdit || $canReceive)
         <section class="ot-card space-y-3 p-4" aria-label="{{ __('Scan') }}">
             <p class="text-sm font-semibold">
-                {{ $canEdit ? __('Scan each unit or lot box to put it on the transfer.') : __('Scan every unit that arrived.') }}
+                {{ $canEdit ? __('Scan each item') : __('Scan what arrived') }}
             </p>
             <div class="relative aspect-video w-full overflow-hidden rounded-lg bg-fg" wire:ignore x-show="cameraOn" x-cloak>
                 <video x-ref="video" class="h-full w-full object-cover" playsinline muted aria-label="{{ __('Camera preview') }}"></video>

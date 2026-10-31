@@ -6,7 +6,6 @@
 
     <header>
         <h1 class="text-2xl font-bold">{{ __('Customer return') }}</h1>
-        <p class="mt-1 text-muted-fg">{{ __('Items coming back from a hospital or customer. Scan serial numbers; pick lot products below.') }}</p>
     </header>
 
     <section class="ot-card space-y-3 p-4" aria-label="{{ __('Scan') }}">

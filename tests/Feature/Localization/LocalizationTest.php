@@ -20,7 +20,7 @@ it('renders the ops app right-to-left for Arabic and Sorani users', function (st
 it('shows Sorani UI strings to a Sorani user', function () {
     $doctor = userWithRole(Role::Doctor, [branch('DHK')], ['locale' => 'ckb']);
 
-    $this->actingAs($doctor)->get('/app')->assertSee('هەر شتێک سکان بکە');
+    $this->actingAs($doctor)->get('/app')->assertSee('نەشتەرگەری نوێ');
 });
 
 it('saves a language switch on the account', function () {

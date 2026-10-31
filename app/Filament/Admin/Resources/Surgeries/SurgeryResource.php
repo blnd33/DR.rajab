@@ -84,7 +84,7 @@ class SurgeryResource extends Resource
                 CodeColumn::make('number')->label(__('Number'))->searchable()->sortable(),
                 TextColumn::make('surgery_date')->label(__('Date'))->sortable()->formatStateUsing(fn ($state) => Display::date($state)),
                 TextColumn::make('type.name')->label(__('Surgery'))->description(fn (Surgery $r) => $r->laterality->getLabel())->placeholder('—'),
-                TextColumn::make('patient.full_name')->label(__('Patient'))->placeholder('—')
+                TextColumn::make('patient.full_name')->label(__('Patient'))->placeholder('—')->state(fn (Surgery $r) => $r->patientName())
                     ->description(fn (Surgery $r) => $r->patient?->file_number),
                 TextColumn::make('customer.code')->label(__('Hospital'))->badge()->color('gray')->placeholder('—'),
                 TextColumn::make('lead')->label(__('Lead surgeon'))->state(fn (Surgery $r) => $r->leadDoctor()?->name)->toggleable(),
@@ -113,7 +113,7 @@ class SurgeryResource extends Resource
                 TextEntry::make('status')->label(__('Status'))->badge(),
                 TextEntry::make('surgery_date')->label(__('Date'))->formatStateUsing(fn ($state) => Display::date($state)),
                 TextEntry::make('type.name')->label(__('Surgery'))->placeholder('—'),
-                TextEntry::make('patient.full_name')->label(__('Patient'))->placeholder('—')
+                TextEntry::make('patient.full_name')->label(__('Patient'))->placeholder('—')->state(fn (Surgery $r) => $r->patientName())
                     ->url(fn (Surgery $r) => $r->patient !== null ? PatientResource::getUrl('view', ['record' => $r->patient]) : null),
                 TextEntry::make('customer.name')->label(__('Hospital'))->placeholder('—'),
                 TextEntry::make('laterality')->label(__('Side'))->badge(),

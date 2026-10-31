@@ -6,7 +6,6 @@
 
     <header>
         <h1 class="text-2xl font-bold">{{ __('New sale') }}</h1>
-        <p class="mt-1 text-muted-fg">{{ __('Scan each item, check the price, take the money.') }}</p>
     </header>
 
     @if ($currencies === [])

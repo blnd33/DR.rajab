@@ -25,6 +25,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $branch_id
  * @property ?int $customer_id
  * @property ?int $patient_id
+ * @property ?array{full_name?: string, phone?: ?string, age?: ?int, gender?: ?string} $patient_details typed on a draft; becomes a patient file on completion
  * @property ?int $surgery_type_id
  * @property Laterality $laterality
  * @property Carbon $surgery_date
@@ -54,6 +55,7 @@ class Surgery extends Model
             'surgery_date' => DateOnly::class,
             'status' => SurgeryStatus::class,
             'problems' => 'array',
+            'patient_details' => 'encrypted:array',
             'completed_at' => 'datetime',
             'cancelled_at' => 'datetime',
             'fee_amount' => 'decimal:4',
@@ -137,6 +139,14 @@ class Surgery extends Model
     public function attachments(): MorphMany
     {
         return $this->morphMany(Attachment::class, 'attachable');
+    }
+
+    /**
+     * The patient file's name, or on a draft the name typed in the surgery log.
+     */
+    public function patientName(): ?string
+    {
+        return $this->patient->full_name ?? $this->patient_details['full_name'] ?? null;
     }
 
     public function leadDoctor(): ?User

@@ -6,7 +6,6 @@
 
     <header>
         <h1 class="text-2xl font-bold">{{ __('Exchange currency') }}</h1>
-        <p class="mt-1 text-muted-fg">{{ __('Money moves between your own boxes at the rate you got.') }}</p>
     </header>
 
     <form wire:submit="submit" class="space-y-4">
