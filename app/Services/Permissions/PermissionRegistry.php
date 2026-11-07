@@ -55,6 +55,7 @@ final class PermissionRegistry
                 'products.import' => ['Import products from Excel', false],
                 'products.export' => ['Export products to Excel', false],
                 'products.print_labels' => ['Print barcode labels', true],
+                'products.link_barcodes' => ['Link a new box barcode to a product while receiving', false],
                 'labels.templates' => ['Edit label layouts', false],
             ],
             'stock' => [
@@ -271,7 +272,7 @@ final class PermissionRegistry
 
             Role::BranchStaff->value => [
                 'ops.access',
-                'products.view_any', 'products.print_labels',
+                'products.view_any', 'products.print_labels', 'products.link_barcodes',
                 'stock.view', 'stock.receive', 'stock.recall',
                 'transfers.view_any', 'transfers.create', 'transfers.send', 'transfers.receive', 'transfers.cancel',
                 'stock_requests.view_any', 'stock_requests.create',

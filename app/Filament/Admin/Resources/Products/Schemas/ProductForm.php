@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Products\Schemas;
 
 use App\Enums\TrackingType;
+use App\Enums\UsageLevel;
 use App\Filament\Admin\Forms\TranslatableInput;
 use App\Models\Brand;
 use App\Models\Category;
@@ -103,6 +104,8 @@ class ProductForm
                                         : __('Serial: every unit has its own serial number (implants). Lot: counted by quantity per lot (screws, cement).'))
                                     ->disabled(fn (?Product $record) => $record !== null && app(ProductService::class)->hasStock($record)),
                                 Toggle::make('is_implant')->label(__('Implant'))->default(true),
+                                Select::make('usage_level')->label(__('Usage'))->options(UsageLevel::options())->native(false)
+                                    ->helperText(__('How often it is used. Most-used items come first in searches.')),
                                 Toggle::make('requires_expiry')->label(__('Has an expiry date'))->default(true),
                                 Toggle::make('is_active')->label(__('Active'))->default(true)
                                     ->helperText(__('Inactive products are hidden from daily lists; their history stays.')),

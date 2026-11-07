@@ -14,10 +14,12 @@ use App\Models\Branch;
 use App\Models\DataImport;
 use App\Models\DataImportRow;
 use App\Models\User;
+use App\Services\Imports\Contracts\ReadsWorkbook;
 use App\Services\Imports\Contracts\RowHandler;
 use App\Services\Imports\Handlers\MinStockRowHandler;
 use App\Services\Imports\Handlers\ProductRowHandler;
 use App\Services\Imports\Handlers\StockRowHandler;
+use App\Services\Imports\Handlers\SupplierCatalogRowHandler;
 use App\Services\Permissions\BranchScopeResolver;
 use App\Support\Locale\LocaleRegistry;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -42,6 +44,8 @@ class ImportPipeline
 
     public const MAX_ROWS = 20000;
 
+    private const MEMORY_LIMIT = '512M';
+
     public function __construct(private readonly BranchScopeResolver $scope) {}
 
     public function handler(ImportType $type): RowHandler
@@ -50,6 +54,7 @@ class ImportPipeline
             ImportType::Products => app(ProductRowHandler::class),
             ImportType::Stock => app(StockRowHandler::class),
             ImportType::MinStock => app(MinStockRowHandler::class),
+            ImportType::SupplierCatalog => app(SupplierCatalogRowHandler::class),
         };
     }
 
@@ -108,11 +113,14 @@ class ImportPipeline
     public function validate(DataImport $import): void
     {
         $this->actAs($import);
+        $this->raiseMemoryLimit();
         $import->forceFill(['status' => ImportStatus::Validating, 'failure_message' => null])->save();
 
         try {
             $handler = $this->handler($import->type);
-            $rows = $this->readRows($import, $handler);
+            $rows = $handler instanceof ReadsWorkbook
+                ? $handler->readWorkbook($this->originalPath($import))
+                : $this->readRows($import, $handler);
 
             $handler->begin($import, $import->user);
             $import->rows()->delete();
@@ -224,6 +232,7 @@ class ImportPipeline
         }
 
         $this->actAs($import);
+        $this->raiseMemoryLimit();
         $import->forceFill(['status' => ImportStatus::Processing, 'started_at' => now(), 'processed_rows' => 0])->save();
 
         $handler = $this->handler($import->type);
@@ -424,6 +433,34 @@ class ImportPipeline
         }
 
         return $map;
+    }
+
+    /**
+     * A supplier catalog is thousands of rows (each kept in the activity log): give the job
+     * room and time instead of failing half-way on small default limits.
+     */
+    private function raiseMemoryLimit(): void
+    {
+        $limit = ini_get('memory_limit');
+
+        if ($limit !== false && $limit !== '-1' && $this->bytes($limit) < $this->bytes(self::MEMORY_LIMIT)) {
+            ini_set('memory_limit', self::MEMORY_LIMIT);
+        }
+
+        // Without a queue worker (QUEUE_CONNECTION=sync) the import runs inside the request.
+        set_time_limit(0);
+    }
+
+    private function bytes(string $value): int
+    {
+        $number = (int) $value;
+
+        return match (mb_strtolower(mb_substr(trim($value), -1))) {
+            'g' => $number * 1024 ** 3,
+            'm' => $number * 1024 ** 2,
+            'k' => $number * 1024,
+            default => $number,
+        };
     }
 
     /**

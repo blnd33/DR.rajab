@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\ProductBarcode;
 use App\Models\StockBatch;
 use App\Models\StockUnit;
+use App\Models\User;
 use App\Support\Gs1\Gtin;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -79,6 +80,51 @@ class ProductService
         }
 
         return $product->barcodes()->create(['barcode' => $barcode, 'symbology' => $symbology]);
+    }
+
+    /**
+     * "Learn on first scan": a box barcode (GTIN) nobody knew yet is linked to the product the
+     * user picked — as its GTIN when it has none, otherwise as an extra barcode. Next time the
+     * box scans by itself.
+     *
+     * @return 'gtin'|'barcode' where it was stored
+     */
+    public function learnBarcode(Product $product, string $gtin, User $by): string
+    {
+        $gtin = trim($gtin);
+
+        if (! Gtin::isValid($gtin)) {
+            throw ValidationException::withMessages(['barcode' => __('This is not a valid GTIN (8, 12, 13 or 14 digits with a correct check digit).')]);
+        }
+
+        return DB::transaction(function () use ($product, $gtin, $by) {
+            $product = Product::query()->lockForUpdate()->findOrFail($product->id);
+            $variants = Gtin::variants((string) Gtin::toGtin14($gtin));
+
+            $owner = Product::query()->whereIn('gtin', $variants)->first()
+                ?? ProductBarcode::query()->whereIn('barcode', $variants)->first()?->product;
+
+            if ($owner !== null) {
+                throw ValidationException::withMessages(['barcode' => $owner->id === $product->id
+                    ? __('This barcode is already linked to :sku.', ['sku' => $product->sku])
+                    : __('This barcode already belongs to :sku.', ['sku' => $owner->sku])]);
+            }
+
+            if (blank($product->gtin)) {
+                $product->gtin = $gtin;
+                $product->save();
+                $storedAs = 'gtin';
+            } else {
+                $this->addBarcode($product, $gtin, BarcodeSymbology::Gtin);
+                $storedAs = 'barcode';
+            }
+
+            activity('catalog')->performedOn($product)->causedBy($by)->event('barcode_learned')
+                ->withProperties(['barcode' => $gtin, 'stored_as' => $storedAs])
+                ->log('Box barcode linked to product');
+
+            return $storedAs;
+        });
     }
 
     /**

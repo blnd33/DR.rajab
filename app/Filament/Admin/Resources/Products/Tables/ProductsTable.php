@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Products\Tables;
 
 use App\Enums\TrackingType;
+use App\Enums\UsageLevel;
 use App\Filament\Admin\Actions\PrintLabelsAction;
 use App\Filament\Admin\Tables\Columns\CodeColumn;
 use App\Models\Brand;
@@ -51,6 +52,8 @@ class ProductsTable
                     ->state(fn (Product $record) => $record->category?->path())
                     ->toggleable(),
                 TextColumn::make('brand.name')->label(__('Brand'))->toggleable(),
+                TextColumn::make('usage_level')->label(__('Usage'))->badge()->placeholder('—')
+                    ->sortable(query: fn (Builder $query, string $direction) => $query->orderByRaw(UsageLevel::orderSql('products.usage_level').' '.($direction === 'desc' ? 'desc' : 'asc'))),
                 TextColumn::make('tracking_type')->label(__('Tracking'))->badge()->color('gray'),
                 TextColumn::make('on_shelf_total')
                     ->label(__('On shelf'))
@@ -66,6 +69,7 @@ class ProductsTable
             ->filters([
                 SelectFilter::make('category_id')->label(__('Category'))->options(fn () => Category::options())->searchable(),
                 SelectFilter::make('brand_id')->label(__('Brand'))->options(fn () => Brand::query()->orderBy('name')->pluck('name', 'id'))->searchable(),
+                SelectFilter::make('usage_level')->label(__('Usage'))->options(UsageLevel::options())->multiple(),
                 SelectFilter::make('tracking_type')->label(__('Tracking'))->options(TrackingType::options()),
                 TernaryFilter::make('is_implant')->label(__('Implant')),
                 TernaryFilter::make('is_active')->label(__('Active'))->default(true),

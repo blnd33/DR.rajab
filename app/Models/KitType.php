@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UsageLevel;
 use App\Models\Concerns\HasCleanTranslations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -16,6 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $code
  * @property string $name
  * @property ?string $description
+ * @property ?UsageLevel $usage_level
  * @property bool $is_active
  */
 class KitType extends Model
@@ -26,11 +28,11 @@ class KitType extends Model
     /** @var list<string> */
     public array $translatable = ['name', 'description'];
 
-    protected $fillable = ['code', 'name', 'description', 'is_active'];
+    protected $fillable = ['code', 'name', 'description', 'usage_level', 'is_active'];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return ['usage_level' => UsageLevel::class, 'is_active' => 'boolean'];
     }
 
     protected static function booted(): void

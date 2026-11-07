@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\Barcode\ScanResolver;
 use App\Services\Barcode\ScanResultKind;
+use App\Services\Catalog\ProductService;
 use App\Services\Stock\Data\ReceiveLine;
 use App\Services\Stock\StockMovementService;
 use App\Support\CurrentBranch;
@@ -16,6 +17,7 @@ use App\Support\Locale\Display;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -24,6 +26,9 @@ use Livewire\Component;
  * Receive stock on the phone (opening stock, P1-1): scan box after box into the current
  * branch, check the list, confirm. Costs come from the product defaults (the admin can
  * correct them later); purchases arrive in Phase 4.
+ *
+ * A box barcode the system doesn't know yet (a supplier GTIN) is learned on the spot: the
+ * user picks the product once and the barcode is saved on it.
  */
 #[Layout('layouts::ops')]
 class Receive extends Component
@@ -36,6 +41,11 @@ class Receive extends Component
     public array $lines = [];
 
     public string $productSearch = '';
+
+    /** @var array{gtin: string, prefill: array<string, mixed>}|null a scanned box barcode nobody knows yet */
+    public ?array $unknown = null;
+
+    public string $linkSearch = '';
 
     public function mount(): void
     {
@@ -74,13 +84,57 @@ class Receive extends Component
 
         if ($result->product === null) {
             $this->dispatch('scan-feedback', type: 'error');
-            $this->dispatch('toast', type: 'error', message: __('Code not recognised. Search the product below.'));
+
+            if ($result->parsed->gtin !== null && $this->canLinkBarcodes()) {
+                $this->unknown = ['gtin' => $result->parsed->gtin, 'prefill' => $result->prefill()];
+                $this->linkSearch = '';
+
+                return;
+            }
+
+            $this->dispatch('toast', type: 'error', message: $result->parsed->gtin !== null
+                ? __('New box barcode. Ask an admin to link it to its product, or search the product below.')
+                : __('Code not recognised. Search the product below.'));
 
             return;
         }
 
         $this->addLine($result->product, $result->prefill());
         $this->dispatch('scan-feedback', type: 'success');
+    }
+
+    /**
+     * The user says which product the unknown box is: remember its barcode, add the box.
+     */
+    public function linkProduct(int $productId, ProductService $products): void
+    {
+        abort_unless($this->canLinkBarcodes(), 403);
+
+        $product = Product::query()->active()->find($productId);
+
+        if ($this->unknown === null || $product === null) {
+            return;
+        }
+
+        try {
+            $products->learnBarcode($product, $this->unknown['gtin'], $this->user());
+        } catch (ValidationException $e) {
+            $this->dispatch('toast', type: 'error', message: collect($e->errors())->flatten()->first());
+
+            return;
+        }
+
+        $this->addLine($product, $this->unknown['prefill']);
+        $this->unknown = null;
+        $this->linkSearch = '';
+        $this->dispatch('scan-feedback', type: 'success');
+        $this->dispatch('toast', type: 'success', message: __('Barcode saved on :sku — next time it scans by itself.', ['sku' => $product->sku]));
+    }
+
+    public function cancelLink(): void
+    {
+        $this->unknown = null;
+        $this->linkSearch = '';
     }
 
     public function addProduct(int $productId): void
@@ -147,12 +201,17 @@ class Receive extends Component
     public function render(): View
     {
         $matches = mb_strlen(trim($this->productSearch)) >= 2
-            ? Product::query()->active()->search($this->productSearch)->orderBy('sku')->limit(8)->get()
+            ? Product::query()->active()->search($this->productSearch)->orderByUsage()->orderBy('sku')->limit(8)->get()
+            : collect();
+
+        $linkMatches = $this->unknown !== null && mb_strlen(trim($this->linkSearch)) >= 2
+            ? Product::query()->active()->search($this->linkSearch)->orderByUsage()->orderBy('sku')->limit(8)->get()
             : collect();
 
         return view('livewire.ops.stock.receive', [
             'branch' => CurrentBranch::get(),
             'matches' => $matches,
+            'linkMatches' => $linkMatches,
             'total' => array_sum(array_map(fn ($l) => (int) $l['quantity'], $this->lines)),
         ])->title(__('Receive stock'));
     }
@@ -195,6 +254,11 @@ class Receive extends Component
             'unit_cost' => $product->purchase_price ?? '0',
             'cost_currency' => $product->purchase_currency ?? 'USD',
         ]] + $this->lines;
+    }
+
+    private function canLinkBarcodes(): bool
+    {
+        return $this->user()->can('products.link_barcodes');
     }
 
     private function user(): User

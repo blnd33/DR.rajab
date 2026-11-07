@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\DataImports\RelationManagers;
 
 use App\Enums\ImportRowAction;
+use App\Enums\UsageLevel;
 use App\Models\DataImportRow;
 use App\Support\FieldLabels;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -36,8 +37,9 @@ class RowsRelationManager extends RelationManager
                     ->label(__('Item'))
                     ->fontFamily(FontFamily::Mono)
                     ->extraAttributes(['dir' => 'ltr'])
+                    ->description(fn (DataImportRow $record) => isset($record->raw['kind']) ? $this->sourceLine($record) : null)
                     ->state(fn (DataImportRow $record) => implode(' · ', array_filter([
-                        $record->raw['sku'] ?? null,
+                        $record->raw['sku'] ?? $record->raw['code'] ?? null,
                         $record->raw['serial'] ?? null,
                         $record->raw['lot'] ?? null,
                         $record->raw['branch'] ?? null,
@@ -62,7 +64,11 @@ class RowsRelationManager extends RelationManager
     private function changes(DataImportRow $row): ?HtmlString
     {
         if ($row->action === ImportRowAction::Create) {
-            return new HtmlString('<span class="text-success-700 dark:text-success-400">'.e(__('New')).'</span>');
+            // Supplier catalog: the usage read from the doctor's colours, to check at a glance.
+            $usage = UsageLevel::tryFrom((string) ($row->raw['usage'] ?? ''));
+            $usageBadge = $usage === null ? '' : ' · <span class="text-gray-600 dark:text-gray-300">'.e($usage->getLabel()).'</span>';
+
+            return new HtmlString('<span class="text-success-700 dark:text-success-400">'.e(__('New')).'</span>'.$usageBadge);
         }
 
         if (empty($row->diff)) {
@@ -78,6 +84,21 @@ class RowsRelationManager extends RelationManager
         }
 
         return new HtmlString(implode('', $parts));
+    }
+
+    /**
+     * Supplier catalog rows: what the item is and where it is in the workbook.
+     */
+    private function sourceLine(DataImportRow $row): string
+    {
+        $kind = match ($row->raw['kind'] ?? null) {
+            'implant' => __('Implant'),
+            'instrument' => __('Instrument'),
+            'set' => __('Instrument set'),
+            default => '',
+        };
+
+        return trim($kind.' · '.mb_strimwidth((string) ($row->raw['name'] ?? ''), 0, 70, '…').' · '.__(':sheet, row :row', ['sheet' => trim((string) ($row->raw['sheet'] ?? '')), 'row' => $row->raw['row'] ?? '']), ' ·');
     }
 
     private function messages(DataImportRow $row): ?HtmlString

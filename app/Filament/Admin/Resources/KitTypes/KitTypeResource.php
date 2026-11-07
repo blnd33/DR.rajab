@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\KitTypes;
 
+use App\Enums\UsageLevel;
 use App\Filament\Admin\Forms\TranslatableInput;
 use App\Filament\Admin\Resources\KitTypes\Pages\CreateKitType;
 use App\Filament\Admin\Resources\KitTypes\Pages\EditKitType;
@@ -13,6 +14,7 @@ use App\Support\Database\Pg;
 use App\Support\Locale\Display;
 use BackedEnum;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -20,6 +22,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -56,6 +59,7 @@ class KitTypeResource extends Resource
             TextInput::make('code')->label(__('Code'))->required()->maxLength(32)->unique(ignoreRecord: true)
                 ->extraInputAttributes(['dir' => 'ltr', 'class' => 'ot-code', 'style' => 'text-transform: uppercase']),
             Toggle::make('is_active')->label(__('Active'))->default(true),
+            Select::make('usage_level')->label(__('Usage'))->options(UsageLevel::options())->native(false),
             TranslatableInput::make('name', __('Name'))->columnSpanFull(),
             TranslatableInput::make('description', __('Description'), required: false)->columnSpanFull(),
         ]);
@@ -69,12 +73,18 @@ class KitTypeResource extends Resource
             ->columns([
                 CodeColumn::make('code')->label(__('Code'))->sortable()->searchable(),
                 TextColumn::make('name')->label(__('Name'))
+                    ->description(fn (KitType $record) => $record->description)
+                    ->wrap()
                     ->searchable(query: fn ($query, string $search) => $query->whereRaw(Pg::jsonContainsSql('name'), ["%{$search}%"])),
+                TextColumn::make('usage_level')->label(__('Usage'))->badge()->placeholder('—'),
                 TextColumn::make('template_items_count')->label(__('Template lines'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('kits_count')->label(__('Kits'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
                 IconColumn::make('is_active')->label(__('Active'))->boolean(),
             ])
-            ->filters([TernaryFilter::make('is_active')->label(__('Active'))->default(true)])
+            ->filters([
+                SelectFilter::make('usage_level')->label(__('Usage'))->options(UsageLevel::options())->multiple(),
+                TernaryFilter::make('is_active')->label(__('Active'))->default(true),
+            ])
             ->recordActions([EditAction::make()])
             ->emptyStateHeading(__('No kit types yet'));
     }

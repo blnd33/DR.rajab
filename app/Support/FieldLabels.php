@@ -36,6 +36,9 @@ final class FieldLabels
             'branch_location_id' => __('Shelf'),
             'quantity' => __('Quantity'),
             'branch' => __('Branch'),
+            'description' => __('Description'),
+            'usage_level' => __('Usage'),
+            'contents' => __('Set contents'),
             default => $field,
         };
     }

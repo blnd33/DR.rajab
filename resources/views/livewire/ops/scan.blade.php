@@ -187,6 +187,12 @@
                             <p class="font-semibold">{{ __('Code not recognised') }}</p>
                             <x-code :value="$card['raw']" class="block break-all text-sm" />
                             <p class="mt-1 text-sm text-muted-fg">{{ __('Saved for the admin, so this label format can be added.') }}</p>
+                            @if ($card['gs1'] && $canReceive)
+                                <a href="{{ route('ops.stock.receive', ['code' => $card['raw']]) }}" wire:navigate class="ot-btn ot-btn-secondary mt-3 w-full">
+                                    @svg('heroicon-o-link', 'size-5')
+                                    <span>{{ __('Receive and link this box') }}</span>
+                                </a>
+                            @endif
                         </div>
                     </div>
                 @endif

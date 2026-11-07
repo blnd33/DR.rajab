@@ -68,7 +68,14 @@ class CreateDataImport extends CreateRecord
                         ->live(),
                 ]),
 
+            Section::make(__('2. The supplier workbook'))
+                ->visible(fn (Get $get) => ImportType::tryFrom((string) $get('type'))?->hasTemplate() === false)
+                ->schema([
+                    Text::make(__('Upload the supplier workbook exactly as you received it — no template. Implants become products, instrument sets become kit types with their contents, and the colours become the usage level of each item. You see everything before it is saved.')),
+                ]),
+
             Section::make(__('2. Fill the template'))
+                ->visible(fn (Get $get) => ImportType::tryFrom((string) $get('type'))?->hasTemplate() !== false)
                 ->schema([
                     Text::make(__('Use the template: keep the header row, one item per row. The second sheet explains every column in English, Arabic and Kurdish.')),
                     Actions::make([

@@ -7,7 +7,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 
 /**
- * The three Excel templates of Module 23.
+ * The three Excel templates of Module 23, and a supplier's own catalog workbook.
  */
 enum ImportType: string implements HasIcon, HasLabel
 {
@@ -16,6 +16,7 @@ enum ImportType: string implements HasIcon, HasLabel
     case Products = 'products';
     case Stock = 'stock';
     case MinStock = 'min_stock';
+    case SupplierCatalog = 'supplier_catalog';
 
     public function getLabel(): string
     {
@@ -23,6 +24,7 @@ enum ImportType: string implements HasIcon, HasLabel
             self::Products => __('Product catalog'),
             self::Stock => __('Stock (serials and lots)'),
             self::MinStock => __('Minimum stock per branch'),
+            self::SupplierCatalog => __('Supplier catalog (Lima / Enovis workbook)'),
         };
     }
 
@@ -32,6 +34,7 @@ enum ImportType: string implements HasIcon, HasLabel
             self::Products => 'heroicon-o-cube',
             self::Stock => 'heroicon-o-archive-box',
             self::MinStock => 'heroicon-o-arrow-trending-down',
+            self::SupplierCatalog => 'heroicon-o-book-open',
         };
     }
 
@@ -41,7 +44,7 @@ enum ImportType: string implements HasIcon, HasLabel
     public function permission(): string
     {
         return match ($this) {
-            self::Products => 'products.import',
+            self::Products, self::SupplierCatalog => 'products.import',
             self::Stock => 'stock.import',
             self::MinStock => 'stock.min_levels',
         };
@@ -52,6 +55,14 @@ enum ImportType: string implements HasIcon, HasLabel
      */
     public function isBranchScoped(): bool
     {
-        return $this !== self::Products;
+        return ! in_array($this, [self::Products, self::SupplierCatalog], true);
+    }
+
+    /**
+     * False when the file is the supplier's own workbook (no template to download).
+     */
+    public function hasTemplate(): bool
+    {
+        return $this !== self::SupplierCatalog;
     }
 }

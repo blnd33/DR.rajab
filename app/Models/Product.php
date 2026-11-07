@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\TrackingType;
+use App\Enums\UsageLevel;
 use App\Models\Concerns\HasCleanTranslations;
 use App\Models\Concerns\TracksAuthor;
 use App\Support\Database\Pg;
@@ -29,6 +30,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property ?string $size
  * @property TrackingType $tracking_type
  * @property bool $is_implant
+ * @property ?UsageLevel $usage_level how often the doctor uses it (supplier workbook colours)
  * @property bool $requires_expiry
  * @property ?string $purchase_price
  * @property ?string $purchase_currency
@@ -62,6 +64,7 @@ class Product extends Model
         'size',
         'tracking_type',
         'is_implant',
+        'usage_level',
         'requires_expiry',
         'purchase_price',
         'purchase_currency',
@@ -77,6 +80,7 @@ class Product extends Model
         return [
             'tracking_type' => TrackingType::class,
             'is_implant' => 'boolean',
+            'usage_level' => UsageLevel::class,
             'requires_expiry' => 'boolean',
             'purchase_price' => 'decimal:4',
             'selling_price' => 'decimal:4',
@@ -179,6 +183,16 @@ class Product extends Model
                 ->orWhereRaw(Pg::jsonContainsSql('name'), [$like])
                 ->orWhereHas('barcodes', fn (Builder $q) => $q->where('barcode', $term));
         });
+    }
+
+    /**
+     * Most-used items first, items without a level after "rarely", "not used" last.
+     *
+     * @param  Builder<Product>  $query
+     */
+    public function scopeOrderByUsage(Builder $query): void
+    {
+        $query->orderByRaw(UsageLevel::orderSql($query->qualifyColumn('usage_level')));
     }
 
     public function isSerialTracked(): bool

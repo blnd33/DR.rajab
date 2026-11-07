@@ -7,7 +7,9 @@
     <section class="ot-card space-y-3 p-4" aria-label="{{ __('Scan') }}">
         <div class="relative aspect-video w-full overflow-hidden rounded-lg bg-fg" wire:ignore x-show="cameraOn" x-cloak>
             <video x-ref="video" class="h-full w-full object-cover" playsinline muted aria-label="{{ __('Camera preview') }}"></video>
-            <div class="pointer-events-none absolute inset-6 rounded-xl border-4 border-white/80"></div>
+            <div class="pointer-events-none absolute inset-x-6 top-1/2 h-1/2 -translate-y-1/2 rounded-xl border-4 border-white/80">
+                <div class="absolute inset-x-3 top-1/2 h-0.5 -translate-y-1/2 bg-danger"></div>
+            </div>
         </div>
         <button type="button" class="ot-btn w-full" :class="cameraOn ? 'ot-btn-secondary' : 'ot-btn-primary'" @click="toggleCamera()" :disabled="starting">
             @svg('heroicon-o-camera', 'size-5')
@@ -21,6 +23,42 @@
             <button type="submit" class="ot-btn ot-btn-secondary shrink-0">{{ __('Add') }}</button>
         </form>
     </section>
+
+    {{-- A box barcode the system doesn't know yet: link it once --}}
+    @if ($unknown)
+        <section class="ot-card space-y-3 border-s-4 border-s-warning p-4" role="alert" aria-labelledby="link-title">
+            <div class="flex items-start gap-3">
+                <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-warning-soft text-warning">@svg('ot-barcode', 'size-6')</span>
+                <div class="min-w-0">
+                    <h2 id="link-title" class="font-semibold">{{ __('New barcode — which product is this?') }}</h2>
+                    <x-code :value="$unknown['gtin']" class="text-sm text-muted-fg" />
+                    @if ($unknown['prefill']['lot'] || $unknown['prefill']['expiry_date'])
+                        <p class="text-sm text-muted-fg">
+                            @if ($unknown['prefill']['lot']) {{ __('Lot') }} <x-code :value="$unknown['prefill']['lot']" /> @endif
+                            @if ($unknown['prefill']['expiry_date']) · {{ __('Expiry') }} <x-date :value="$unknown['prefill']['expiry_date']" /> @endif
+                        </p>
+                    @endif
+                </div>
+            </div>
+            <label for="link-search" class="block text-sm font-semibold">{{ __('Search by REF (from the box) or name') }}</label>
+            <input id="link-search" type="search" wire:model.live.debounce.300ms="linkSearch" class="ot-input ot-code" dir="ltr" autocomplete="off" placeholder="4250.20.100">
+            @if ($linkMatches->isNotEmpty())
+                <ul class="divide-y divide-border rounded-lg border border-border">
+                    @foreach ($linkMatches as $match)
+                        <li>
+                            <button type="button" wire:click="linkProduct({{ $match->id }})" wire:loading.attr="disabled" class="flex min-h-12 w-full items-center justify-between gap-3 px-3 py-2 text-start hover:bg-subtle">
+                                <span class="min-w-0"><x-code :value="$match->sku" class="font-semibold" /> <span class="text-sm text-muted-fg">{{ $match->name }}@if ($match->size) · <bdi class="whitespace-nowrap">{{ $match->size }}</bdi> @endif</span></span>
+                                @svg('heroicon-o-link', 'size-6 shrink-0 text-primary')
+                            </button>
+                        </li>
+                    @endforeach
+                </ul>
+            @elseif (mb_strlen(trim($linkSearch)) >= 2)
+                <p class="text-sm text-muted-fg">{{ __('No product found.') }}</p>
+            @endif
+            <button type="button" wire:click="cancelLink" class="ot-btn ot-btn-secondary w-full">{{ __('Cancel') }}</button>
+        </section>
+    @endif
 
     {{-- Add by hand --}}
     <section class="ot-card space-y-2 p-4">

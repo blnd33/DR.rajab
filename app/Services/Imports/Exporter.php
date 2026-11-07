@@ -31,6 +31,8 @@ class Exporter
             ImportType::Products => $this->products(),
             ImportType::Stock => $this->stock($user),
             ImportType::MinStock => $this->minStock($user),
+            // Comes from the supplier's own workbook: nothing to export back.
+            ImportType::SupplierCatalog => throw new \LogicException('The supplier catalog has no export.'),
         };
 
         $ordered = array_map(fn (array $row) => array_map(fn (string $key) => $row[$key] ?? '', array_keys($columns)), $rows);
