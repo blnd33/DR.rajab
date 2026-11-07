@@ -146,13 +146,16 @@ class ReceiveStock extends Page
                                         $set('quantity', 1);
                                     })
                                     ->columnSpan(['default' => 2, 'md' => 4, 'xl' => 2]),
+                                // Serial-tracked: SN required. Lot items: the box's SN or LOT, whichever the label shows.
                                 TextInput::make('serial')
-                                    ->label(__('Serial'))
+                                    ->label(__('Serial').' (SN)')
                                     ->maxLength(64)
-                                    ->visible(fn (Get $get) => $this->isSerial($get('product_id')))
                                     ->required(fn (Get $get) => $this->isSerial($get('product_id')))
+                                    ->placeholder(fn (Get $get) => $this->isSerial($get('product_id')) ? null : __('optional'))
+                                    ->live(onBlur: true)
+                                    ->afterStateUpdated(fn ($state, callable $set) => filled($state) ? $set('quantity', 1) : null)
                                     ->extraInputAttributes(['dir' => 'ltr', 'class' => 'ot-code']),
-                                TextInput::make('lot')->label(__('Lot'))->maxLength(64)->extraInputAttributes(['dir' => 'ltr', 'class' => 'ot-code']),
+                                TextInput::make('lot')->label(__('Lot').' (LOT)')->placeholder(__('optional'))->maxLength(64)->extraInputAttributes(['dir' => 'ltr', 'class' => 'ot-code']),
                                 DatePicker::make('expiry_date')
                                     ->label(__('Expiry'))
                                     ->native(false)
@@ -165,7 +168,7 @@ class ReceiveStock extends Page
                                     ->minValue(1)
                                     ->default(1)
                                     ->required()
-                                    ->disabled(fn (Get $get) => $this->isSerial($get('product_id')))
+                                    ->disabled(fn (Get $get) => $this->isSerial($get('product_id')) || filled($get('serial')))
                                     ->dehydrated(),
                                 TextInput::make('unit_cost')->label(__('Unit cost'))->numeric()->minValue(0)->extraInputAttributes(['dir' => 'ltr']),
                                 Select::make('cost_currency')->label(__('Currency'))->options(fn () => Currency::query()->active()->pluck('code', 'code'))->default('USD')->required()->native(false),
@@ -279,10 +282,11 @@ class ReceiveStock extends Page
 
         $lines = $this->data['lines'] ?? [];
 
-        // Lot items: scanning the same lot again adds 1 to its line.
-        if (! $product->isSerialTracked()) {
+        // Lot items: scanning the same lot again adds 1 to its line; a box with its own SN gets its own line.
+        if (! $product->isSerialTracked() && blank($prefill['serial'])) {
             foreach ($lines as $key => $line) {
                 if ((int) $line['product_id'] === $product->id
+                    && blank($line['serial'] ?? null)
                     && ($line['lot'] ?? null) === $prefill['lot']
                     && ($line['expiry_date'] ?? null) === $prefill['expiry_date']) {
                     $lines[$key]['quantity'] = (int) $line['quantity'] + 1;

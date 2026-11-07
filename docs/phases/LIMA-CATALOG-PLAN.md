@@ -31,9 +31,9 @@ Codes are Lima catalog numbers (`4250.20.080` = H-MAX S stem #8; `9…` = instru
 |---|---|---|
 | L-1 | **New import type** | *Supplier catalog (Lima / Enovis workbook)* in Data imports, permission `products.import`. It reads the workbook **as the doctor sent it** — no template to fill. Same flow as the other imports: upload → preview (new / updated / unchanged / errors, old → new) → confirm → applied in the background. Re-importing a newer version of the file updates names, usage, categories and set contents. |
 | L-2 | **Colours by meaning, not by colour** | Each sheet's key is read and its text mapped to a usage level (*most commonly / used frequently / will be ordered* → Most used; *less commonly* → Less used; *sometimes* → Sometimes; *rarely / almost never ordered* → Rarely; *not used / will not be ordered* → Not used). The same colour can mean different things on different sheets, so no colour is hard-coded. |
-| L-3 | **Usage level** | New `usage_level` on products and kit types: `most_used`, `less_used`, `sometimes`, `rarely`, `not_used`. *Not used* items are imported **archived** (inactive): hidden from pickers and receiving, kept for history and recalls. Product search lists most-used items first. Admin lists show the level with a filter. |
+| L-3 | **Usage level** | New `usage_level` on products and kit types: `most_used`, `less_used`, `sometimes`, `rarely`, `not_used`. *Not used* items **stay in the system and usable** (answer 2026-11-07: "the whole items should remain"); they are labelled *Not used* and sort last. An item an admin archives by hand stays archived on a re-import. Product search lists most-used items first. Admin lists show the level with a filter. |
 | L-4 | **Implants → products** | SKU = REF code. Name (English) = the description, cleaned (spacing, the file's typos *Ssytem / SAPCER / PARTICAL / MODULS / Taber / Ti6AI4V*). Category = **Area → section** (e.g. *Hip → Acetabular Cups*), created automatically. Brand = *Lima (Enovis)*, or *Dedienne Santé* for SYMBOL. Size read from the description (`#8`, `Ø 28 mm`, `H 10 mm`, `Size Large`, `Right` / `Left`). Implant, unit *pc*, expiry required. SYMBOL EAN-13 codes are also stored as the GTIN. |
-| L-5 | **Tracking type** | **Lot + quantity** for every implant until the doctor sends a photo of a real Lima label: lot tracking works whether or not the label carries a serial (SN), and recalls work by lot. Can be switched per product while it has no stock. |
+| L-5 | **Tracking type** | **Lot + quantity** for every implant, with **SN and LOT both optional on each box** (answer 2026-11-07: "have both … he can write that or that"). A box received with its SN is its own record of 1 (`stock_batches.serial`) and scanning its SN finds that exact box; boxes with only a LOT add up per lot. Recalls work by lot. Can be switched per product while it has no stock. |
 | L-6 | **Instrument sets → kit types** | Every set code (`9xxx.xx.000…`) becomes a kit type with its name, usage (summary sheet first, red details block → Not used) and a description *Area · family heading*. Its **contents** come from the details sheet: the rows under the set name until the next set; a code listed twice in one set means quantity 2; items under *Additional instruments – upon request* are optional. Re-import replaces the contents. |
 | L-7 | **Instruments → instrument types** | Every other instrument code (details and summary) becomes an instrument type (code + name). Italian words in names (RASPA, BATTITORE…) are kept as written — translation needs the doctor's confirmation. |
 | L-8 | **Problems in the file** | Same REF for two different items (`5885.42.262`: ceramic liner *and* dual-mobility coupling) → error row, not imported until the doctor decides. The same REF listed twice for the same item (Modulus necks) → one product. Text in the code column and stray spaces are cleaned or skipped. |
@@ -47,12 +47,13 @@ Codes are Lima catalog numbers (`4250.20.080` = H-MAX S stem #8; `9…` = instru
 * **Import pipeline**: handlers may read the workbook themselves (`ReadsWorkbook`); no template download for this type.
 * **Admin**: usage column + filter on products and kit types; import preview shows sheet, row and item name.
 * **Phone**: Receive stock → unknown barcode → link to a product.
+* **SN or LOT per box** (migration `2026_11_07_000200_add_optional_serial_to_stock_batches`): optional `serial` on lot boxes (part of the bucket key, quantity 1); receiving (phone + admin) shows SN and LOT, both optional; a serial is refused when a unit or an in-stock box already has it; scanning the SN (GS1 AI 21 or typed) finds the box; transfers, kits, corrections keep it.
 * **Tests**: reader on a small generated workbook (colour keys per sheet, set contents, optional items, duplicates and conflicts, sizes, typos), full import end to end, re-import, learn-on-scan (permission, GTIN vs extra barcode, activity), translations.
 
 ## 4. Questions for the doctor
 1. `5885.42.262` — ceramic liner 40 mm Large, or dual-mobility coupling 40 mm Large?
-2. Prices — separate price list, or entered later?
-3. Discontinued (red) items — keep archived (current choice) or leave out completely?
-4. A photo of a real Lima implant label — serial number (SN) or only LOT?
-5. Item names in English only?
+2. ~~Prices~~ — **answered**: entered after go-live, not now.
+3. ~~Red items~~ — **answered**: all items remain in the system (usable, labelled *Not used*).
+4. ~~SN or LOT~~ — **answered**: both on the system, each optional per box.
+5. ~~English names~~ — **answered**: English only.
 6. The 4 old Physica instrument sets — does he still own them?

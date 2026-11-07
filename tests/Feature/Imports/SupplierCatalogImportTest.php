@@ -171,7 +171,7 @@ it('reads usage from each sheet\'s own colour key, the set contents and the prob
         ->and(collect($catalog['instruments'])->pluck('code'))->toContain('9095.11.110', '9013.50.120')->not->toContain('9042.04.000');
 });
 
-it('imports the workbook: products with usage, archived discontinued items, sets with contents', function () {
+it('imports the workbook: products with usage, discontinued items kept usable, sets with contents', function () {
     $import = importCatalog(limaWorkbook());
 
     expect($import->status)->toBe(ImportStatus::Previewed)
@@ -197,7 +197,7 @@ it('imports the workbook: products with usage, archived discontinued items, sets
 
     expect(Product::query()->where('sku', '4510.15.010')->sole())
         ->usage_level->toBe(UsageLevel::NotUsed)
-        ->is_active->toBeFalse()
+        ->is_active->toBeTrue()
         ->and(Product::query()->where('sku', '3700502203530')->value('gtin'))->toBe('3700502203530')
         ->and(Product::query()->where('sku', '5885.42.262')->exists())->toBeFalse();
 
@@ -208,7 +208,7 @@ it('imports the workbook: products with usage, archived discontinued items, sets
         ->and($set->templateItems->map(fn ($i) => [$i->instrumentType->code, $i->expected_qty, $i->is_required])->all())->toBe([
             ['9042.04.950', 1, true], ['9042.05.080', 2, true], ['9095.11.906', 1, false],
         ])
-        ->and(KitType::query()->where('code', '9013.68.000')->value('is_active'))->toBeFalse()
+        ->and(KitType::query()->where('code', '9013.68.000')->sole())->usage_level->toBe(UsageLevel::NotUsed)->is_active->toBeTrue()
         ->and(InstrumentType::query()->where('code', '9095.11.110')->exists())->toBeTrue();
 
     // Same file again: nothing to do.
@@ -217,7 +217,7 @@ it('imports the workbook: products with usage, archived discontinued items, sets
     expect([$again->new_count, $again->updated_count, $again->unchanged_count])->toBe([0, 0, $again->total_rows - 1]);
 });
 
-it('updates the usage when the doctor recolours an item, and archives it when red', function () {
+it('updates the usage when the doctor recolours an item, and keeps it usable when red', function () {
     app(ImportPipeline::class)->confirm(importCatalog(limaWorkbook()), $this->admin);
 
     $import = importCatalog(limaWorkbook(['4250.20.080' => 'FF0000']));
@@ -230,7 +230,7 @@ it('updates the usage when the doctor recolours an item, and archives it when re
 
     expect(Product::query()->where('sku', '4250.20.080')->sole())
         ->usage_level->toBe(UsageLevel::NotUsed)
-        ->is_active->toBeFalse();
+        ->is_active->toBeTrue();
 });
 
 it('fails clearly on a workbook that is not a supplier catalog', function () {

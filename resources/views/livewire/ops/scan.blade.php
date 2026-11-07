@@ -124,7 +124,7 @@
                             @foreach ($card['lots'] as $lot)
                                 <li class="flex flex-wrap items-center justify-between gap-2 p-2 text-sm">
                                     <span class="min-w-0">
-                                        <x-code :value="$lot['lot'] ?? '—'" class="font-semibold" />
+                                        <x-code :value="$lot['code'] ?? $lot['lot'] ?? '—'" class="font-semibold" />
                                         <span @class(['text-muted-fg', 'font-semibold text-fg' => $lot['here']])> · {{ $lot['branch'] }}</span>
                                     </span>
                                     <span class="flex items-center gap-2">

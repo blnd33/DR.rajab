@@ -64,7 +64,7 @@
             @forelse ($batches as $batch)
                 <div wire:key="b-{{ $batch->id }}" class="ot-card flex items-start justify-between gap-3 p-4">
                     <div class="min-w-0 space-y-1">
-                        <p><span class="text-sm text-muted-fg">{{ __('Lot') }}</span> <x-code :value="$batch->lot ?? '—'" class="font-semibold" /></p>
+                        <p><x-code :value="$batch->codeLabel()" class="font-semibold" /></p>
                         <x-expiry-chip :date="$batch->expiry_date" />
                         <p class="text-xs text-muted-fg">{{ $batch->locationLabel() }}</p>
                     </div>

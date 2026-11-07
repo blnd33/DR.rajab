@@ -17,10 +17,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
  * A lot-tracked bucket: quantity of one product, lot and expiry in one place at one cost.
+ * A box received with its own serial (SN) is a bucket of 1 with `serial` set.
  *
  * @property int $id
  * @property int $product_id
  * @property ?string $lot
+ * @property ?string $serial
  * @property ?Carbon $expiry_date
  * @property ?Carbon $production_date
  * @property int $branch_id
@@ -62,14 +64,27 @@ class StockBatch extends Model
     {
         return LogOptions::defaults()
             ->useLogName('stock')
-            ->logOnly(['lot', 'expiry_date', 'production_date', 'branch_id', 'quantity', 'branch_location_id', 'unit_cost', 'cost_currency', 'supplier_id'])
+            ->logOnly(['lot', 'serial', 'expiry_date', 'production_date', 'branch_id', 'quantity', 'branch_location_id', 'unit_cost', 'cost_currency', 'supplier_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
 
     public function activityReferenceCode(): ?string
     {
-        return $this->lot;
+        return $this->serial ?? $this->lot;
+    }
+
+    /**
+     * How the box is named on screen: "SN 123 · LOT A1", "LOT A1" or "—".
+     */
+    public function codeLabel(): string
+    {
+        $parts = array_filter([
+            filled($this->serial) ? 'SN '.$this->serial : null,
+            filled($this->lot) ? 'LOT '.$this->lot : null,
+        ]);
+
+        return $parts === [] ? '—' : implode(' · ', $parts);
     }
 
     /** @return BelongsTo<Product, $this> */

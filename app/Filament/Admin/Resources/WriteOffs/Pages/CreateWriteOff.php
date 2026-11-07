@@ -51,7 +51,7 @@ class CreateWriteOff extends CreateRecord
                         ->options(fn (Get $get) => StockBatch::query()->with('product')
                             ->where('branch_id', (int) $get('../../branch_id'))->where('location_type', LocationType::Shelf)->where('quantity', '>', 0)
                             ->orderBy('product_id')->get()
-                            ->mapWithKeys(fn (StockBatch $b) => [$b->id => $b->product->sku.' · '.($b->lot ?? '—').' · '.Display::date($b->expiry_date).' · '.__(':qty on shelf', ['qty' => Display::number($b->quantity)])]))
+                            ->mapWithKeys(fn (StockBatch $b) => [$b->id => $b->product->sku.' · '.$b->codeLabel().' · '.Display::date($b->expiry_date).' · '.__(':qty on shelf', ['qty' => Display::number($b->quantity)])]))
                         ->searchable()->native(false),
                     TextInput::make('quantity')->label(__('Quantity (lots)'))->numeric()->integer()->minValue(1)->default(1),
                 ]),

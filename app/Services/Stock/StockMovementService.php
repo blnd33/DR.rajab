@@ -122,10 +122,15 @@ class StockMovementService
                         continue;
                     }
 
+                    if ($line->serial !== null) {
+                        $this->assertSerialFree($line->serial);
+                    }
+
                     $batch = $this->lockBucket([
                         'product_id' => $product->id,
                         'branch_id' => $branch->id,
                         'lot' => $line->lot,
+                        'serial' => $line->serial,
                         'expiry_date' => $line->expiryDate,
                         'location_type' => LocationType::Shelf->value,
                         'branch_location_id' => $line->locationId,
@@ -311,6 +316,7 @@ class StockMovementService
                 'product_id' => $source->product_id,
                 'branch_id' => $source->branch_id,
                 'lot' => $new['lot'],
+                'serial' => $source->serial,
                 'expiry_date' => $new['expiry_date'],
                 'location_type' => $source->location_type->value,
                 'branch_location_id' => $new['branch_location_id'],
@@ -911,6 +917,7 @@ class StockMovementService
                 'product_id' => $source->product_id,
                 'branch_id' => $source->branch_id,
                 'lot' => $source->lot,
+                'serial' => $source->serial,
                 'expiry_date' => $source->expiry_date?->toDateString(),
                 'location_type' => $source->location_type->value,
                 'branch_location_id' => $source->branch_location_id,
@@ -1134,6 +1141,7 @@ class StockMovementService
             'product_id' => $source->product_id,
             'branch_id' => $branchId,
             'lot' => $source->lot,
+            'serial' => $source->serial,
             'expiry_date' => $source->expiry_date?->toDateString(),
             'location_type' => $location->value,
             'branch_location_id' => $sameShelf ? $source->branch_location_id : null,
@@ -1211,11 +1219,23 @@ class StockMovementService
         return $movement;
     }
 
+    /**
+     * A serial number names one physical piece: refuse it when a unit has it, or a lot box
+     * that is still in stock.
+     */
+    private function assertSerialFree(string $serial): void
+    {
+        $taken = StockUnit::query()->where('serial', $serial)->lockForUpdate()->exists()
+            || StockBatch::query()->where('serial', $serial)->where('quantity', '>', 0)->lockForUpdate()->exists();
+
+        if ($taken) {
+            throw new StockRuleViolation(__('Serial :serial is already in the system.', ['serial' => $serial]), 'serial');
+        }
+    }
+
     private function createUnit(Branch $branch, Product $product, ReceiveLine $line, string $cost, Carbon $now): StockUnit
     {
-        if (StockUnit::query()->where('serial', $line->serial)->lockForUpdate()->exists()) {
-            throw new StockRuleViolation(__('Serial :serial is already in the system.', ['serial' => $line->serial]), 'serial');
-        }
+        $this->assertSerialFree((string) $line->serial);
 
         $unit = new StockUnit([
             'product_id' => $product->id,
@@ -1331,8 +1351,17 @@ class StockMovementService
                     throw new StockRuleViolation(__('Line :row: quantity must be at least 1.', ['row' => $row]), "lines.{$index}.quantity");
                 }
 
+                // A lot item may carry the box's own serial (SN) as well: that box is then 1 piece.
                 if (filled($line->serial)) {
-                    throw new StockRuleViolation(__('Line :row: :sku is lot-tracked — it has no serial numbers.', ['row' => $row, 'sku' => $product->sku]), "lines.{$index}.serial");
+                    if ($line->quantity !== 1) {
+                        throw new StockRuleViolation(__('Line :row: a box with a serial number (SN) always has quantity 1.', ['row' => $row]), "lines.{$index}.quantity");
+                    }
+
+                    if (isset($serials[$line->serial])) {
+                        throw new StockRuleViolation(__('Serial :serial is in the list twice.', ['serial' => $line->serial]), "lines.{$index}.serial");
+                    }
+
+                    $serials[$line->serial] = true;
                 }
             }
 

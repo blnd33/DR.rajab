@@ -8,7 +8,8 @@ Plan: [docs/phases/LIMA-CATALOG-PLAN.md](docs/phases/LIMA-CATALOG-PLAN.md) (deci
 
 ### Added
 - **Supplier catalog import** (Admin → Excel imports → *Supplier catalog (Lima / Enovis workbook)*, `products.import`): reads the doctor's own workbook as it is — Hip, Knee and Shoulder implants, instrument-set summaries and set details. Implants become products (lot-tracked, expiry required, category *Area → section*, brand Lima or Dedienne Santé for SYMBOL items, size from the name, EAN-13 codes as GTIN); sets become kit types with their contents; instruments become instrument types. Obvious typos in the names are fixed (System, Spacer, Ti6Al4V, …). Same preview as every import (new / changed old → new / errors), with the sheet and row of each line. Re-importing the same file changes nothing; a recoloured item updates its usage.
-- **Usage level** on products and kit types, read from the workbook's colour key per sheet (Most used, Less used, Sometimes, Rarely, Not used). *Not used* (red) items are kept but archived. Filter and sort by usage in Products and Kit types; product searches on the phone show the most used first.
+- **Usage level** on products and kit types, read from the workbook's colour key per sheet (Most used, Less used, Sometimes, Rarely, Not used). Every item stays in the system and usable, *Not used* (red) ones included — they are labelled and sort last. Filter and sort by usage in Products and Kit types; product searches on the phone show the most used first.
+- **SN or LOT per box**: lot items may carry the box's own serial number. Receiving (phone and admin) shows *Serial (SN)* and *Lot (LOT)*, both optional — staff fill whichever the label shows. A box with an SN is kept as its own record of 1 and scanning its SN (GS1 or typed) finds that exact box; boxes with only a LOT add up per lot. An SN already in stock is refused. Transfers, kits, corrections keep the SN; lists show *SN … · LOT …*.
 - **Learn the box barcode on first scan** (`products.link_barcodes`, given to roles that can receive stock): Lima boxes carry a GS1 GTIN, not the REF. When Receive stock meets an unknown GTIN it asks *which product is this?* (search by REF), links the barcode once and adds the box with its lot and expiry; next boxes scan straight in. The Scan screen offers *Receive and link this box* for an unknown box.
 - **Tests**: workbook reader rules, full import, unchanged re-import, recolour → update / archive, wrong file refused, usage order; barcode learning (link, extra barcode, no permission, barcode owned by another product).
 
@@ -16,11 +17,11 @@ Plan: [docs/phases/LIMA-CATALOG-PLAN.md](docs/phases/LIMA-CATALOG-PLAN.md) (deci
 - Queue `retry_after` defaults 90 → 3700 s (longer than the 1-hour import job) for the database and Redis queues. Imports raise PHP memory to 512 MB and lift the time limit while they run.
 
 ### Deploy notes
-- `php artisan migrate` (usage columns + new permission), `npm run build`, `php artisan icons:cache` if icons are cached; restart Horizon so the new `retry_after` applies.
+- `php artisan migrate` (usage columns, new permission, optional serial on lot boxes), `npm run build`, `php artisan icons:cache` if icons are cached; restart Horizon so the new `retry_after` applies.
 
 ### Known gaps / to review
 - One workbook conflict: **5885.42.262** is listed as two different items — the import stops it with an error until the doctor says which is right.
-- No prices in the workbook; names are English only. Arabic and Sorani texts for this part need native-speaker review (e.g. Sorani *Hip*).
+- Prices come after go-live (decided 2026-11-07); names stay English only. Arabic and Sorani texts for this part need native-speaker review (e.g. Sorani *Hip*).
 
 ## [Phase 5 — Insight & polish] — 2026-10-27
 

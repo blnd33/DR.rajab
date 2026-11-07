@@ -99,14 +99,17 @@ class ScanResolver
         }
 
         if (! $product->isSerialTracked()) {
-            $batches = StockBatch::query()
-                ->with(['branch', 'location'])
-                ->where('product_id', $product->id)
-                ->onHand()
-                ->when($parsed->lot !== null, fn ($q) => $q->where('lot', $parsed->lot))
-                ->when($parsed->expiryDate !== null, fn ($q) => $q->whereDate('expiry_date', $parsed->expiryDate))
-                ->orderBy('expiry_date')
-                ->get();
+            $query = StockBatch::query()->with(['branch', 'location'])->where('product_id', $product->id)->onHand();
+
+            // A box received with its own SN: that exact box. Otherwise by lot / expiry.
+            if ($parsed->serial !== null && (clone $query)->where('serial', $parsed->serial)->exists()) {
+                $query->where('serial', $parsed->serial);
+            } else {
+                $query->when($parsed->lot !== null, fn ($q) => $q->where('lot', $parsed->lot))
+                    ->when($parsed->expiryDate !== null, fn ($q) => $q->whereDate('expiry_date', $parsed->expiryDate));
+            }
+
+            $batches = $query->orderBy('expiry_date')->get();
 
             return new ScanResult(ScanResultKind::Lot, $parsed, $product, batches: $batches, warnings: $warnings);
         }
@@ -127,6 +130,13 @@ class ScanResolver
 
         if (($unit = $this->unitBySerial($code)) !== null) {
             return new ScanResult(ScanResultKind::Unit, $parsed, $unit->product, $unit);
+        }
+
+        // The SN of a lot box received with its serial.
+        $boxes = StockBatch::query()->with(['product', 'branch', 'location'])->where('serial', $code)->onHand()->get();
+
+        if ($boxes->isNotEmpty()) {
+            return new ScanResult(ScanResultKind::Lot, $parsed, $boxes->first()->product, batches: $boxes);
         }
 
         $product = $this->productBySku($code)

@@ -78,7 +78,10 @@ class SupplierCatalogService
             }
 
             $kitType->usage_level = $usage;
-            $kitType->is_active = $usage !== UsageLevel::NotUsed;
+            // Every set stays usable ("Not used" ones sort last); a hand-archived set stays archived.
+            if (! $kitType->exists) {
+                $kitType->is_active = true;
+            }
             $kitType->save();
 
             if ($items !== []) {

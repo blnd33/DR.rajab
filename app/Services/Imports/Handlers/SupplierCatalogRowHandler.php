@@ -168,9 +168,10 @@ class SupplierCatalogRowHandler implements ReadsWorkbook, RowHandler
             '_category' => ['area' => $row['area'], 'section' => $row['section'] ?? null],
         ];
 
-        if ($product === null || $product->usage_level !== $usage) {
-            // "Not used" items are archived; a level coming back makes them active again.
-            $attributes['is_active'] = $usage !== UsageLevel::NotUsed;
+        if ($product === null) {
+            // Every item stays usable, "Not used" ones included (they sort last). An item an
+            // admin archived by hand stays archived on a re-import.
+            $attributes['is_active'] = true;
         }
 
         $gtin = $row['gtin'] ?? null;

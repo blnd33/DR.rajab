@@ -150,7 +150,7 @@ class Receive extends Component
 
     public function increment(string $key, int $by = 1): void
     {
-        if (isset($this->lines[$key]) && ! $this->lines[$key]['serial_tracked']) {
+        if (isset($this->lines[$key]) && ! $this->lines[$key]['serial_tracked'] && blank($this->lines[$key]['serial'])) {
             $this->lines[$key]['quantity'] = max(1, (int) $this->lines[$key]['quantity'] + $by);
         }
     }
@@ -170,7 +170,8 @@ class Receive extends Component
 
         $lines = array_map(fn (array $line) => new ReceiveLine(
             productId: (int) $line['product_id'],
-            quantity: $line['serial_tracked'] ? 1 : max(1, (int) $line['quantity']),
+            // A box with its own SN is one piece.
+            quantity: $line['serial_tracked'] || filled($line['serial']) ? 1 : max(1, (int) $line['quantity']),
             serial: filled($line['serial']) ? DigitConverter::toWestern(trim((string) $line['serial'])) : null,
             lot: filled($line['lot']) ? DigitConverter::toWestern(trim((string) $line['lot'])) : null,
             expiryDate: filled($line['expiry_date']) ? (string) $line['expiry_date'] : null,
@@ -221,9 +222,10 @@ class Receive extends Component
      */
     private function addLine(Product $product, array $prefill): void
     {
-        if (! $product->isSerialTracked()) {
+        // A box with its own SN gets its own line; boxes with only a LOT add up.
+        if (! $product->isSerialTracked() && blank($prefill['serial'])) {
             foreach ($this->lines as $key => $line) {
-                if ($line['product_id'] === $product->id && $line['lot'] === $prefill['lot'] && $line['expiry_date'] === $prefill['expiry_date']) {
+                if ($line['product_id'] === $product->id && blank($line['serial']) && $line['lot'] === $prefill['lot'] && $line['expiry_date'] === $prefill['expiry_date']) {
                     $this->lines[$key]['quantity']++;
 
                     return;

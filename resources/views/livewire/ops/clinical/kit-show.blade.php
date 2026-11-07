@@ -173,7 +173,7 @@
                 <div wire:key="ba-{{ $batch->id }}" class="ot-card flex items-center justify-between gap-3 p-3">
                     <div class="min-w-0 space-y-1">
                         <p class="font-semibold">{{ $batch->product->name }}@if ($batch->product->size) · <bdi class="whitespace-nowrap">{{ $batch->product->size }}</bdi> @endif</p>
-                        <p class="text-sm text-muted-fg"><x-code :value="$batch->lot ?? '—'" /> × <x-num :value="$batch->quantity" /></p>
+                        <p class="text-sm text-muted-fg"><x-code :value="$batch->codeLabel()" /> × <x-num :value="$batch->quantity" /></p>
                         <x-expiry-chip :date="$batch->expiry_date" />
                     </div>
                     @if ($mode === 'prepare' && $batch->location_type === \App\Enums\LocationType::Kit)

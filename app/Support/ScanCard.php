@@ -73,6 +73,7 @@ final class ScanCard
                 ->map(fn (StockBatch $b) => [
                     'sku' => $b->product?->sku,
                     'lot' => $b->lot,
+                    'code' => $b->codeLabel(),
                     'expiry' => $b->expiry_date?->toDateString(),
                     'quantity' => $b->quantity,
                     'branch' => $b->branch->code,

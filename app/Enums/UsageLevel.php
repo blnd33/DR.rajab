@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasLabel;
 
 /**
  * How often the doctor uses an item or an instrument set — the colours of his supplier
- * workbook. Most-used items come first in searches; "not used" items are archived.
+ * workbook. Most-used items come first in searches; "not used" items stay usable and come last.
  */
 enum UsageLevel: string implements HasColor, HasLabel
 {

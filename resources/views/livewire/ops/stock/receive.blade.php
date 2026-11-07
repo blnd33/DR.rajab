@@ -98,21 +98,23 @@
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
-                    @if ($line['serial_tracked'])
-                        <div class="col-span-2">
-                            <label for="serial-{{ $key }}" class="mb-1 block text-xs font-semibold text-muted-fg">{{ __('Serial') }} *</label>
-                            <input id="serial-{{ $key }}" wire:model.blur="lines.{{ $key }}.serial" data-western-digits class="ot-input ot-code" dir="ltr" autocomplete="off" required>
-                        </div>
-                    @endif
+                    {{-- Serial-tracked: SN required. Lot items: the box's SN or LOT, whichever the label shows. --}}
+                    <div class="col-span-2">
+                        <label for="serial-{{ $key }}" class="mb-1 block text-xs font-semibold text-muted-fg">
+                            {{ __('Serial') }} (SN){{ $line['serial_tracked'] ? ' *' : '' }}
+                            @unless ($line['serial_tracked']) <span class="font-normal">· {{ __('optional') }}</span> @endunless
+                        </label>
+                        <input id="serial-{{ $key }}" wire:model.blur="lines.{{ $key }}.serial" data-western-digits class="ot-input ot-code" dir="ltr" autocomplete="off" @required($line['serial_tracked'])>
+                    </div>
                     <div>
-                        <label for="lot-{{ $key }}" class="mb-1 block text-xs font-semibold text-muted-fg">{{ __('Lot') }}</label>
+                        <label for="lot-{{ $key }}" class="mb-1 block text-xs font-semibold text-muted-fg">{{ __('Lot') }} (LOT) <span class="font-normal">· {{ __('optional') }}</span></label>
                         <input id="lot-{{ $key }}" wire:model.blur="lines.{{ $key }}.lot" data-western-digits class="ot-input ot-code" dir="ltr" autocomplete="off">
                     </div>
                     <div>
                         <label for="exp-{{ $key }}" class="mb-1 block text-xs font-semibold text-muted-fg">{{ __('Expiry') }}{{ $line['requires_expiry'] ? ' *' : '' }}</label>
                         <x-ops.date-input id="exp-{{ $key }}" wire:model.blur="lines.{{ $key }}.expiry_date" />
                     </div>
-                    @unless ($line['serial_tracked'])
+                    @unless ($line['serial_tracked'] || filled($line['serial']))
                         <div class="col-span-2 flex items-center justify-between gap-3">
                             <span class="text-sm font-semibold">{{ __('Quantity') }}</span>
                             <div class="flex items-center gap-2">

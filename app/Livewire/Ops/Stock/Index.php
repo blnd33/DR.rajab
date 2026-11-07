@@ -166,7 +166,7 @@ class Index extends Component
             ->orderBy('expiry_date')
             ->limit($this->perPage + 1)
             ->get()
-            ->map(fn (StockBatch $b) => ['type' => 'lot', 'product' => $b->product, 'code' => $b->lot ?? '—', 'lot' => $b->lot, 'expiry' => $b->expiry_date, 'quantity' => $b->quantity, 'where' => $b->locationLabel(), 'url' => route('ops.stock.product', $b->product)]);
+            ->map(fn (StockBatch $b) => ['type' => 'lot', 'product' => $b->product, 'code' => $b->serial ?? $b->lot ?? '—', 'lot' => $b->lot, 'expiry' => $b->expiry_date, 'quantity' => $b->quantity, 'where' => $b->locationLabel(), 'url' => route('ops.stock.product', $b->product)]);
 
         $items = $units->concat($batches)->sortBy(fn ($i) => $i['expiry']->timestamp ?? PHP_INT_MAX)->values();
 

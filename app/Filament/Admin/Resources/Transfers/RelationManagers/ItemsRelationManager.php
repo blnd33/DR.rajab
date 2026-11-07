@@ -89,7 +89,7 @@ class ItemsRelationManager extends RelationManager
                             ->options(fn () => StockBatch::query()->with('product')
                                 ->where('branch_id', $this->transfer()->from_branch_id)->where('location_type', LocationType::Shelf)->where('quantity', '>', 0)
                                 ->orderBy('product_id')->orderBy('expiry_date')->get()
-                                ->mapWithKeys(fn (StockBatch $b) => [$b->id => $b->product->sku.' · '.($b->lot ?? '—').' · '.Display::date($b->expiry_date).' · '.__(':qty on shelf', ['qty' => Display::number($b->quantity)])]))
+                                ->mapWithKeys(fn (StockBatch $b) => [$b->id => $b->product->sku.' · '.$b->codeLabel().' · '.Display::date($b->expiry_date).' · '.__(':qty on shelf', ['qty' => Display::number($b->quantity)])]))
                             ->searchable()->required()->native(false),
                         TextInput::make('quantity')->label(__('Quantity'))->numeric()->integer()->minValue(1)->required(),
                     ])
