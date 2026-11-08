@@ -53,7 +53,7 @@ php artisan webpush:vapid --force
 touch ../drrajab-data/orthotrack.sqlite
 php artisan migrate --force
 php artisan db:seed --force          # base data only — no demo data on a test site
-php artisan storage:link
+ln -s ../storage/app/public public/storage   # logo, item and kit photos (php artisan storage:link fails here: exec/symlink are off)
 php artisan optimize && php artisan filament:optimize
 php artisan orthotrack:create-admin rajab --name="Dr. Rajab"   # asks for his password twice
 ```
@@ -76,6 +76,13 @@ One job, **every minute** (`* * * * *`), command:
 ```
 
 Use the PHP path that answered 8.3+ in step 3 (`which php` shows it). This runs the daily alerts, exchange-rate fetch, nightly stock value, backups — and the job queue (Excel imports, notifications).
+
+### What this server is like (found on the first install, 2026-11-08)
+
+* Web PHP 8.4, command-line PHP 8.3 (`/usr/bin/php`) — both fine; every needed extension is on.
+* Command-line PHP has `exec`, `shell_exec`, `system`, `popen`, `symlink` and `link` switched off. `proc_open` works, so the scheduler and the queue run. Use the shell (`ln -s`) for links.
+* Password prompts (`orthotrack:create-admin`) show what you type — the tool that hides it is blocked. Clear the screen afterwards (`clear`).
+* Every Super Admin must set up two-factor (authenticator app) on first sign-in; until then the panel stays on the Profile page.
 
 ## 5. Check
 
