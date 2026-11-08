@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\SalesInvoices\RelationManagers;
 
+use App\Filament\Admin\Support\ServiceAction;
 use App\Filament\Admin\Tables\Columns\ProductColumn;
 use App\Models\SalesInvoice;
 use App\Models\SalesInvoiceItem;
@@ -44,6 +45,12 @@ class SalesInvoiceItemsRelationManager extends RelationManager
                 TextColumn::make('quantity')->label(__('Quantity'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('unit_price')->label(__('Price'))->alignEnd()->formatStateUsing(fn ($state) => Display::money($state, $invoice->currency)),
                 TextColumn::make('line_total')->label(__('Line total'))->alignEnd()->weight('semibold')->formatStateUsing(fn ($state) => Display::money($state, $invoice->currency)),
+                // Each piece's share of this sale: of what it cost us, and of what we received.
+                TextColumn::make('cost_share')->label(__('Cost %'))->alignEnd()->placeholder('—')
+                    ->formatStateUsing(fn ($state) => Display::number($state, 2).' %')->extraAttributes(['dir' => 'ltr'])
+                    ->visible(fn () => ServiceAction::user()->can('reports.profit') || ServiceAction::user()->canInBranch('stock.view_cost', $invoice->branch_id)),
+                TextColumn::make('price_share')->label(__('Received %'))->alignEnd()->placeholder('—')
+                    ->formatStateUsing(fn ($state) => Display::number($state, 2).' %')->extraAttributes(['dir' => 'ltr']),
                 TextColumn::make('unit_cost')->label(__('Cost'))->alignEnd()->placeholder('—')->toggleable(isToggledHiddenByDefault: true)
                     ->formatStateUsing(fn ($state, SalesInvoiceItem $r) => Display::money($state, $r->cost_currency)),
                 TextColumn::make('override_reason')->label(__('Override reason'))->placeholder('—')->toggleable(isToggledHiddenByDefault: true),

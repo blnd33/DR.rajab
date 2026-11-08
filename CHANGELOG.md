@@ -2,6 +2,25 @@
 
 All notable changes per build phase.
 
+## [Graphs, transfer photos, sales split] — 2026-11-08
+
+Plan: [docs/phases/GRAPHS-PHOTOS-SPLIT-PLAN.md](docs/phases/GRAPHS-PHOTOS-SPLIT-PLAN.md) (decisions G-1 … G-4, T-1 … T-4, S-1 … S-5).
+
+### Added
+- **Graphs** (admin panel only, new *Graphs* menu, `reports.view`; cost / profit graphs also need `reports.profit`): 31 graphs in six sections — Sales, Surgeries, Items & stock, Money, Transfers, Kits — as pies (doughnut), ranking bars, monthly bars and lines. A search box finds a graph by words in any of the three languages (e.g. *surgeries hospital*, *dinar*); section chips narrow the list. Each graph has period, branch and currency filters (dates YYYY-MM-DD) and a table under it with every value, its share % and the total. Graphs use the reports' own numbers, so a graph never disagrees with its report. Colours come from the validated colour-blind-safe palette (light and dark steps); past 7 slices the rest fold into a grey *Other*.
+- **Transfer photos**: the sending branch must take a photo of the items before *Send* (*our photo*), and the receiving branch a photo on arrival before *Confirm received* (*their photo*). Both show side by side on the transfer (phone and admin), with who took them and when; only people who may see the transfer can open them. Closing a branch (transfer everything) asks for the photo too. Images only, 10 MB max, never deleted.
+- **Sales split by percentage**: a sale is priced *per item* (as before) or with *one price for all the pieces* in USD, EUR or IQD. The price is split by each piece's share of the cost (e.g. cost 250 / 150 / 100 of 500 → 50 % / 30 % / 20 %; sold for 800 → 400 / 240 / 160); the shares can be edited and must add up to 100 %. Pieces with no cost share equally; the last line takes the rounding rest so the lines add up exactly. A live table shows each piece's cost %, share and amount (cost amounts only with `stock.view_cost`). Every sold line now stores its **cost %** and **received %**.
+- **Sales and profit report**: new *Sale line (each piece, with %)* grouping (invoice, piece, cost, cost %, received, received %, profit, margin) and *Revenue %* / *Cost %* columns in every grouping. The invoice page shows the pricing and both percentages per line.
+- **Tests**: every graph builds in three languages, search, folding into Other, profit graphs hidden, page access; photos required to send and receive, who may add which photo, photo access, phone flow; split amounts and rounding, edited shares, zero-cost pieces, refused shares, report percentages, admin and phone screens.
+
+### Deploy notes
+- `php artisan migrate` (attachment kinds, `sales_invoices.pricing`, `sales_invoice_items.cost_share` / `price_share`), `npm run build` (chart palette plugin), `php artisan view:cache`.
+- Photos are stored on the private `local` disk under `transfers/{id}` — include it in backups.
+
+### Known gaps / to review
+- Arabic and Sorani texts for this part were written by the developer — native-speaker review needed.
+- Sales made before this update have no stored per-piece cost % / received % (shown as —); the report's Revenue % / Cost % columns still work for them, as they are worked out from the amounts.
+
 ## [Lima / Enovis catalog] — 2026-11-07
 
 Plan: [docs/phases/LIMA-CATALOG-PLAN.md](docs/phases/LIMA-CATALOG-PLAN.md) (decisions L-1 … L-10, questions for the doctor).

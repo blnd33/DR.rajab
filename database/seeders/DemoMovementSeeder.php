@@ -23,6 +23,7 @@ use App\Services\Movement\StockRequestService;
 use App\Services\Movement\TransferService;
 use App\Services\Movement\WriteOffService;
 use Illuminate\Database\Seeder;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use RuntimeException;
 
@@ -54,7 +55,7 @@ class DemoMovementSeeder extends Seeder
             $transfers->addUnit($transfer, $unit, $staff);
         }
         $transfers->addBatch($transfer, $this->batch($dhk, 'SC-COR-3530'), 5, $staff);
-        $transfers->send($transfer, $staff);
+        $transfers->send($transfer, $staff, photo: $this->photo('sent-dhk'));
 
         // 2. EBL → DHK received with one unit missing: an issue for the admin.
         $short = $transfers->createDraft($ebl, $dhk, $admin);
@@ -62,8 +63,8 @@ class DemoMovementSeeder extends Seeder
         foreach ($sent as $unit) {
             $transfers->addUnit($short, $unit, $admin);
         }
-        $transfers->send($short, $admin);
-        $transfers->receive($short, [$sent[0]->id], [], $staff);
+        $transfers->send($short, $admin, photo: $this->photo('sent-ebl'));
+        $transfers->receive($short, [$sent[0]->id], [], $staff, photo: $this->photo('received-dhk'));
 
         // 3. A draft being prepared DHK → EBL.
         $draft = $transfers->createDraft($dhk, $ebl, $staff);
@@ -161,5 +162,26 @@ class DemoMovementSeeder extends Seeder
     {
         return User::query()->where('username', $username)->first()
             ?? User::query()->whereHas('roles', fn ($q) => $q->where('name', $fallbackRole->value))->firstOrFail();
+    }
+
+    /**
+     * Transfers need a photo when sent and when received: a plain placeholder picture
+     * (drawn with GD when it is installed, otherwise a 1×1 PNG).
+     */
+    private function photo(string $name): UploadedFile
+    {
+        $path = tempnam(sys_get_temp_dir(), 'ot-photo');
+
+        if (function_exists('imagecreatetruecolor')) {
+            $image = imagecreatetruecolor(640, 480);
+            imagefill($image, 0, 0, (int) imagecolorallocate($image, 226, 232, 240));
+            imagestring($image, 5, 24, 24, 'Demo photo - '.$name, (int) imagecolorallocate($image, 51, 65, 85));
+            imagepng($image, $path);
+            imagedestroy($image);
+        } else {
+            file_put_contents($path, (string) base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8+P9/PQAI8wNPjqY0WwAAAABJRU5ErkJggg=='));
+        }
+
+        return new UploadedFile($path, $name.'.png', 'image/png', null, true);
     }
 }

@@ -14,6 +14,8 @@ enum AttachmentKind: string implements HasLabel
     case Photo = 'photo';
     case ImplantSticker = 'implant_sticker';
     case CreditNote = 'credit_note';
+    case TransferSent = 'transfer_sent';
+    case TransferReceived = 'transfer_received';
     case Other = 'other';
 
     public function getLabel(): string
@@ -24,6 +26,8 @@ enum AttachmentKind: string implements HasLabel
             self::Photo => __('Photo'),
             self::ImplantSticker => __('Implant sticker'),
             self::CreditNote => __('Credit note'),
+            self::TransferSent => __('Photo when sent'),
+            self::TransferReceived => __('Photo when received'),
             self::Other => __('Other'),
         };
     }

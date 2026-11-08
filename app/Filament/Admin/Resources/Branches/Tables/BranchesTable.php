@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Branches\Tables;
 
 use App\Enums\BranchStatus;
 use App\Exceptions\Domain\BranchClosureBlocked;
+use App\Filament\Admin\Resources\Transfers\Pages\ViewTransfer;
 use App\Filament\Admin\Resources\Transfers\TransferResource;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Filament\Admin\Tables\Columns\CodeColumn;
@@ -80,9 +81,10 @@ class BranchesTable
             ->schema(fn (Branch $record) => [
                 Select::make('to_branch_id')->label(__('To branch'))->required()->native(false)
                     ->options(fn () => collect(ServiceAction::branchOptions('transfers.create'))->except([$record->id])->all()),
+                ViewTransfer::photoField(__('Photo of the items before sending'), true),
             ])
             ->action(function (Branch $record, array $data, Action $action) {
-                $transfer = ServiceAction::run($action, fn ($u) => app(TransferService::class)->transferAll($record, Branch::query()->findOrFail($data['to_branch_id']), $u), __('All stock is on its way.'));
+                $transfer = ServiceAction::run($action, fn ($u) => app(TransferService::class)->transferAll($record, Branch::query()->findOrFail($data['to_branch_id']), $u, ViewTransfer::uploaded($data['photo'] ?? null)), __('All stock is on its way.'));
 
                 if ($transfer !== null) {
                     $action->redirect(TransferResource::getUrl('view', ['record' => $transfer]));

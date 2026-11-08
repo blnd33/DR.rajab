@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Transfers\Pages;
 
+use App\Enums\AttachmentKind;
 use App\Enums\TransferStatus;
 use App\Filament\Admin\Resources\Transfers\TransferResource;
 use App\Filament\Admin\Support\PrintAction;
@@ -13,11 +14,13 @@ use App\Services\Movement\TransferService;
 use App\Support\Locale\Display;
 use Filament\Actions\Action;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Section;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Http\UploadedFile;
 
 class ViewTransfer extends ViewRecord
 {
@@ -42,13 +45,14 @@ class ViewTransfer extends ViewRecord
                 ->color('primary')
                 ->visible(fn () => $this->transfer()->status === TransferStatus::Draft && $user->canInBranch('transfers.send', $this->transfer()->from_branch_id))
                 ->schema([
+                    self::photoField(__('Photo of the items before sending'), $this->transfer()->photo(AttachmentKind::TransferSent) === null),
                     TextInput::make('override_reason')
                         ->label(__('Reason to send expired items (only if there are any)'))
                         ->visible(fn () => $user->canInBranch('stock.override_expired', $this->transfer()->from_branch_id)),
                 ])
                 ->modalDescription(__('Units become "in transit"; lot quantities leave the shelf of the sending branch.'))
                 ->action(function (array $data, Action $action) {
-                    ServiceAction::run($action, fn ($u) => app(TransferService::class)->send($this->transfer(), $u, $data['override_reason'] ?? null), __('Transfer sent.'));
+                    ServiceAction::run($action, fn ($u) => app(TransferService::class)->send($this->transfer(), $u, $data['override_reason'] ?? null, self::uploaded($data['photo'] ?? null)), __('Transfer sent.'));
                     $this->refreshRecord();
                 }),
 
@@ -63,6 +67,7 @@ class ViewTransfer extends ViewRecord
                     'lots' => $this->transfer()->items->whereNull('stock_unit_id')->mapWithKeys(fn (TransferItem $i) => [$i->id => $i->quantity_sent])->all(),
                 ])
                 ->schema(fn () => [
+                    self::photoField(__('Photo of the items as they arrived'), $this->transfer()->photo(AttachmentKind::TransferReceived) === null),
                     CheckboxList::make('units')
                         ->label(__('Serial units that arrived'))
                         ->options($this->transfer()->items->whereNotNull('stock_unit_id')->mapWithKeys(fn (TransferItem $i) => [$i->stock_unit_id => $i->stockUnit->serial.' — '.$i->product->sku])->all())
@@ -80,6 +85,7 @@ class ViewTransfer extends ViewRecord
                         array_map('intval', $data['units'] ?? []),
                         array_map('intval', $data['lots'] ?? []),
                         $u,
+                        photo: self::uploaded($data['photo'] ?? null),
                     ), __('Transfer received.'));
                     $this->refreshRecord();
                 }),
@@ -96,6 +102,30 @@ class ViewTransfer extends ViewRecord
                     $this->refreshRecord();
                 }),
         ];
+    }
+
+    /**
+     * Required unless a photo of this step is already on the transfer. The file goes to the
+     * service as an upload (the service stores it).
+     */
+    public static function photoField(string $label, bool $required): FileUpload
+    {
+        return FileUpload::make('photo')
+            ->label($label)
+            ->image()
+            ->maxSize(10240)
+            ->storeFiles(false)
+            ->required($required)
+            ->helperText($required ? __('Required. Take or choose a clear photo of the items.') : __('A photo is already saved; add another only if needed.'));
+    }
+
+    public static function uploaded(mixed $file): ?UploadedFile
+    {
+        if (is_array($file)) {
+            $file = reset($file) ?: null;
+        }
+
+        return $file instanceof UploadedFile ? $file : null;
     }
 
     public function refreshRecord(): void

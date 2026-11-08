@@ -75,9 +75,9 @@ it('runs a stock request: create → approve → draft transfer → received →
     $transfers = app(TransferService::class);
     $transfers->addByScan($transfer, 'SN-1', $this->dhkStaff);
     $transfers->addBatch($transfer, StockBatch::query()->where('lot', 'L1')->firstOrFail(), 10, $this->dhkStaff);
-    $transfer = $transfers->send($transfer, $this->dhkStaff);
+    $transfer = $transfers->send($transfer, $this->dhkStaff, photo: transferPhoto());
     $lotItem = $transfer->items()->whereNotNull('from_batch_id')->firstOrFail();
-    $transfers->receive($transfer, [StockUnit::query()->where('serial', 'SN-1')->value('id')], [$lotItem->id => 10], $this->bgwStaff);
+    $transfers->receive($transfer, [StockUnit::query()->where('serial', 'SN-1')->value('id')], [$lotItem->id => 10], $this->bgwStaff, photo: transferPhoto());
 
     expect($request->fresh()->status)->toBe(StockRequestStatus::Fulfilled);
 });

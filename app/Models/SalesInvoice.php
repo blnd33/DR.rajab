@@ -30,6 +30,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property ?int $customer_id
  * @property ?string $walk_in_name
  * @property string $currency
+ * @property string $pricing per_item | split
  * @property int $fx_snapshot_id
  */
 class SalesInvoice extends Model

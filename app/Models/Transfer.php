@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\AttachmentKind;
 use App\Enums\TransferLineResolution;
 use App\Enums\TransferLineStatus;
 use App\Enums\TransferStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Carbon;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -101,6 +103,22 @@ class Transfer extends Model
     public function receiver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by');
+    }
+
+    /** @return MorphMany<Attachment, $this> */
+    public function attachments(): MorphMany
+    {
+        return $this->morphMany(Attachment::class, 'attachable')->orderBy('id');
+    }
+
+    /**
+     * The photo the sending branch took, or the one the receiving branch took.
+     */
+    public function photo(AttachmentKind $kind): ?Attachment
+    {
+        return $this->relationLoaded('attachments')
+            ? $this->attachments->where('kind', $kind)->last()
+            : $this->attachments()->where('kind', $kind->value)->reorder()->latest('id')->first();
     }
 
     public function totalQuantity(): int

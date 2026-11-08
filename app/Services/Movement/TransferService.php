@@ -2,6 +2,7 @@
 
 namespace App\Services\Movement;
 
+use App\Enums\AttachmentKind;
 use App\Enums\InstrumentStatus;
 use App\Enums\IssueSeverity;
 use App\Enums\IssueType;
@@ -16,6 +17,7 @@ use App\Enums\TransferLineStatus;
 use App\Enums\TransferStatus;
 use App\Enums\WriteOffStatus;
 use App\Exceptions\Domain\StockRuleViolation;
+use App\Models\Attachment;
 use App\Models\Branch;
 use App\Models\Instrument;
 use App\Models\Kit;
@@ -37,6 +39,7 @@ use App\Services\Permissions\BranchScopeResolver;
 use App\Services\Stock\StockMovementService;
 use App\Support\Msg;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -47,6 +50,8 @@ use Illuminate\Support\Str;
  */
 class TransferService
 {
+    public const PHOTO_MAX_BYTES = 10 * 1024 * 1024;
+
     public function __construct(
         private readonly StockMovementService $stock,
         private readonly BranchScopeResolver $scope,
@@ -214,9 +219,17 @@ class TransferService
     /**
      * Draft → in transit: units become "in transit", lot quantities leave the shelf.
      */
-    public function send(Transfer $transfer, User $by, ?string $overrideReason = null): Transfer
+    public function send(Transfer $transfer, User $by, ?string $overrideReason = null, ?UploadedFile $photo = null): Transfer
     {
         $this->authorize($by, 'transfers.send', $transfer->from_branch_id);
+
+        if ($photo !== null) {
+            $this->attachPhoto($transfer, $photo, AttachmentKind::TransferSent, $by);
+        }
+
+        if ($transfer->photo(AttachmentKind::TransferSent) === null) {
+            throw new StockRuleViolation(__('Take a photo of the items before sending.'), 'photo');
+        }
 
         $transfer = DB::transaction(function () use ($transfer, $by, $overrideReason) {
             /** @var Transfer $transfer */
@@ -266,9 +279,17 @@ class TransferService
      * @param  array<int, int>  $lotQuantities  transfer item id → quantity received
      * @param  list<string>  $extraCodes  codes scanned that are not on the slip
      */
-    public function receive(Transfer $transfer, array $scannedUnitIds, array $lotQuantities, User $by, array $extraCodes = []): Transfer
+    public function receive(Transfer $transfer, array $scannedUnitIds, array $lotQuantities, User $by, array $extraCodes = [], ?UploadedFile $photo = null): Transfer
     {
         $this->authorize($by, 'transfers.receive', $transfer->to_branch_id);
+
+        if ($photo !== null) {
+            $this->attachPhoto($transfer, $photo, AttachmentKind::TransferReceived, $by);
+        }
+
+        if ($transfer->photo(AttachmentKind::TransferReceived) === null) {
+            throw new StockRuleViolation(__('Take a photo of the items as they arrived before confirming.'), 'photo');
+        }
 
         $transfer = DB::transaction(function () use ($transfer, $scannedUnitIds, $lotQuantities, $by, $extraCodes) {
             /** @var Transfer $transfer */
@@ -482,9 +503,9 @@ class TransferService
     /**
      * Closing a branch (P2-9): everything on its shelves goes to another branch in one transfer.
      */
-    public function transferAll(Branch $from, Branch $to, User $by): Transfer
+    public function transferAll(Branch $from, Branch $to, User $by, ?UploadedFile $photo = null): Transfer
     {
-        return DB::transaction(function () use ($from, $to, $by) {
+        return DB::transaction(function () use ($from, $to, $by, $photo) {
             $transfer = $this->createDraft($from, $to, $by, __('All stock moved before closing :branch.', ['branch' => $from->code]));
 
             StockUnit::query()->where('branch_id', $from->id)->where('status', StockStatus::InStock)->each(
@@ -508,8 +529,51 @@ class TransferService
                 throw new StockRuleViolation(__('There is no stock on the shelves of :branch.', ['branch' => $from->code]));
             }
 
-            return $this->send($transfer, $by, __('Branch closing: all stock moved'));
+            return $this->send($transfer, $by, __('Branch closing: all stock moved'), $photo);
         });
+    }
+
+    /**
+     * The photo of the items: ours before sending (draft, sender), theirs on arrival (in
+     * transit, receiver). Both are required; photos are kept, never replaced or deleted.
+     */
+    public function attachPhoto(Transfer $transfer, UploadedFile $photo, AttachmentKind $kind, User $by): Attachment
+    {
+        [$permission, $branchId, $status] = match ($kind) {
+            AttachmentKind::TransferSent => ['transfers.send', $transfer->from_branch_id, TransferStatus::Draft],
+            AttachmentKind::TransferReceived => ['transfers.receive', $transfer->to_branch_id, TransferStatus::InTransit],
+            default => throw new \InvalidArgumentException('Not a transfer photo.'),
+        };
+
+        $this->authorize($by, $permission, $branchId);
+
+        if (Transfer::query()->whereKey($transfer->id)->toBase()->value('status') !== $status->value) {
+            throw new StockRuleViolation($kind === AttachmentKind::TransferSent
+                ? __('The photo before sending can only be added while the transfer is a draft.')
+                : __('The photo on arrival can only be added while the transfer is on its way.'), 'photo');
+        }
+
+        if (! str_starts_with((string) $photo->getMimeType(), 'image/') || $photo->getSize() > self::PHOTO_MAX_BYTES) {
+            throw new StockRuleViolation(__('The photo must be an image of at most 10 MB.'), 'photo');
+        }
+
+        $path = $photo->store('transfers/'.$transfer->id, 'local');
+
+        $attachment = Attachment::query()->create([
+            'attachable_type' => $transfer->getMorphClass(),
+            'attachable_id' => $transfer->id,
+            'kind' => $kind,
+            'disk' => 'local',
+            'path' => $path,
+            'original_name' => mb_substr($photo->getClientOriginalName(), 0, 191),
+            'mime' => $photo->getMimeType(),
+            'size_bytes' => (int) $photo->getSize(),
+            'uploaded_by' => $by->id,
+        ]);
+
+        $transfer->unsetRelation('attachments');
+
+        return $attachment;
     }
 
     /**

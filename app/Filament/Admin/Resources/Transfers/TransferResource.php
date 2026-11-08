@@ -19,6 +19,7 @@ use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontFamily;
 use Filament\Support\Icons\Heroicon;
@@ -107,6 +108,10 @@ class TransferResource extends Resource
                 LocalDateTimeEntry::make('received_at')->label(__('Received'))->placeholder('—'),
                 TextEntry::make('notes')->label(__('Notes'))->placeholder('—')->columnSpan(2),
                 TextEntry::make('cancel_reason')->label(__('Cancel reason'))->visible(fn (Transfer $r) => $r->cancel_reason !== null)->columnSpan(2),
+            ]),
+            // Our photo when sending, theirs on arrival (both required).
+            Section::make(__('Photos'))->columnSpanFull()->schema([
+                View::make('filament.transfers.photos'),
             ]),
         ]);
     }

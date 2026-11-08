@@ -193,11 +193,11 @@ it('sends a kit with everything in it on a transfer', function () {
     $transfer = $transfers->createDraft($this->dhk, $this->bgw, $this->staff);
     app(AssetTransferService::class)->addKit($transfer, $this->kit, $this->staff);
 
-    $transfer = $transfers->send($transfer, $this->staff);
+    $transfer = $transfers->send($transfer, $this->staff, photo: transferPhoto());
     expect($this->kit->fresh()->status)->toBe(KitStatus::InTransit)
         ->and($this->instrument->fresh()->status)->toBe(InstrumentStatus::InTransit);
 
-    $transfers->receive($transfer, [], [], $receiver);
+    $transfers->receive($transfer, [], [], $receiver, photo: transferPhoto());
 
     expect($this->kit->fresh()->branch_id)->toBe($this->bgw->id)
         ->and($this->kit->fresh()->status)->toBe(KitStatus::Available)

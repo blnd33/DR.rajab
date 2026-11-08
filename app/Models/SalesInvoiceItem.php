@@ -19,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ?int $stock_unit_id
  * @property ?int $stock_batch_id
  * @property ?string $cost_currency
+ * @property ?string $cost_share percent of the invoice cost
+ * @property ?string $price_share percent of the invoice amount
  */
 class SalesInvoiceItem extends Model
 {
@@ -33,6 +35,8 @@ class SalesInvoiceItem extends Model
             'line_total' => 'decimal:4',
             'unit_cost' => 'decimal:4',
             'returned_qty' => 'integer',
+            'cost_share' => 'decimal:4',
+            'price_share' => 'decimal:4',
         ];
     }
 

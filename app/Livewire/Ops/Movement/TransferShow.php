@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Ops\Movement;
 
+use App\Enums\AttachmentKind;
 use App\Enums\TransferStatus;
 use App\Livewire\Ops\Concerns\RunsStockActions;
 use App\Models\StockUnit;
@@ -12,7 +13,10 @@ use App\Services\Movement\TransferService;
 use App\Support\Locale\DigitConverter;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Validate;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 
 /**
  * One transfer on the phone. Draft: scan items in and send. In transit (receiving branch):
@@ -22,6 +26,7 @@ use Livewire\Component;
 class TransferShow extends Component
 {
     use RunsStockActions;
+    use WithFileUploads;
 
     public Transfer $transfer;
 
@@ -37,6 +42,10 @@ class TransferShow extends Component
     public string $overrideReason = '';
 
     public string $cancelReason = '';
+
+    /** Photo of the items: ours before sending, theirs on arrival (required for both). */
+    #[Validate('nullable|image|max:10240')]
+    public ?TemporaryUploadedFile $photo = null;
 
     public function mount(Transfer $transfer): void
     {
@@ -93,6 +102,19 @@ class TransferShow extends Component
         $this->dispatch('toast', type: 'warning', message: __(':code is not on this transfer.', ['code' => $raw]));
     }
 
+    public function updatedPhoto(): void
+    {
+        $this->validateOnly('photo');
+
+        if ($this->photo === null) {
+            return;
+        }
+
+        $kind = $this->transfer->status === TransferStatus::Draft ? AttachmentKind::TransferSent : AttachmentKind::TransferReceived;
+        $this->attempt(fn () => app(TransferService::class)->attachPhoto($this->transfer, $this->photo, $kind, $this->user()), __('Photo saved.'));
+        $this->photo = null;
+    }
+
     public function forgetExtra(string $code): void
     {
         $this->extra = array_values(array_diff($this->extra, [$code]));
@@ -147,12 +169,17 @@ class TransferShow extends Component
 
     public function render(): View
     {
-        $this->transfer->load(['fromBranch', 'toBranch', 'items.product', 'items.stockUnit', 'items.fromBatch', 'stockRequest.items.product', 'sender', 'receiver']);
+        $this->transfer->load(['fromBranch', 'toBranch', 'items.product', 'items.stockUnit', 'items.fromBatch', 'stockRequest.items.product', 'sender', 'receiver', 'attachments.uploader']);
 
         $units = $this->transfer->items->whereNotNull('stock_unit_id');
 
         return view('livewire.ops.movement.transfer-show', [
             'canEdit' => $this->canEdit(),
+            'canSend' => $this->transfer->status === TransferStatus::Draft && $this->user()->canInBranch('transfers.send', $this->transfer->from_branch_id),
+            'takeSent' => $this->transfer->status === TransferStatus::Draft && $this->user()->canInBranch('transfers.send', $this->transfer->from_branch_id) && $this->transfer->items->isNotEmpty(),
+            'takeReceived' => $this->canReceive(),
+            'sentPhoto' => $this->transfer->photo(AttachmentKind::TransferSent),
+            'receivedPhoto' => $this->transfer->photo(AttachmentKind::TransferReceived),
             'canReceive' => $this->canReceive(),
             'canCancel' => in_array($this->transfer->status, [TransferStatus::Draft, TransferStatus::InTransit], true)
                 && $this->user()->canInBranch('transfers.cancel', $this->transfer->from_branch_id),

@@ -58,7 +58,7 @@ function draftWithStock($test, int $lotQty = 10)
 }
 
 it('sends a transfer: units in transit, lots off the shelf, still on the sender books', function () {
-    $transfer = $this->transfers->send(draftWithStock($this), $this->sender);
+    $transfer = $this->transfers->send(draftWithStock($this), $this->sender, photo: transferPhoto());
 
     expect($transfer->status)->toBe(TransferStatus::InTransit)
         ->and($transfer->number)->toStartWith('TRF')
@@ -75,10 +75,10 @@ it('sends a transfer: units in transit, lots off the shelf, still on the sender 
 });
 
 it('receives everything that was scanned', function () {
-    $transfer = $this->transfers->send(draftWithStock($this), $this->sender);
+    $transfer = $this->transfers->send(draftWithStock($this), $this->sender, photo: transferPhoto());
     $lotItem = $transfer->items()->whereNotNull('from_batch_id')->firstOrFail();
 
-    $transfer = $this->transfers->receive($transfer, [$this->unit1->id, $this->unit2->id], [$lotItem->id => 10], $this->receiver);
+    $transfer = $this->transfers->receive($transfer, [$this->unit1->id, $this->unit2->id], [$lotItem->id => 10], $this->receiver, photo: transferPhoto());
 
     expect($transfer->status)->toBe(TransferStatus::Received)
         ->and($this->unit1->fresh()->branch_id)->toBe($this->bgw->id)
@@ -88,10 +88,10 @@ it('receives everything that was scanned', function () {
 });
 
 it('records missing, short and extra lines and opens one issue', function () {
-    $transfer = $this->transfers->send(draftWithStock($this), $this->sender);
+    $transfer = $this->transfers->send(draftWithStock($this), $this->sender, photo: transferPhoto());
     $lotItem = $transfer->items()->whereNotNull('from_batch_id')->firstOrFail();
 
-    $transfer = $this->transfers->receive($transfer, [$this->unit1->id], [$lotItem->id => 7], $this->receiver, ['UNKNOWN-99']);
+    $transfer = $this->transfers->receive($transfer, [$this->unit1->id], [$lotItem->id => 7], $this->receiver, ['UNKNOWN-99'], transferPhoto());
 
     expect($transfer->status)->toBe(TransferStatus::ReceivedWithDiscrepancy)
         ->and($transfer->items()->where('stock_unit_id', $this->unit2->id)->first()->line_status)->toBe(TransferLineStatus::Missing)
@@ -106,9 +106,9 @@ it('records missing, short and extra lines and opens one issue', function () {
 });
 
 it('settles differences: found, returned, written off — then closes the issue', function () {
-    $transfer = $this->transfers->send(draftWithStock($this), $this->sender);
+    $transfer = $this->transfers->send(draftWithStock($this), $this->sender, photo: transferPhoto());
     $lotItem = $transfer->items()->whereNotNull('from_batch_id')->firstOrFail();
-    $transfer = $this->transfers->receive($transfer, [], [$lotItem->id => 6], $this->receiver);
+    $transfer = $this->transfers->receive($transfer, [], [$lotItem->id => 6], $this->receiver, photo: transferPhoto());
 
     $unit1Item = $transfer->items()->where('stock_unit_id', $this->unit1->id)->firstOrFail();
     $unit2Item = $transfer->items()->where('stock_unit_id', $this->unit2->id)->firstOrFail();
@@ -134,7 +134,7 @@ it('settles differences: found, returned, written off — then closes the issue'
 });
 
 it('cancels a transfer in transit and puts everything back', function () {
-    $transfer = $this->transfers->send(draftWithStock($this), $this->sender);
+    $transfer = $this->transfers->send(draftWithStock($this), $this->sender, photo: transferPhoto());
 
     $this->transfers->cancel($transfer, 'Wrong branch', $this->sender);
 
@@ -151,10 +151,10 @@ it('blocks expired items unless someone allowed gives a reason', function () {
     $transfer = $this->transfers->createDraft($this->dhk, $this->bgw, $this->sender);
     $this->transfers->addUnit($transfer, $this->unit1->fresh(), $this->sender);
 
-    expect(fn () => $this->transfers->send($transfer, $this->sender, 'Needed'))->toThrow(StockRuleViolation::class)
-        ->and(fn () => $this->transfers->send($transfer, $this->admin))->toThrow(StockRuleViolation::class);
+    expect(fn () => $this->transfers->send($transfer, $this->sender, 'Needed', transferPhoto()))->toThrow(StockRuleViolation::class)
+        ->and(fn () => $this->transfers->send($transfer, $this->admin, photo: transferPhoto()))->toThrow(StockRuleViolation::class);
 
-    $this->transfers->send($transfer, $this->admin, 'Supplier takes it back at BGW');
+    $this->transfers->send($transfer, $this->admin, 'Supplier takes it back at BGW', transferPhoto());
 
     expect(StockMovement::query()->where('type', MovementType::TransferSend)->value('is_override'))->toBeTrue();
 });
@@ -183,7 +183,7 @@ it('blocks closing a branch with open transfers, and moves all stock in one go',
     expect(app(BranchService::class)->closureBlockers($this->dhk))->not->toBe([]);
     $this->transfers->cancel($transfer, 'not needed', $this->sender);
 
-    $all = $this->transfers->transferAll($this->dhk, $this->bgw, $this->admin);
+    $all = $this->transfers->transferAll($this->dhk, $this->bgw, $this->admin, transferPhoto());
 
     expect($all->status)->toBe(TransferStatus::InTransit)
         ->and($all->items()->count())->toBe(3)

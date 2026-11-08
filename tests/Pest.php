@@ -8,6 +8,8 @@ use App\Services\Stock\StockMovementService;
 use Database\Seeders\CurrencySeeder;
 use Database\Seeders\PermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /*
@@ -22,6 +24,7 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->beforeEach(function () {
         $this->seed([CurrencySeeder::class, PermissionSeeder::class]);
+        Storage::fake('local');
     })
     ->in('Feature');
 
@@ -70,4 +73,12 @@ function stockIn(Branch $branch, User $by, array $lines): void
         'unit_cost' => '100',
         'cost_currency' => 'USD',
     ]), $lines), $by);
+}
+
+/**
+ * A photo of the items, as taken when sending or receiving a transfer.
+ */
+function transferPhoto(string $name = 'items.jpg'): UploadedFile
+{
+    return UploadedFile::fake()->image($name, 640, 480);
 }

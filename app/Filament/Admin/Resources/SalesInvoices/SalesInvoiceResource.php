@@ -115,6 +115,8 @@ class SalesInvoiceResource extends Resource
                 TextEntry::make('branch.name')->label(__('Branch')),
                 TextEntry::make('status')->label(__('Status'))->badge(),
                 TextEntry::make('payment_terms')->label(__('Terms'))->badge()->color('gray'),
+                TextEntry::make('pricing')->label(__('Price'))->badge()->color('gray')
+                    ->formatStateUsing(fn ($state) => $state === 'split' ? __('One price, split by %') : __('Per item')),
                 TextEntry::make('due_date')->label(__('Due'))->placeholder('—')->formatStateUsing(fn ($state) => Display::date($state)),
                 LocalDateTimeEntry::make('issued_at')->label(__('Date')),
                 TextEntry::make('creator.name')->label(__('By')),

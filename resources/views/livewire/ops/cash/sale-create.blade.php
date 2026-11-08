@@ -23,6 +23,23 @@
             </div>
         </fieldset>
 
+        <fieldset>
+            <legend class="mb-1 text-sm font-semibold">{{ __('Price') }}</legend>
+            <div class="grid grid-cols-2 gap-2">
+                <label class="ot-card flex min-h-12 cursor-pointer items-center gap-2 px-3 text-sm has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary">
+                    <input type="radio" wire:model.live="pricing" value="per_item" class="size-5">
+                    <span class="font-semibold">{{ __('Per item') }}</span>
+                </label>
+                <label class="ot-card flex min-h-12 cursor-pointer items-center gap-2 px-3 text-sm has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary">
+                    <input type="radio" wire:model.live="pricing" value="split" class="size-5">
+                    <span class="font-semibold">{{ __('One price, split by %') }}</span>
+                </label>
+            </div>
+            @if ($pricing === 'split')
+                <p class="mt-1 text-xs text-muted-fg">{{ __('Type one price for all the pieces. Each piece gets the percentage of what it cost us; you can change the percentages.') }}</p>
+            @endif
+        </fieldset>
+
         <x-ops.scan-box id="sale-code" />
 
         <section class="space-y-3" aria-label="{{ __('Items') }}">
@@ -36,10 +53,28 @@
                         <button type="button" wire:click="remove('{{ $key }}')" class="ot-btn ot-btn-secondary w-11 shrink-0 px-0" aria-label="{{ __('Remove') }}">@svg('heroicon-o-trash', 'size-5')</button>
                     </div>
                     <div class="flex items-end justify-between gap-3">
-                        <div class="min-w-0 flex-1">
-                            <label for="price-{{ $key }}" class="mb-1 block text-sm font-semibold">{{ __('Price (:currency)', ['currency' => $currency]) }}</label>
-                            <input id="price-{{ $key }}" wire:model.live.debounce.400ms="items.{{ $key }}.price" inputmode="decimal" data-western-digits dir="ltr" class="ot-input" autocomplete="off">
-                        </div>
+                        @if ($pricing === 'split')
+                            @php($row = $split[$key] ?? null)
+                            <div class="min-w-0 flex-1 space-y-1">
+                                <label for="share-{{ $key }}" class="block text-sm font-semibold">{{ __('Share %') }}</label>
+                                <input id="share-{{ $key }}" wire:model.live.debounce.500ms="shares.{{ $key }}" inputmode="decimal" data-western-digits dir="ltr" class="ot-input"
+                                       placeholder="{{ $row ? $row['cost_share'] : '' }}" autocomplete="off">
+                                @if ($row)
+                                    <p class="text-xs text-muted-fg">
+                                        {{ __('Cost share') }} <span dir="ltr">{{ \App\Support\Locale\Display::number($row['cost_share'], 2) }} %</span>
+                                        @if ($canSeeCost) · {{ __('cost') }} <x-money :value="$row['cost']" :currency="$currency" /> @endif
+                                    </p>
+                                    @if ($row['amount'] !== null)
+                                        <p class="text-sm font-semibold">{{ __('Gets') }} <x-money :value="$row['amount']" :currency="$currency" /> <span class="text-muted-fg" dir="ltr">({{ \App\Support\Locale\Display::number($row['share'], 2) }} %)</span></p>
+                                    @endif
+                                @endif
+                            </div>
+                        @else
+                            <div class="min-w-0 flex-1">
+                                <label for="price-{{ $key }}" class="mb-1 block text-sm font-semibold">{{ __('Price (:currency)', ['currency' => $currency]) }}</label>
+                                <input id="price-{{ $key }}" wire:model.live.debounce.400ms="items.{{ $key }}.price" inputmode="decimal" data-western-digits dir="ltr" class="ot-input" autocomplete="off">
+                            </div>
+                        @endif
                         @if ($item['batch_id'])
                             <div class="flex shrink-0 items-center gap-2">
                                 <button type="button" wire:click="change('{{ $key }}', -1)" class="ot-btn ot-btn-secondary w-11 px-0" aria-label="{{ __('Less') }}">@svg('heroicon-o-minus', 'size-5')</button>
@@ -71,10 +106,20 @@
                         <input id="sale-walkin" wire:model="walkIn" class="ot-input" autocomplete="off">
                     </div>
                 @endunless
-                <div>
-                    <label for="sale-discount" class="mb-1 block text-sm font-semibold">{{ __('Discount') }}</label>
-                    <input id="sale-discount" wire:model.live.debounce.400ms="discount" inputmode="decimal" data-western-digits dir="ltr" class="ot-input" autocomplete="off">
-                </div>
+                @if ($pricing === 'split')
+                    <div>
+                        <label for="sale-total" class="mb-1 block text-sm font-semibold">{{ __('Price for all the pieces (:currency)', ['currency' => $currency]) }}</label>
+                        <input id="sale-total" wire:model.live.debounce.500ms="saleTotal" inputmode="decimal" data-western-digits dir="ltr" class="ot-input text-lg font-semibold" autocomplete="off">
+                        @if ($shares)
+                            <button type="button" wire:click="resetShares" class="mt-2 text-sm font-semibold text-primary">{{ __('Use the cost shares again') }}</button>
+                        @endif
+                    </div>
+                @else
+                    <div>
+                        <label for="sale-discount" class="mb-1 block text-sm font-semibold">{{ __('Discount') }}</label>
+                        <input id="sale-discount" wire:model.live.debounce.400ms="discount" inputmode="decimal" data-western-digits dir="ltr" class="ot-input" autocomplete="off">
+                    </div>
+                @endif
             </section>
 
             <div class="ot-safe-bottom sticky bottom-20 z-20">
@@ -84,7 +129,7 @@
                         @if ($total !== null)
                             <x-money :value="$total" :currency="$currency" class="text-2xl font-bold" />
                         @else
-                            <p class="text-sm font-semibold text-warning">{{ __('Type the missing prices') }}</p>
+                            <p class="text-sm font-semibold text-warning">{{ $pricing === 'split' ? __('Type the price for all the pieces') : __('Type the missing prices') }}</p>
                         @endif
                     </div>
                     <button type="button" wire:click="submit" wire:loading.attr="disabled" class="ot-btn ot-btn-primary px-6 py-4 text-lg">

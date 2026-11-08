@@ -30,6 +30,7 @@ use App\Services\Settings\SettingsRepository;
 use App\Services\Stock\StockMovementService;
 use App\Support\Money\FxConverter;
 use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException;
 use Brick\Math\RoundingMode;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
@@ -38,9 +39,16 @@ use Illuminate\Support\Str;
 /**
  * Sales (Module 13, P4-12): scan units / lots, price in the invoice currency, paid now into
  * a box (credit only with the credit-sales flag). Void reverses stock and money.
+ *
+ * Pricing: per item (each line its price) or split — one total for all the pieces, shared by
+ * each piece's cost share (editable). Every line keeps its cost share and price share (%).
  */
 class SalesService
 {
+    public const PER_ITEM = 'per_item';
+
+    public const SPLIT = 'split';
+
     public function __construct(
         private readonly StockMovementService $stock,
         private readonly MoneyLedgerService $ledger,
@@ -53,7 +61,7 @@ class SalesService
     ) {}
 
     /**
-     * @param  array{currency: string, customer_id?: ?int, walk_in_name?: ?string, discount?: string|int|float|null, payment_terms?: string, cash_box_id?: ?int, due_date?: ?string, notes?: ?string, override_reason?: ?string, items: list<array{raw?: ?string, stock_unit_id?: ?int, stock_batch_id?: ?int, product_id?: ?int, quantity?: int|null, unit_price?: string|int|float|null}>}  $data
+     * @param  array{currency: string, pricing?: ?string, sale_total?: string|int|float|null, customer_id?: ?int, walk_in_name?: ?string, discount?: string|int|float|null, payment_terms?: string, cash_box_id?: ?int, due_date?: ?string, notes?: ?string, override_reason?: ?string, items: list<array{raw?: ?string, stock_unit_id?: ?int, stock_batch_id?: ?int, product_id?: ?int, quantity?: int|null, unit_price?: string|int|float|null, share?: string|int|float|null}>}  $data
      */
     public function sell(Branch $branch, array $data, User $by): SalesInvoice
     {
@@ -74,7 +82,10 @@ class SalesService
             throw new MoneyRuleViolation(__('Add at least one item.'), 'items');
         }
 
-        return DB::transaction(function () use ($branch, $data, $by, $terms, $customer, $items) {
+        $split = ($data['pricing'] ?? self::PER_ITEM) === self::SPLIT;
+        $saleTotal = $split ? $this->saleTotal($data) : null;
+
+        return DB::transaction(function () use ($branch, $data, $by, $terms, $customer, $items, $split, $saleTotal) {
             $snapshot = $this->fx->currentOrFail();
             $converter = $this->fx->converter($snapshot);
             $currency = $data['currency'];
@@ -94,6 +105,7 @@ class SalesService
                 'customer_id' => $customer?->id,
                 'walk_in_name' => $customer === null ? ($data['walk_in_name'] ?? null) : null,
                 'currency' => $currency,
+                'pricing' => $split ? self::SPLIT : self::PER_ITEM,
                 'fx_snapshot_id' => $snapshot->id,
                 'payment_terms' => $terms,
                 'due_date' => $terms === PaymentTerms::Credit ? ($data['due_date'] ?? now()->addDays(30)->toDateString()) : null,
@@ -103,8 +115,8 @@ class SalesService
             ]);
 
             $group = (string) Str::uuid();
-            $subtotal = BigDecimal::zero();
             $seen = [];
+            $sold = [];
 
             foreach ($items as $line) {
                 [$unit, $batch, $product, $quantity] = $this->resolve($branch, $line);
@@ -116,32 +128,58 @@ class SalesService
                     $seen[$unit->id] = true;
                 }
 
-                $price = filled($line['unit_price'] ?? null)
+                $price = $split ? null : (filled($line['unit_price'] ?? null)
                     ? BigDecimal::of((string) $line['unit_price'])->toScale(4, RoundingMode::HalfUp)
-                    : $this->listPrice($product, $currency, $converter);
-                $lineTotal = $price->multipliedBy($quantity)->toScale(4, RoundingMode::HalfUp);
+                    : $this->listPrice($product, $currency, $converter));
 
                 $movement = $unit !== null
                     ? $this->stock->sellUnit($unit, $branch, $customer, $by, $invoice, $group, $data['override_reason'] ?? null)
                     : $this->stock->sellBatch($batch, $quantity, $branch, $customer, $by, $invoice, $group, $data['override_reason'] ?? null);
 
+                $sold[] = [
+                    'product' => $product, 'unit' => $unit, 'batch' => $batch, 'quantity' => $quantity, 'price' => $price, 'movement' => $movement,
+                    'cost' => $this->costIn((string) $movement->unit_cost, $quantity, (string) $movement->cost_currency, $currency, $converter),
+                    'share' => $line['share'] ?? null,
+                ];
+            }
+
+            // Each piece's share of what the sale cost us.
+            $costShares = $this->costShares(array_column($sold, 'cost'), array_column($sold, 'quantity'));
+
+            if ($split) {
+                $shares = $this->chosenShares(array_column($sold, 'share'), $costShares);
+                $amounts = $this->splitAmount($saleTotal, $shares);
+            } else {
+                $amounts = array_map(fn (array $s) => $s['price']->multipliedBy($s['quantity'])->toScale(4, RoundingMode::HalfUp), $sold);
+            }
+
+            $subtotal = array_reduce($amounts, fn (BigDecimal $sum, BigDecimal $a) => $sum->plus($a), BigDecimal::zero());
+
+            foreach ($sold as $i => $s) {
+                $lineTotal = $amounts[$i];
+                $price = $s['price'] ?? $lineTotal->dividedBy($s['quantity'], 4, RoundingMode::HalfUp);
+
                 $invoice->items()->create([
-                    'product_id' => $product->id,
-                    'stock_unit_id' => $unit?->id,
-                    'stock_batch_id' => $batch?->id,
-                    'quantity' => $quantity,
+                    'product_id' => $s['product']->id,
+                    'stock_unit_id' => $s['unit']?->id,
+                    'stock_batch_id' => $s['batch']?->id,
+                    'quantity' => $s['quantity'],
                     'unit_price' => (string) $price,
                     'line_total' => (string) $lineTotal,
-                    'unit_cost' => $movement->unit_cost,
-                    'cost_currency' => $movement->cost_currency,
-                    'cost_fx_snapshot_id' => ($unit ?? $batch)?->cost_fx_snapshot_id,
-                    'override_reason' => $movement->is_override ? $movement->override_reason : null,
+                    'cost_share' => (string) $costShares[$i],
+                    'price_share' => $subtotal->isZero() ? null : (string) $lineTotal->multipliedBy(100)->dividedBy($subtotal, 4, RoundingMode::HalfUp),
+                    'unit_cost' => $s['movement']->unit_cost,
+                    'cost_currency' => $s['movement']->cost_currency,
+                    'cost_fx_snapshot_id' => ($s['unit'] ?? $s['batch'])?->cost_fx_snapshot_id,
+                    'override_reason' => $s['movement']->is_override ? $s['movement']->override_reason : null,
                 ]);
-
-                $subtotal = $subtotal->plus($lineTotal);
             }
 
             $discount = BigDecimal::of((string) ($data['discount'] ?? '0') ?: '0')->toScale(4, RoundingMode::HalfUp);
+
+            if ($split && ! $discount->isZero()) {
+                throw new MoneyRuleViolation(__('A sale split by percentage has no extra discount — lower the total instead.'), 'discount');
+            }
 
             if ($discount->isNegative() || $discount->isGreaterThan($subtotal)) {
                 throw new MoneyRuleViolation(__('The discount must be between zero and the invoice total.'), 'discount');
@@ -274,6 +312,196 @@ class SalesService
             ?? throw new MoneyRuleViolation(__('No :sku with :qty available for this sale.', ['sku' => $product->sku, 'qty' => $quantity]), 'items');
 
         return [null, $batch, $product, $quantity];
+    }
+
+    /**
+     * Preview of a split sale before it is made: each piece, what it cost us (in the sale
+     * currency), its cost share and — with a total — its amount. Nothing is sold or saved.
+     *
+     * @param  list<array<string, mixed>>  $items  same lines as sell()
+     * @return list<array{product: Product, quantity: int, cost: string, cost_share: string, share: string, amount: ?string}>
+     */
+    public function quoteSplit(Branch $branch, array $items, string $currency, string|int|float|null $saleTotal = null): array
+    {
+        $converter = $this->fx->converter($this->fx->currentOrFail());
+        $lines = [];
+        $seen = [];
+
+        foreach ($items as $line) {
+            if (! (filled($line['raw'] ?? null) || filled($line['stock_unit_id'] ?? null) || filled($line['stock_batch_id'] ?? null) || filled($line['product_id'] ?? null))) {
+                continue;
+            }
+
+            [$unit, $batch, $product, $quantity] = $this->resolve($branch, $line);
+
+            if ($unit !== null && isset($seen[$unit->id])) {
+                continue;
+            }
+
+            if ($unit !== null) {
+                $seen[$unit->id] = true;
+            }
+
+            $item = $unit ?? $batch;
+            $lines[] = [
+                'product' => $product,
+                'quantity' => $quantity,
+                'cost' => $this->costIn((string) $item->unit_cost, $quantity, (string) $item->cost_currency, $currency, $converter),
+                'share' => $line['share'] ?? null,
+            ];
+        }
+
+        if ($lines === []) {
+            return [];
+        }
+
+        $costShares = $this->costShares(array_column($lines, 'cost'), array_column($lines, 'quantity'));
+        $shares = $this->chosenShares(array_column($lines, 'share'), $costShares, strict: false);
+        $total = filled($saleTotal) && BigDecimal::of((string) $saleTotal)->isPositive() ? BigDecimal::of((string) $saleTotal)->toScale(4, RoundingMode::HalfUp) : null;
+        $amounts = $total !== null && $this->sumIs100($shares) ? $this->splitAmount($total, $shares) : [];
+
+        return array_map(fn (array $l, int $i) => [
+            'product' => $l['product'],
+            'quantity' => $l['quantity'],
+            'cost' => (string) $l['cost']->toScale(2, RoundingMode::HalfUp),
+            'cost_share' => (string) $costShares[$i]->toScale(2, RoundingMode::HalfUp),
+            'share' => (string) $shares[$i]->toScale(2, RoundingMode::HalfUp),
+            'amount' => isset($amounts[$i]) ? (string) $amounts[$i]->toScale(2, RoundingMode::HalfUp) : null,
+        ], $lines, array_keys($lines));
+    }
+
+    /**
+     * Cost of a line in the sale currency (today's rates).
+     */
+    private function costIn(string $unitCost, int $quantity, string $from, string $to, FxConverter $converter): BigDecimal
+    {
+        $amount = (string) BigDecimal::of($unitCost ?: '0')->multipliedBy($quantity);
+
+        return BigDecimal::of($from === '' || $from === $to ? $amount : $converter->convert($amount, $from, $to))->toScale(4, RoundingMode::HalfUp);
+    }
+
+    /**
+     * Each line's percentage of the total cost; lines without any cost share equally per piece.
+     *
+     * @param  list<BigDecimal>  $costs
+     * @param  list<int>  $quantities
+     * @return list<BigDecimal>
+     */
+    private function costShares(array $costs, array $quantities): array
+    {
+        $total = array_reduce($costs, fn (BigDecimal $sum, BigDecimal $c) => $sum->plus($c), BigDecimal::zero());
+        $basis = $total->isPositive() ? $costs : array_map(fn (int $q) => BigDecimal::of($q), $quantities);
+        $whole = $total->isPositive() ? $total : BigDecimal::of(max(1, array_sum($quantities)));
+
+        return $this->toHundred(array_map(fn (BigDecimal $part) => $part->multipliedBy(100)->dividedBy($whole, 4, RoundingMode::HalfUp), $basis));
+    }
+
+    /**
+     * The percentages typed by hand (all lines, adding up to 100) or the cost shares.
+     *
+     * @param  list<mixed>  $typed
+     * @param  list<BigDecimal>  $costShares
+     * @return list<BigDecimal>
+     */
+    private function chosenShares(array $typed, array $costShares, bool $strict = true): array
+    {
+        $filled = array_filter($typed, fn ($s) => filled($s));
+
+        if ($filled === []) {
+            return $costShares;
+        }
+
+        if (count($filled) !== count($typed)) {
+            if ($strict) {
+                throw new MoneyRuleViolation(__('Give a percentage for every item, or leave them all empty to use the cost shares.'), 'items');
+            }
+
+            return array_map(fn ($s, BigDecimal $c) => filled($s) ? BigDecimal::of((string) $s)->toScale(4, RoundingMode::HalfUp) : $c, $typed, $costShares);
+        }
+
+        $shares = array_map(fn ($s) => BigDecimal::of((string) $s)->toScale(4, RoundingMode::HalfUp), $typed);
+
+        foreach ($shares as $share) {
+            if ($share->isNegative()) {
+                throw new MoneyRuleViolation(__('A percentage cannot be negative.'), 'items');
+            }
+        }
+
+        if ($strict && ! $this->sumIs100($shares)) {
+            throw new MoneyRuleViolation(__('The percentages must add up to 100 %.'), 'items');
+        }
+
+        return $shares;
+    }
+
+    /**
+     * @param  list<BigDecimal>  $shares
+     */
+    private function sumIs100(array $shares): bool
+    {
+        $sum = array_reduce($shares, fn (BigDecimal $s, BigDecimal $p) => $s->plus($p), BigDecimal::zero());
+
+        return $sum->minus(100)->abs()->isLessThanOrEqualTo('0.01');
+    }
+
+    /**
+     * Rounded shares nudged so they add up to exactly 100 (the largest takes the difference).
+     *
+     * @param  list<BigDecimal>  $shares
+     * @return list<BigDecimal>
+     */
+    private function toHundred(array $shares): array
+    {
+        if ($shares === []) {
+            return [];
+        }
+
+        $sum = array_reduce($shares, fn (BigDecimal $s, BigDecimal $p) => $s->plus($p), BigDecimal::zero());
+        $largest = array_keys($shares, max($shares))[0];
+        $shares[$largest] = $shares[$largest]->plus(BigDecimal::of(100)->minus($sum));
+
+        return $shares;
+    }
+
+    /**
+     * Total × share per line, 4 decimals; the last line takes the rounding rest so the lines
+     * add up to the total exactly.
+     *
+     * @param  list<BigDecimal>  $shares
+     * @return list<BigDecimal>
+     */
+    private function splitAmount(BigDecimal $total, array $shares): array
+    {
+        $amounts = [];
+        $given = BigDecimal::zero();
+        $last = count($shares) - 1;
+
+        foreach ($shares as $i => $share) {
+            $amounts[$i] = $i === $last
+                ? $total->minus($given)
+                : $total->multipliedBy($share)->dividedBy(100, 4, RoundingMode::HalfUp);
+            $given = $given->plus($amounts[$i]);
+        }
+
+        return $amounts;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function saleTotal(array $data): BigDecimal
+    {
+        try {
+            $total = BigDecimal::of((string) ($data['sale_total'] ?? ''))->toScale(4, RoundingMode::HalfUp);
+        } catch (MathException) {
+            $total = BigDecimal::zero();
+        }
+
+        if (! $total->isPositive()) {
+            throw new MoneyRuleViolation(__('Type the total price of the sale.'), 'sale_total');
+        }
+
+        return $total;
     }
 
     /**

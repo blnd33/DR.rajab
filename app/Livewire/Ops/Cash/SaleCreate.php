@@ -25,7 +25,8 @@ use Livewire\Component;
 
 /**
  * Cash sale at the counter (Module 9, P4-12): scan the items, check the prices, take the
- * money into the branch box of the chosen currency.
+ * money into the branch box of the chosen currency. Priced per item, or one total split by
+ * each piece's share of the cost (the shares can be changed).
  */
 #[Layout('layouts::ops')]
 class SaleCreate extends Component
@@ -42,6 +43,15 @@ class SaleCreate extends Component
     public string $walkIn = '';
 
     public string $discount = '';
+
+    /** per_item | split */
+    public string $pricing = SalesService::PER_ITEM;
+
+    /** The one price for all the pieces (split pricing). */
+    public string $saleTotal = '';
+
+    /** @var array<string, string> item key → percentage typed by hand (empty = cost share) */
+    public array $shares = [];
 
     public function mount(): void
     {
@@ -118,11 +128,64 @@ class SaleCreate extends Component
 
     public function remove(string $key): void
     {
-        unset($this->items[$key]);
+        unset($this->items[$key], $this->shares[$key]);
+    }
+
+    public function updatedPricing(): void
+    {
+        $this->pricing = $this->pricing === SalesService::SPLIT ? SalesService::SPLIT : SalesService::PER_ITEM;
+    }
+
+    /**
+     * Back to the shares from the cost.
+     */
+    public function resetShares(): void
+    {
+        $this->shares = [];
+    }
+
+    /**
+     * Split pricing: each piece with its cost share, chosen share and amount.
+     *
+     * @return array<string, array{cost: string, cost_share: string, share: string, amount: ?string}>
+     */
+    public function splitPreview(): array
+    {
+        $branch = CurrentBranch::get();
+
+        if ($this->pricing !== SalesService::SPLIT || $this->items === [] || $branch === null) {
+            return [];
+        }
+
+        $keys = array_keys($this->items);
+
+        try {
+            $rows = app(SalesService::class)->quoteSplit($branch, $this->saleLines(), $this->currency, $this->saleTotal === '' ? null : $this->western($this->saleTotal));
+        } catch (\Throwable) {
+            return [];
+        }
+
+        $preview = [];
+
+        foreach ($rows as $i => $row) {
+            if (isset($keys[$i])) {
+                $preview[$keys[$i]] = ['cost' => $row['cost'], 'cost_share' => $row['cost_share'], 'share' => $row['share'], 'amount' => $row['amount']];
+            }
+        }
+
+        return $preview;
     }
 
     public function total(): ?string
     {
+        if ($this->pricing === SalesService::SPLIT) {
+            try {
+                return $this->saleTotal === '' ? null : (string) BigDecimal::of($this->western($this->saleTotal));
+            } catch (MathException) {
+                return null;
+            }
+        }
+
         try {
             $sum = BigDecimal::zero();
 
@@ -157,13 +220,10 @@ class SaleCreate extends Component
             'customer_id' => $this->customerId,
             'walk_in_name' => $this->walkIn ?: null,
             'cash_box_id' => $box->id,
-            'discount' => $this->discount === '' ? '0' : $this->western($this->discount),
-            'items' => array_map(fn ($i) => [
-                'stock_unit_id' => $i['unit_id'],
-                'stock_batch_id' => $i['batch_id'],
-                'quantity' => $i['quantity'],
-                'unit_price' => $i['price'] === '' ? null : $this->western($i['price']),
-            ], array_values($this->items)),
+            'pricing' => $this->pricing,
+            'sale_total' => $this->pricing === SalesService::SPLIT ? $this->western($this->saleTotal) : null,
+            'discount' => $this->pricing === SalesService::SPLIT || $this->discount === '' ? '0' : $this->western($this->discount),
+            'items' => $this->saleLines(),
         ], $this->user()));
 
         if ($invoice !== null) {
@@ -178,7 +238,28 @@ class SaleCreate extends Component
             'currencies' => $this->boxes()->keys()->all(),
             'customers' => Customer::options(),
             'total' => $this->total(),
+            'split' => $this->splitPreview(),
+            'canSeeCost' => $this->user()->canInBranch('stock.view_cost', CurrentBranch::id()),
         ])->title(__('New sale'));
+    }
+
+    /**
+     * The lines as SalesService reads them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function saleLines(): array
+    {
+        $typed = array_filter($this->shares, fn ($s) => trim((string) $s) !== '');
+
+        return array_values(array_map(fn (string $key, array $i) => [
+            'stock_unit_id' => $i['unit_id'],
+            'stock_batch_id' => $i['batch_id'],
+            'quantity' => $i['quantity'],
+            'unit_price' => $this->pricing === SalesService::SPLIT || $i['price'] === '' ? null : $this->western($i['price']),
+            // Hand-typed shares only when some were typed (the service then wants all of them).
+            'share' => $this->pricing === SalesService::SPLIT && $typed !== [] ? $this->western((string) ($this->shares[$key] ?? '')) : null,
+        ], array_keys($this->items), $this->items));
     }
 
     private function listPrice(int $productId): string

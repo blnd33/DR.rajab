@@ -140,6 +140,40 @@
         @endif
     </section>
 
+    {{-- Photos: ours before sending, theirs on arrival --}}
+    @if ($sentPhoto || $receivedPhoto || $takeSent || $takeReceived)
+        <section class="ot-card space-y-3 p-4" aria-labelledby="photos-title">
+            <h2 id="photos-title" class="font-semibold">{{ __('Photos') }}</h2>
+            <div class="grid grid-cols-2 gap-3">
+                @foreach ([[$sentPhoto, __('Our photo (when sent)')], [$receivedPhoto, __('Their photo (when received)')]] as [$p, $caption])
+                    <figure class="space-y-1">
+                        @if ($p)
+                            <a href="{{ route('attachments.show', $p) }}" target="_blank" rel="noopener" class="block overflow-hidden rounded-lg ring-1 ring-border">
+                                <img src="{{ route('attachments.show', $p) }}" alt="{{ $caption }}" class="aspect-square w-full object-cover" loading="lazy">
+                            </a>
+                        @else
+                            <div class="flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border text-center text-xs text-muted-fg">
+                                @svg('heroicon-o-camera', 'size-7')
+                                <span>{{ __('No photo yet') }}</span>
+                            </div>
+                        @endif
+                        <figcaption class="text-xs font-semibold text-muted-fg">{{ $caption }}</figcaption>
+                    </figure>
+                @endforeach
+            </div>
+            @if (($takeSent && ! $sentPhoto) || ($takeReceived && ! $receivedPhoto))
+                <label class="ot-btn ot-btn-secondary w-full cursor-pointer py-3">
+                    @svg('heroicon-o-camera', 'size-6')
+                    <span wire:loading.remove wire:target="photo">{{ $takeSent ? __('Take a photo of the items before sending') : __('Take a photo of the items as they arrived') }}</span>
+                    <span wire:loading wire:target="photo">{{ __('Uploading…') }}</span>
+                    <input type="file" accept="image/*" capture="environment" wire:model="photo" class="sr-only">
+                </label>
+                <p class="text-xs text-muted-fg">{{ __('Required. The other branch sees this photo.') }}</p>
+            @endif
+            @error('photo') <p class="text-sm text-danger">{{ $message }}</p> @enderror
+        </section>
+    @endif
+
     {{-- Actions --}}
     @if ($canEdit && $transfer->items->isNotEmpty())
         <section class="space-y-3">
@@ -154,7 +188,7 @@
                     <span>{{ __('Expired items cannot be transferred. Remove them, or ask an admin.') }}</span>
                 </p>
             @endif
-            <button type="button" wire:click="send" wire:loading.attr="disabled" class="ot-btn ot-btn-primary w-full py-4 text-lg">
+            <button type="button" wire:click="send" wire:loading.attr="disabled" class="ot-btn ot-btn-primary w-full py-4 text-lg" @disabled(! $sentPhoto)>
                 @svg('heroicon-o-truck', 'size-6')
                 <span>{{ __('Send to :branch', ['branch' => $transfer->toBranch->code]) }}</span>
             </button>
@@ -162,7 +196,7 @@
     @endif
 
     @if ($canReceive)
-        <button type="button" wire:click="receive" wire:loading.attr="disabled" class="ot-btn ot-btn-primary w-full py-4 text-lg"
+        <button type="button" wire:click="receive" wire:loading.attr="disabled" class="ot-btn ot-btn-primary w-full py-4 text-lg" @disabled(! $receivedPhoto)
                 wire:confirm="{{ $unitsScanned < $unitsTotal ? __('Some units were not scanned. They will be reported as missing. Receive anyway?') : __('Receive this transfer?') }}">
             @svg('heroicon-o-check', 'size-6')
             <span>{{ __('Receive') }}</span>

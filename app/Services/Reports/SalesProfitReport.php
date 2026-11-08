@@ -14,7 +14,9 @@ use Illuminate\Support\Carbon;
 
 /**
  * Sales and profit (Module 24): revenue (after the invoice discount) minus the true cost of
- * what was sold, per month, product, branch or customer. Voided sales don't count.
+ * what was sold, per month, product, branch, customer or sale line. Voided sales don't count.
+ * Percentages: every grouping shows its share of the period's revenue (and cost); the sale-line
+ * grouping shows each piece's share of its own sale — of the cost and of what we received.
  */
 class SalesProfitReport extends Report
 {
@@ -47,6 +49,7 @@ class SalesProfitReport extends Report
             'product' => __('Product'),
             'branch' => __('Branch'),
             'customer' => __('Hospital / customer'),
+            'line' => __('Sale line (each piece, with %)'),
         ];
     }
 
@@ -56,15 +59,31 @@ class SalesProfitReport extends Report
             'product' => [ReportColumn::code('sku', __('SKU')), ReportColumn::text('product', __('Product'))],
             'branch' => [ReportColumn::text('branch', __('Branch'))],
             'customer' => [ReportColumn::text('customer', __('Hospital / customer'))],
+            'line' => [ReportColumn::code('invoice', __('Invoice')), ReportColumn::code('sku', __('SKU')), ReportColumn::text('product', __('Product'))],
             default => [ReportColumn::code('month', __('Month'))],
         };
+
+        if ($context->group === 'line') {
+            return [
+                ...$head,
+                ReportColumn::number('quantity', __('Quantity')),
+                ReportColumn::money('cost', __('Cost'), profit: true),
+                ReportColumn::percent('cost_share', __('Cost % of the sale'), profit: true),
+                ReportColumn::money('revenue', __('Received')),
+                ReportColumn::percent('price_share', __('Received % of the sale')),
+                ReportColumn::money('profit', __('Profit'), profit: true),
+                ReportColumn::percent('margin', __('Margin %'), profit: true),
+            ];
+        }
 
         return [
             ...$head,
             ReportColumn::number('invoices', __('Invoices')),
             ReportColumn::number('quantity', __('Quantity')),
             ReportColumn::money('revenue', __('Revenue')),
+            ReportColumn::percent('revenue_pct', __('Revenue %')),
             ReportColumn::money('cost', __('Cost'), profit: true),
+            ReportColumn::percent('cost_pct', __('Cost %'), profit: true),
             ReportColumn::money('profit', __('Profit'), profit: true),
             ReportColumn::percent('margin', __('Margin %'), profit: true),
         ];
@@ -82,7 +101,7 @@ class SalesProfitReport extends Report
                 'sales_invoice_items.*',
                 'sales_invoices.branch_id', 'sales_invoices.customer_id', 'sales_invoices.walk_in_name', 'sales_invoices.issued_at',
                 'sales_invoices.currency AS invoice_currency', 'sales_invoices.fx_snapshot_id AS invoice_snapshot_id',
-                'sales_invoices.subtotal', 'sales_invoices.total',
+                'sales_invoices.subtotal', 'sales_invoices.total', 'sales_invoices.number AS invoice_number',
             ])
             ->toBase()->get();
 
@@ -98,6 +117,7 @@ class SalesProfitReport extends Report
                 'product' => 'p'.$item->product_id,
                 'branch' => 'b'.$item->branch_id,
                 'customer' => 'c'.($item->customer_id ?? 0),
+                'line' => 'i'.$item->id,
                 default => Carbon::parse($item->issued_at)->setTimezone($tz)->format('Y-m'),
             };
 
@@ -119,6 +139,8 @@ class SalesProfitReport extends Report
                 'product' => $product->name ?? '—',
                 'branch' => $branches[(int) $item->branch_id] ?? '—',
                 'customer' => $item->customer_id !== null ? ($customers[(int) $item->customer_id] ?? '—') : __('Walk-in'),
+                'invoice' => (string) $item->invoice_number,
+                'invoice_id' => (int) $item->sales_invoice_id,
                 'quantity' => 0,
                 'revenue' => '0',
                 'cost' => '0',
@@ -129,11 +151,30 @@ class SalesProfitReport extends Report
             $rows[$key]['cost'] = self::money(BigDecimal::of($rows[$key]['cost'])->plus($cost));
         }
 
+        $revenueTotal = BigDecimal::zero();
+        $costTotal = BigDecimal::zero();
+        $perInvoice = [];
+
+        foreach ($rows as $row) {
+            $revenueTotal = $revenueTotal->plus($row['revenue']);
+            $costTotal = $costTotal->plus($row['cost']);
+            $perInvoice[$row['invoice_id']]['revenue'] = BigDecimal::of($row['revenue'])->plus($perInvoice[$row['invoice_id']]['revenue'] ?? '0');
+            $perInvoice[$row['invoice_id']]['cost'] = BigDecimal::of($row['cost'])->plus($perInvoice[$row['invoice_id']]['cost'] ?? '0');
+        }
+
         foreach ($rows as $key => $row) {
             $profit = BigDecimal::of($row['revenue'])->minus($row['cost']);
             $rows[$key]['invoices'] = count($invoices[$key] ?? []);
             $rows[$key]['profit'] = self::money($profit);
             $rows[$key]['margin'] = self::percent($profit, BigDecimal::of($row['revenue']));
+            $rows[$key]['revenue_pct'] = self::percent(BigDecimal::of($row['revenue']), $revenueTotal);
+            $rows[$key]['cost_pct'] = self::percent(BigDecimal::of($row['cost']), $costTotal);
+
+            // Sale line: the piece's share of its own sale (same currency, so same as stored).
+            if ($context->group === 'line') {
+                $rows[$key]['cost_share'] = self::percent(BigDecimal::of($row['cost']), $perInvoice[$row['invoice_id']]['cost']);
+                $rows[$key]['price_share'] = self::percent(BigDecimal::of($row['revenue']), $perInvoice[$row['invoice_id']]['revenue']);
+            }
         }
 
         return array_values($rows);
@@ -146,6 +187,15 @@ class SalesProfitReport extends Report
         if (isset($totals['profit'], $totals['revenue'])) {
             $totals['margin'] = (string) self::percent(BigDecimal::of($totals['profit']), BigDecimal::of($totals['revenue']));
         }
+
+        // Shares add up to 100 % of the period (not meaningful summed per sale line).
+        foreach (['revenue_pct', 'cost_pct'] as $column) {
+            if (isset($totals[$column])) {
+                $totals[$column] = $rows === [] ? '' : '100';
+            }
+        }
+
+        unset($totals['cost_share'], $totals['price_share']);
 
         // An invoice can sit in more than one row (per product); count each once.
         $totals['invoices'] = (string) SalesInvoice::query()
