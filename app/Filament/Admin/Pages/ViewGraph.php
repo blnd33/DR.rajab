@@ -45,6 +45,10 @@ class ViewGraph extends Page
     #[Url(except: 'USD')]
     public ?string $currency = 'USD';
 
+    /** Pie, bars or line; empty = the graph's own form. */
+    #[Url(as: 'view', except: '')]
+    public string $chartView = '';
+
     private ?GraphData $cachedData = null;
 
     private ?string $cachedHash = null;
@@ -145,6 +149,37 @@ class ViewGraph extends Page
         $this->currency = in_array($this->currency, ['USD', 'EUR', 'IQD'], true) ? $this->currency : 'USD';
     }
 
+    public function chooseView(string $view): void
+    {
+        if (in_array($view, $this->definition()->views(), true)) {
+            $this->chartView = $view === $this->definition()->defaultView() ? '' : $view;
+        }
+    }
+
+    /**
+     * The form drawn now: the chosen one when it can show these numbers, else the graph's own
+     * form (or bars when that is a pie that cannot be drawn).
+     */
+    public function currentView(): string
+    {
+        $definition = $this->definition();
+        $view = in_array($this->chartView, $definition->views(), true) ? $this->chartView : $definition->defaultView();
+
+        if ($view === Graph::VIEW_PIE && $this->pie()[0] === null) {
+            return $definition->defaultView() === Graph::VIEW_PIE ? Graph::VIEW_BARS : $definition->defaultView();
+        }
+
+        return $view;
+    }
+
+    /**
+     * @return array{0: ?GraphData, 1: ?string}
+     */
+    public function pie(): array
+    {
+        return app(GraphRegistry::class)->asPie($this->definition(), $this->data());
+    }
+
     public function resetFilters(): void
     {
         $this->from = $this->definition()->usesPeriod ? GraphContext::defaultFrom()->toDateString() : '';
@@ -158,12 +193,28 @@ class ViewGraph extends Page
      */
     protected function getViewData(): array
     {
+        $definition = $this->definition();
         $data = $this->data();
+        $view = $this->currentView();
+        [$pie, $noPie] = $this->pie();
+        $drawn = $view === Graph::VIEW_PIE && $pie !== null ? $pie : $data;
 
         return [
-            'definition' => $this->definition(),
+            'definition' => $definition,
             'data' => $data,
-            'chartKey' => md5((string) json_encode([$this->graph, $data->labels, $data->series, app()->getLocale()])),
+            'view' => $view,
+            'views' => array_map(fn (string $v) => [
+                'key' => $v,
+                'label' => Graph::viewLabel($v),
+                'icon' => Graph::viewIcon($v),
+                'reason' => $v === Graph::VIEW_PIE ? $noPie : null,
+            ], $definition->views()),
+            'chartKind' => $definition->kindFor($view),
+            'drawn' => $drawn,
+            'pieNote' => $view === Graph::VIEW_PIE && count($data->series) > 1
+                ? __('The pie shows :series only.', ['series' => $data->series[0]['label']])
+                : null,
+            'chartKey' => md5((string) json_encode([$this->graph, $view, $drawn->labels, $drawn->series, app()->getLocale()])),
         ];
     }
 

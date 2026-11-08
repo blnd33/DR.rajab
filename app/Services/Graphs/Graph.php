@@ -20,6 +20,13 @@ final class Graph
     /** Change over time: one or more lines. */
     public const LINE = 'line';
 
+    /** Forms the user can switch between on the graph page. */
+    public const VIEW_PIE = 'pie';
+
+    public const VIEW_BARS = 'bars';
+
+    public const VIEW_LINE = 'line';
+
     /**
      * @param  Closure(GraphContext): GraphData  $build
      * @param  list<string>  $keywords  extra English search words
@@ -46,6 +53,64 @@ final class Graph
             self::RANKING => __('Bar chart (ranking)'),
             self::MONTHS => __('Bar chart (per month)'),
             default => __('Line chart'),
+        };
+    }
+
+    public function isTimeline(): bool
+    {
+        return in_array($this->kind, [self::MONTHS, self::LINE], true);
+    }
+
+    /**
+     * How the graph opens: its own form.
+     */
+    public function defaultView(): string
+    {
+        return match ($this->kind) {
+            self::DOUGHNUT => self::VIEW_PIE,
+            self::LINE => self::VIEW_LINE,
+            default => self::VIEW_BARS,
+        };
+    }
+
+    /**
+     * Forms the user may switch to: pie and bars for every graph, a line for graphs over time
+     * (a line between unrelated names would suggest a trend that is not there).
+     *
+     * @return list<string>
+     */
+    public function views(): array
+    {
+        return $this->isTimeline() ? [self::VIEW_PIE, self::VIEW_BARS, self::VIEW_LINE] : [self::VIEW_PIE, self::VIEW_BARS];
+    }
+
+    /**
+     * The drawn form for a chosen view: bars run across for months and along for names.
+     */
+    public function kindFor(string $view): string
+    {
+        return match ($view) {
+            self::VIEW_PIE => self::DOUGHNUT,
+            self::VIEW_LINE => self::LINE,
+            default => $this->isTimeline() ? self::MONTHS : self::RANKING,
+        };
+    }
+
+    public static function viewLabel(string $view): string
+    {
+        return match ($view) {
+            self::VIEW_PIE => __('Pie'),
+            self::VIEW_LINE => __('Line'),
+            default => __('Bars'),
+        };
+    }
+
+    public static function viewIcon(string $view): string
+    {
+        return match ($view) {
+            self::VIEW_PIE => 'heroicon-m-chart-pie',
+            self::VIEW_LINE => 'heroicon-m-presentation-chart-line',
+            default => 'heroicon-m-chart-bar',
         };
     }
 

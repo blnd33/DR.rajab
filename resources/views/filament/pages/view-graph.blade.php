@@ -12,7 +12,24 @@
     <x-filament::section compact>
         <div class="flex flex-col gap-3" aria-label="{{ __('Filters') }}">
             {{ $this->filtersForm }}
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex flex-wrap items-center gap-2" role="group" aria-label="{{ __('Draw as') }}">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ __('Draw as') }}</span>
+                    @foreach ($views as $option)
+                        <x-filament::button
+                            size="sm"
+                            :color="$option['key'] === $view ? 'primary' : 'gray'"
+                            :outlined="$option['key'] !== $view"
+                            :icon="$option['icon']"
+                            :disabled="$option['reason'] !== null"
+                            :tooltip="$option['reason']"
+                            :aria-pressed="$option['key'] === $view ? 'true' : 'false'"
+                            wire:click="chooseView('{{ $option['key'] }}')"
+                            wire:key="view-{{ $option['key'] }}"
+                        >{{ $option['label'] }}</x-filament::button>
+                    @endforeach
+                </div>
+                <span class="hidden h-6 w-px bg-gray-200 sm:block dark:bg-white/10" aria-hidden="true"></span>
                 <x-filament::button color="gray" size="sm" wire:click="resetFilters" icon="heroicon-m-arrow-path">{{ __('Reset') }}</x-filament::button>
                 <span wire:loading class="text-sm text-gray-500 dark:text-gray-400">{{ __('Loading…') }}</span>
             </div>
@@ -29,9 +46,13 @@
         </x-filament::section>
     @else
         @livewire(\App\Filament\Admin\Graphs\GraphChart::class, [
-            'kind' => $definition->kind,
-            'payload' => ['labels' => $data->labels, 'series' => $data->series, 'other' => $data->other, 'money' => $data->currency !== null],
+            'kind' => $chartKind,
+            'payload' => ['labels' => $drawn->labels, 'series' => $drawn->series, 'other' => $drawn->other, 'money' => $drawn->currency !== null],
         ], key($chartKey))
+
+        @if ($pieNote !== null || ($views[0]['reason'] !== null && $view !== 'pie'))
+            <p class="-mt-4 text-xs text-gray-500 dark:text-gray-400">{{ $pieNote ?? __('Pie not available: :reason', ['reason' => $views[0]['reason']]) }}</p>
+        @endif
 
         <x-filament::section :heading="__('The numbers')" compact>
             <div class="overflow-x-auto">

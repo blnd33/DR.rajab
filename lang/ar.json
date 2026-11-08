@@ -2499,5 +2499,13 @@
     "split": "مقسّم",
     "suggested": "مقترح",
     "to": "إلى",
-    "…": "…"
+    "…": "…",
+    "Draw as": "اعرض كـ",
+    "Pie": "دائري",
+    "Bars": "أعمدة",
+    "Line": "خطي",
+    "The pie shows :series only.": "الرسم الدائري يعرض :series فقط.",
+    "A pie cannot show negative numbers.": "لا يمكن للرسم الدائري عرض أرقام سالبة.",
+    "These values do not add up to a whole, so a pie would mislead.": "هذه القيم لا تُجمع لتكوّن كُلاً واحداً، لذا سيكون الرسم الدائري مضلِّلاً.",
+    "Pie not available: :reason": "الرسم الدائري غير متاح: :reason"
 }

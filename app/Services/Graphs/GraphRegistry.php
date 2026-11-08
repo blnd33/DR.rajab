@@ -456,6 +456,36 @@ final class GraphRegistry
     /**
      * Largest first; past seven slices the rest is one grey "Other".
      */
+    /**
+     * The graph's numbers as a pie: the first series, largest first, past 7 slices folded into
+     * "Other". Null with the reason when a pie would mislead.
+     *
+     * @return array{0: ?GraphData, 1: ?string}
+     */
+    public function asPie(Graph $graph, GraphData $data): array
+    {
+        if (! $graph->summable) {
+            return [null, __('These values do not add up to a whole, so a pie would mislead.')];
+        }
+
+        $values = $data->values();
+
+        if (min($values ?: [0]) < 0) {
+            return [null, __('A pie cannot show negative numbers.')];
+        }
+
+        if (array_sum($values) <= 0) {
+            return [null, __('Nothing to draw for these filters')];
+        }
+
+        if (in_array(true, $data->other, true)) {
+            // Already a pie's numbers (folded): keep them, first series only.
+            return [new GraphData($data->labels, [$data->series[0]], $data->currency, $data->other), null];
+        }
+
+        return [$this->fold($data), null];
+    }
+
     private function fold(GraphData $data): GraphData
     {
         $pairs = $this->sorted($data);

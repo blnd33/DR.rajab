@@ -123,3 +123,46 @@ it('refuses the Graphs page to people without reports', function () {
 it('keeps graph kinds to the four drawn forms', function () {
     expect(collect($this->registry->all())->pluck('kind')->unique()->diff([Graph::DOUGHNUT, Graph::RANKING, Graph::MONTHS, Graph::LINE]))->toBeEmpty();
 });
+
+it('lets the user draw any graph as a pie or bars, and graphs over time as a line too', function () {
+    $this->actingAs($this->admin);
+
+    expect($this->registry->find('catalog-by-usage')->views())->toBe([Graph::VIEW_PIE, Graph::VIEW_BARS])
+        ->and($this->registry->find('sales-per-month')->views())->toBe([Graph::VIEW_PIE, Graph::VIEW_BARS, Graph::VIEW_LINE]);
+
+    $page = Livewire::test(ViewGraph::class, ['graph' => 'catalog-by-usage'])
+        ->assertSee('Draw as')
+        ->call('chooseView', 'bars')->assertSet('chartView', 'bars');
+    expect($page->instance()->currentView())->toBe(Graph::VIEW_BARS);
+
+    // A line is not offered between names; choosing the graph's own form clears the choice.
+    $page->call('chooseView', 'line')->assertSet('chartView', 'bars')
+        ->call('chooseView', 'pie')->assertSet('chartView', '');
+
+    // Opened with ?view=bars from a shared link.
+    $shared = Livewire::withQueryParams(['graph' => 'sales-per-month', 'view' => 'bars'])->test(ViewGraph::class);
+    expect($shared->instance()->currentView())->toBe(Graph::VIEW_BARS);
+});
+
+it('draws a pie only when the numbers make a whole, folding past seven slices', function () {
+    $graph = $this->registry->find('profit-per-month');
+    $months = new GraphData(array_map(fn ($m) => "2026-{$m}", range(1, 12)), [['label' => 'Profit', 'values' => array_map(fn ($m) => (float) $m * 10, range(1, 12))]], 'USD');
+
+    [$pie, $reason] = $this->registry->asPie($graph, $months);
+    expect($reason)->toBeNull()
+        ->and($pie->labels)->toHaveCount(8)
+        ->and($pie->labels[0])->toBe('2026-12')
+        ->and($pie->other[7])->toBeTrue()
+        ->and($pie->total())->toEqual($months->total());
+
+    $loss = new GraphData(['2026-01', '2026-02'], [['label' => 'Profit', 'values' => [50.0, -20.0]]], 'USD');
+    expect($this->registry->asPie($graph, $loss))->toBe([null, 'A pie cannot show negative numbers.']);
+
+    [$none, $why] = $this->registry->asPie($this->registry->find('stock-value-history'), $months);
+    expect($none)->toBeNull()->and($why)->toContain('do not add up');
+
+    // A shared ?view=pie link to a graph that cannot be a pie still opens (in its own form).
+    $this->actingAs($this->admin);
+    Livewire::withQueryParams(['graph' => 'stock-value-history', 'view' => 'pie'])->test(ViewGraph::class)
+        ->assertOk();
+});
