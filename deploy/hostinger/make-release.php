@@ -80,7 +80,7 @@ removeTree($work.'/public/build');
 copyTree($root.'/public/build', $work.'/public/build');
 
 // 4. Leave out what the server does not need.
-foreach (['tests', 'node_modules', '.github', 'phpunit.xml', 'phpstan.neon', 'phpstan-baseline.neon', 'bootstrap/cache/config.php', 'bootstrap/cache/routes-v7.php'] as $path) {
+foreach (['tests', 'node_modules', '.github', '.claude', 'phpunit.xml', 'phpstan.neon', 'phpstan-baseline.neon', 'bootstrap/cache/config.php', 'bootstrap/cache/routes-v7.php'] as $path) {
     removeTree($work.'/'.$path);
 }
 
