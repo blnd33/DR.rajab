@@ -2304,5 +2304,6 @@
     "The pie shows :series only.": "The pie shows :series only.",
     "A pie cannot show negative numbers.": "A pie cannot show negative numbers.",
     "These values do not add up to a whole, so a pie would mislead.": "These values do not add up to a whole, so a pie would mislead.",
-    "Pie not available: :reason": "Pie not available: :reason"
+    "Pie not available: :reason": "Pie not available: :reason",
+    "Test site — for trying things out. The data here is not real and can be erased.": "Test site — for trying things out. The data here is not real and can be erased."
 }

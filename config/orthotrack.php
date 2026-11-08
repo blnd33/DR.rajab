@@ -27,6 +27,11 @@ return [
 
     'currencies' => ['USD', 'EUR', 'IQD'],
 
+    // A test site for the client (e.g. test.example.com): shows a "Test site" banner on every
+    // page, never gets demo data, and is the only kind of site `orthotrack:reset-test-site`
+    // will empty. See docs/TEST-SITE.md.
+    'test_site' => (bool) env('ORTHOTRACK_TEST_SITE', false),
+
     // Demo-user seeder password (local/staging only; the seeder refuses to run in production).
     'demo_user_password' => env('DEMO_USER_PASSWORD', 'Ortho-Demo-2026!'),
 

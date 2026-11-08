@@ -88,6 +88,10 @@ class AdminPanelProvider extends PanelProvider
                 fn () => Blade::render('<x-pwa-head />'),
             )
             ->renderHook(
+                PanelsRenderHook::BODY_START,
+                fn () => Blade::render('<x-test-site-banner />'),
+            )
+            ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn () => Blade::render('<x-auth-notice /><x-language-switcher class="mb-2" />'),
             )

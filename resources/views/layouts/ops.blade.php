@@ -20,6 +20,8 @@
         {{ __('Skip to content') }}
     </a>
 
+    <x-test-site-banner />
+
     {{-- Offline / waiting-to-sync banner --}}
     <div x-data="connectivity" x-cloak x-show="visible" role="status" aria-live="polite"
          class="ot-safe-top sticky top-0 z-40"

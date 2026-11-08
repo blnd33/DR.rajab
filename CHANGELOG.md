@@ -2,6 +2,17 @@
 
 All notable changes per build phase.
 
+## [Test site for the doctor] — 2026-11-08
+
+Guide: [docs/TEST-SITE.md](docs/TEST-SITE.md) · server files: [deploy/test-site/](deploy/test-site/).
+
+### Added
+- **Test site** on a subdomain of the same server, fully separate from the real site (own folder, database `orthotrack_testsite`, Redis databases and prefixes, queue worker, scheduler, session cookie, push keys, backup folder; hidden from search engines). `ORTHOTRACK_TEST_SITE=true` makes it **start with zero data** (base data only, never demo data), shows an orange *Test site* strip on every page of the admin panel and the phone app (three languages).
+- `php artisan orthotrack:create-admin <username> --name= --locale=` — creates a Super Admin from the command line (password asked twice, same password rules as the app). For the first login on any new or emptied site; replaces "use tinker" in the production steps.
+- `php artisan orthotrack:reset-test-site` — erases all data and uploaded files of the test site and puts the base data back, after typing the site name; refused on any site without `ORTHOTRACK_TEST_SITE=true`.
+- `DatabaseSeeder::BASE` — the list of base seeders, shared by the seeder and the reset.
+- **Tests**: empty start, create-admin (success, duplicate, weak password), reset refused (not a test site, wrong name), banner only on a test site. The full reset was checked by hand on a separate database (it cannot run inside the test transaction).
+
 ## [Graphs, transfer photos, sales split] — 2026-11-08
 
 Plan: [docs/phases/GRAPHS-PHOTOS-SPLIT-PLAN.md](docs/phases/GRAPHS-PHOTOS-SPLIT-PLAN.md) (decisions G-1 … G-4, T-1 … T-4, S-1 … S-5).

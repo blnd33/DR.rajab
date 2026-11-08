@@ -12,8 +12,14 @@ use App\Services\Purchasing\OverduePayablesNotifier;
 use App\Services\Reports\StockValueSnapshotter;
 use App\Services\Settings\SettingsRepository;
 use App\Services\Stock\LowStockDetector;
+use App\Services\Users\UserService;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 /*
 |--------------------------------------------------------------------------
@@ -94,3 +100,92 @@ Artisan::command('reports:snapshot', function (StockValueSnapshotter $snapshotte
 })->purpose('Nightly stock value snapshot per branch and currency');
 
 Heartbeat::track(Schedule::command('reports:snapshot')->dailyAt('23:50')->timezone($tz)->onOneServer()->withoutOverlapping(), 'reports:snapshot');
+
+/*
+| New servers and the client's test site (docs/TEST-SITE.md).
+|   php artisan orthotrack:create-admin rajab --name="Dr. Rajab"
+|   php artisan orthotrack:reset-test-site      (test site only: erases everything)
+*/
+Artisan::command('orthotrack:create-admin {username : Login name (a-z, 0-9, dot, dash, underscore)} {--name= : Full name} {--email= : Optional email} {--locale=en : en, ar or ckb}', function (UserService $users) {
+    $input = [
+        'username' => strtolower((string) $this->argument('username')),
+        'name' => (string) ($this->option('name') ?: $this->argument('username')),
+        'email' => $this->option('email') ?: null,
+        'locale' => (string) $this->option('locale'),
+    ];
+
+    $rules = Validator::make($input, [
+        'username' => ['required', 'regex:/^[a-z0-9._-]{3,64}$/', Rule::unique('users', 'username')],
+        'name' => ['required', 'string', 'max:150'],
+        'email' => ['nullable', 'email', Rule::unique('users', 'email')],
+        'locale' => ['required', Rule::in(['en', 'ar', 'ckb'])],
+    ]);
+
+    if ($rules->fails()) {
+        foreach ($rules->errors()->all() as $message) {
+            $this->error($message);
+        }
+
+        return 1;
+    }
+
+    $password = (string) $this->secret('Password (at least 10 characters, upper and lower case letters and a number)');
+    $check = Validator::make(
+        ['password' => $password, 'password_confirmation' => (string) $this->secret('Password again')],
+        ['password' => ['required', 'confirmed', Password::defaults()]],
+    );
+
+    if ($check->fails()) {
+        foreach ($check->errors()->all() as $message) {
+            $this->error($message);
+        }
+
+        return 1;
+    }
+
+    $users->create($input + [
+        'password' => $password,
+        'all_branches' => true,
+        'primary_branch_id' => null,
+        'is_active' => true,
+        'roles' => [Role::SuperAdmin->value],
+        'branches' => [],
+    ]);
+
+    $this->info("Super Admin \"{$input['username']}\" created. Sign in at ".url('/admin').'.');
+
+    return 0;
+})->purpose('Create a Super Admin login (the first login on a new or emptied site)');
+
+Artisan::command('orthotrack:reset-test-site {--force : Do not ask to type the site name}', function () {
+    if (! config('orthotrack.test_site')) {
+        $this->error('Refused: this is not a test site. Only a site with ORTHOTRACK_TEST_SITE=true in .env can be emptied.');
+
+        return 1;
+    }
+
+    $site = (string) (parse_url((string) config('app.url'), PHP_URL_HOST) ?: config('app.url'));
+
+    if (! $this->option('force') && $this->ask("This erases ALL data and uploaded files on {$site}. Type {$site} to confirm") !== $site) {
+        $this->warn('Nothing was erased.');
+
+        return 1;
+    }
+
+    $this->call('migrate:fresh', ['--force' => true]);
+
+    foreach (DatabaseSeeder::BASE as $seeder) {
+        $this->call('db:seed', ['--class' => $seeder, '--force' => true]);
+    }
+
+    // Uploaded photos, invoices and import files belong to the erased data.
+    $files = Storage::disk('local');
+    foreach ($files->directories() as $directory) {
+        $files->deleteDirectory($directory);
+    }
+
+    $this->call('cache:clear');
+    $this->info("{$site} is empty again. Create the first login: php artisan orthotrack:create-admin <username>");
+
+    return 0;
+})->purpose('Empty the client\'s test site (refused on any other site)');

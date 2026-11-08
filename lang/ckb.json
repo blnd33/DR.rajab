@@ -2507,5 +2507,6 @@
     "The pie shows :series only.": "چارتی بازنەیی تەنها :series پیشان دەدات.",
     "A pie cannot show negative numbers.": "چارتی بازنەیی ناتوانێت ژمارەی سالب پیشان بدات.",
     "These values do not add up to a whole, so a pie would mislead.": "ئەم بەهایانە کۆ ناکرێنەوە بۆ یەک گشت، بۆیە چارتی بازنەیی هەڵەتێگەیاندن دەکات.",
-    "Pie not available: :reason": "چارتی بازنەیی بەردەست نییە: :reason"
+    "Pie not available: :reason": "چارتی بازنەیی بەردەست نییە: :reason",
+    "Test site — for trying things out. The data here is not real and can be erased.": "ماڵپەڕی تاقیکردنەوە — تەنها بۆ تاقیکردنەوە. زانیارییەکانی ئێرە ڕاستەقینە نین و دەکرێت بسڕدرێنەوە."
 }

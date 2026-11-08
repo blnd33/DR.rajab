@@ -1,0 +1,2 @@
+# /etc/cron.d/orthotrack-test — Laravel scheduler of the TEST SITE (alerts, rates, snapshots, backups)
+* * * * * deploy cd /var/www/orthotrack-test && php artisan schedule:run >> /dev/null 2>&1

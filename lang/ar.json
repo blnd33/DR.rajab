@@ -2507,5 +2507,6 @@
     "The pie shows :series only.": "الرسم الدائري يعرض :series فقط.",
     "A pie cannot show negative numbers.": "لا يمكن للرسم الدائري عرض أرقام سالبة.",
     "These values do not add up to a whole, so a pie would mislead.": "هذه القيم لا تُجمع لتكوّن كُلاً واحداً، لذا سيكون الرسم الدائري مضلِّلاً.",
-    "Pie not available: :reason": "الرسم الدائري غير متاح: :reason"
+    "Pie not available: :reason": "الرسم الدائري غير متاح: :reason",
+    "Test site — for trying things out. The data here is not real and can be erased.": "موقع تجريبي — للتجربة فقط. البيانات هنا ليست حقيقية ويمكن مسحها."
 }

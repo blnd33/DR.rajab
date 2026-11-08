@@ -146,6 +146,8 @@ vendor/bin/pint --test
 
 ## Production (Ubuntu 24.04 VPS — 2 vCPU / 4 GB to start)
 
+> A separate **test site** for the doctor (subdomain, empty database, *Test site* banner) is set up the same way — see [docs/TEST-SITE.md](docs/TEST-SITE.md).
+
 1. **Packages:** Nginx, PHP-FPM 8.3 (`pgsql redis intl gd mbstring xml zip bcmath curl`), PostgreSQL 16+, Redis, Supervisor, Node 22, Chrome/Chromium (for PDF downloads — `npm ci` installs puppeteer without its own Chromium; set `PDF_CHROME_PATH` if Chrome is not in a standard place), Certbot.
 2. **Database:** create role + database with a strong password (`deploy/local/create-local-db.sql` shows the statements).
 3. **Code:** clone to `/var/www/orthotrack` (owner: `deploy`; `storage/` and `bootstrap/cache/` writable by PHP-FPM).
@@ -153,7 +155,7 @@ vendor/bin/pint --test
 5. **Nginx + HTTPS:** `deploy/nginx/orthotrack.conf`, then `sudo certbot --nginx -d your.domain` (HTTPS is required for the camera, service worker and push).
 6. **Queues:** `deploy/supervisor/horizon.conf` → `/etc/supervisor/conf.d/`, then `sudo supervisorctl reread && sudo supervisorctl update`.
 7. **Scheduler:** `deploy/cron/scheduler` → `/etc/cron.d/orthotrack`.
-8. **First deploy:** `php artisan migrate --force && php artisan db:seed --force` (in production this seeds only currencies, permissions/roles and settings — no demo data). Create the real Super Admin with `php artisan tinker` or from a temporary staging copy, then set up two-factor on first login.
+8. **First deploy:** `php artisan migrate --force && php artisan db:seed --force` (in production this seeds only base data — no demo data). Create the real Super Admin with `php artisan orthotrack:create-admin <username> --name="…"`, then set up two-factor on first login.
 9. **Every deploy:** `./deploy/deploy.sh` (maintenance mode → git pull → composer --no-dev → migrate → idempotent seeders → npm build → optimize → restart Horizon).
 
 ### Backups
