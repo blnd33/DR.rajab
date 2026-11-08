@@ -90,6 +90,14 @@ Open **https://drrajab.coda-agency.net/admin**: the orange *Test site* strip sho
 
 If a page shows an error: `tail -n 50 ~/domains/coda-agency.net/drrajab-app/storage/logs/laravel-*.log`.
 
+An Excel import waits in the queue until the cron runs it (within a minute). To run waiting jobs by hand — imports use their own `imports` queue, so name every queue:
+
+```bash
+php artisan queue:work --queue=high,default,imports,pdf --stop-when-empty
+```
+
+The doctor's Lima / Enovis workbook is imported with **Stock → Excel Imports → New → Supplier catalog (Lima / Enovis workbook)** — not *Products → Excel → Import from Excel* (that one expects OrthoTrack's own product template).
+
 ## 6. Update with new code
 
 On the PC: commit, `php deploy/hostinger/make-release.php`, upload the new zip next to the old one. Then over SSH:

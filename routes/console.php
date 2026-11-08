@@ -43,7 +43,8 @@ if (config('queue.default') === 'redis') {
 // Shared hosting: no Supervisor, so each minute's scheduler run works the queue for up to
 // 55 seconds. A long import keeps its worker; the lock lets another start after 10 minutes.
 if (config('orthotrack.queue_via_scheduler')) {
-    Schedule::command('queue:work --stop-when-empty --max-time=55 --memory=512')
+    // Every queue the app uses (same list as Horizon): imports run on "imports", not "default".
+    Schedule::command('queue:work --queue=high,default,imports,pdf --stop-when-empty --max-time=55 --memory=512')
         ->everyMinute()
         ->withoutOverlapping(10)
         ->runInBackground();
