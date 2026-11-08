@@ -35,8 +35,19 @@ Heartbeat::track(Schedule::command('backup:run')->dailyAt('02:00')->timezone($tz
 Schedule::command('backup:clean')->dailyAt('03:00')->timezone($tz)->onOneServer();
 Heartbeat::track(Schedule::command('backup:monitor')->dailyAt('08:00')->timezone($tz)->onOneServer(), 'backup:monitor');
 
-// Horizon metrics.
-Schedule::command('horizon:snapshot')->everyFiveMinutes();
+// Horizon metrics (only where Horizon runs the queue on Redis).
+if (config('queue.default') === 'redis') {
+    Schedule::command('horizon:snapshot')->everyFiveMinutes();
+}
+
+// Shared hosting: no Supervisor, so each minute's scheduler run works the queue for up to
+// 55 seconds. A long import keeps its worker; the lock lets another start after 10 minutes.
+if (config('orthotrack.queue_via_scheduler')) {
+    Schedule::command('queue:work --stop-when-empty --max-time=55 --memory=512')
+        ->everyMinute()
+        ->withoutOverlapping(10)
+        ->runInBackground();
+}
 
 // Offline-sync replay protection is only needed for a while.
 Schedule::call(fn () => IdempotencyKey::query()->where('created_at', '<', now()->subDays(30))->delete())

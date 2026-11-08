@@ -32,6 +32,10 @@ return [
     // will empty. See docs/TEST-SITE.md.
     'test_site' => (bool) env('ORTHOTRACK_TEST_SITE', false),
 
+    // Shared hosting without Supervisor / Horizon (docs/HOSTINGER.md): the one-minute cron
+    // (schedule:run) also works the database queue — Excel imports, notifications.
+    'queue_via_scheduler' => (bool) env('ORTHOTRACK_QUEUE_VIA_SCHEDULER', false),
+
     // Demo-user seeder password (local/staging only; the seeder refuses to run in production).
     'demo_user_password' => env('DEMO_USER_PASSWORD', 'Ortho-Demo-2026!'),
 

@@ -25,10 +25,12 @@ return [
                 /*
                  * The list of directories and files that will be included in the backup.
                  */
-                'include' => [
+                'include' => array_values(array_filter([
                     base_path(),
                     // storage_path(),  // Include if you use zero downtime deployments and don't follow symlinks
-                ],
+                    // SQLite (test site on shared hosting): the database is one file — copy it.
+                    env('DB_CONNECTION') === 'sqlite' ? env('DB_DATABASE') : null,
+                ])),
 
                 /*
                  * These directories and files will be excluded from the backup.
@@ -89,7 +91,9 @@ return [
              *
              * For a complete list of available customization options, see https://github.com/spatie/db-dumper
              */
-            'databases' => [
+            // SQLite is copied as a file above (dumping it needs the sqlite3 tool, often missing
+            // on shared hosting).
+            'databases' => env('DB_CONNECTION', 'mysql') === 'sqlite' ? [] : [
                 env('DB_CONNECTION', 'mysql'),
             ],
         ],

@@ -10,6 +10,8 @@ A second copy of OrthoTrack on a subdomain of the same server (for example `test
 
 Files: [`deploy/test-site/`](../deploy/test-site/).
 
+> **On Hostinger web hosting** (drrajab.coda-agency.net — no root, PostgreSQL or Redis there) follow **[HOSTINGER.md](HOSTINGER.md)** instead of section 1 below. Sections 3 and 4 apply to both.
+
 ## 1. Set up (server — once)
 
 Replace `test.example.com` with the real subdomain everywhere.
