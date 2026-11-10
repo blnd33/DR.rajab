@@ -152,6 +152,10 @@ final class PermissionRegistry
                 'reports.profit' => ['View profit reports', true],
                 'reports.export' => ['Export reports', true],
             ],
+            'insight' => [
+                'summary.receive' => ['Receive the morning summary', false],
+                'assistant.use' => ['Use Quick answers', false],
+            ],
         ];
 
         $permissions = [];
@@ -217,6 +221,7 @@ final class PermissionRegistry
             'purchasing' => __('Suppliers & purchases'),
             'sales' => __('Sales & expenses'),
             'reports' => __('Reports'),
+            'insight' => __('Morning summary & Quick answers'),
             default => $group,
         };
     }
@@ -246,6 +251,7 @@ final class PermissionRegistry
                 'sales.view_any',
                 'expenses.view_any', 'expenses.create', 'expenses.recurring',
                 'reports.view', 'reports.profit', 'reports.export',
+                'summary.receive', 'assistant.use',
             ],
 
             Role::Doctor->value => [
@@ -257,6 +263,7 @@ final class PermissionRegistry
                 'patients.view_own', 'patients.manage',
                 'surgeries.view_any', 'surgeries.create',
                 'kits.view_any', 'kits.return',
+                'assistant.use',
             ],
 
             Role::Cashier->value => [
@@ -268,6 +275,7 @@ final class PermissionRegistry
                 'currency_exchange.create', 'exchange_rates.view_any',
                 'sales.view_any', 'sales.create', 'customer_payments.create',
                 'expenses.view_any', 'expenses.create',
+                'assistant.use',
             ],
 
             Role::BranchStaff->value => [
@@ -282,6 +290,7 @@ final class PermissionRegistry
                 'customers.view_any',
                 'kits.view_any', 'kits.prepare', 'kits.checkout', 'kits.return', 'instruments.manage',
                 'purchases.receive',
+                'assistant.use',
             ],
         ];
     }

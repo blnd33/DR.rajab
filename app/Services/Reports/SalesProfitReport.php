@@ -94,7 +94,7 @@ class SalesProfitReport extends Report
         $items = SalesInvoiceItem::query()
             ->join('sales_invoices', 'sales_invoices.id', '=', 'sales_invoice_items.sales_invoice_id')
             ->whereNotIn('sales_invoices.status', [SalesInvoiceStatus::Draft->value, SalesInvoiceStatus::Voided->value])
-            ->whereBetween('sales_invoices.issued_at', [$context->from, $context->until])
+            ->whereBetween('sales_invoices.issued_at', $context->bounds())
             ->when($context->branchIds !== null, fn ($q) => $q->whereIn('sales_invoices.branch_id', $context->branchIds))
             ->orderBy('sales_invoices.issued_at')
             ->select([
@@ -200,7 +200,7 @@ class SalesProfitReport extends Report
         // An invoice can sit in more than one row (per product); count each once.
         $totals['invoices'] = (string) SalesInvoice::query()
             ->whereNotIn('status', [SalesInvoiceStatus::Draft->value, SalesInvoiceStatus::Voided->value])
-            ->whereBetween('issued_at', [$context->from, $context->until])
+            ->whereBetween('issued_at', $context->bounds())
             ->when($context->branchIds !== null, fn ($q) => $q->whereIn('branch_id', $context->branchIds))
             ->count();
 

@@ -2,6 +2,21 @@
 
 All notable changes per build phase.
 
+## [Phase 6 — facts engine] — 2026-11-10
+
+The shared building blocks of the coming **morning summary** and **Quick answers** ([plan](docs/phases/PHASE-6-PLAN.md) §1). No screens yet.
+
+### Added
+- **Facts** (`app/Services/Insight/`): 19 small answers, each for one person, a period, a branch and a display currency — *Surgeries* (by hospital), *Kits sent and returned*, *Transfers sent and received*, *Stock received*, *Sales* (by hospital), *Payments received*, *Profit*, *Expenses* (by category), *Unpaid hospital balances*, *Supplier invoices due* (overdue or within 7 days), *Cash in the boxes*, *Kits out at hospitals* (overdue first, days late), *Missing after a return*, *Expiry* (per expiry level), *Below minimum*, *Open issues*, *Waiting for your approval*, *Transfers waiting to be received*, *Surgeries not finished*. Each checks its own permission and branches (and the chosen branch), reuses the reports' and dashboard's numbers, converts money with each row's own exchange rates, and returns a headline, up to five lines, the raw numbers and a link to the full screen. `FactRegistry::FACTS` is the list; adding a question = one class.
+- **Permissions** `summary.receive` (*Receive the morning summary* — Accountant by default) and `assistant.use` (*Use Quick answers* — Accountant, Doctor, Cashier, Branch staff); Super Admin has both. A migration gives them to the built-in roles of an existing database (the test site gets them on update).
+- **Tests**: every fact in three languages, who sees which fact (profit only with `reports.profit`), branch scope and the chosen branch, sales in USD and IQD with each sale's own rate, payments, hospital balances, a sale after midnight on the right day, kits out with days late.
+
+### Fixed
+- **Report and graph periods ran 03:00 → 03:00.** Times are stored in UTC but the period was sent to the database in Baghdad time, so e.g. a sale at 01:00 counted on the previous day in *Sales and profit*, *Cash*, *Kits*, *Stock movements* and the graphs. Timestamps are now compared in UTC (`ReportContext::bounds()`).
+
+### Changed
+- Which approvals a person sees is decided in `ApprovalService` (was in the admin screen), so the approvals list and the facts share one rule.
+
 ## [Mikron trauma workbook import] — 2026-11-10
 
 ### Added

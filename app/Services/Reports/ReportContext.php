@@ -54,6 +54,17 @@ final class ReportContext
         return new self($user, $from, $until, $branchIds, $currency, $group);
     }
 
+    /**
+     * The period for comparing with timestamp columns, which are stored in UTC. ($from and
+     * $until are business-time days; sent as they are, a day would run 03:00 → 03:00.)
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    public function bounds(): array
+    {
+        return [$this->from->copy()->utc(), $this->until->copy()->utc()];
+    }
+
     public function canSeeProfit(): bool
     {
         return $this->user->can('reports.profit');

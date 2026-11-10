@@ -15,6 +15,7 @@ use App\Support\Locale\Display;
 use App\Support\Msg;
 use Brick\Math\BigDecimal;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -37,6 +38,57 @@ class ApprovalService
             ApprovalType::Expense => 'expenses.approve',
             ApprovalType::CommissionPayout => 'commissions.manage',
         };
+    }
+
+    /**
+     * Approvals the user may see: their own requests, and every type they may decide in the
+     * branches where they may decide it.
+     *
+     * @return Builder<Approval>
+     */
+    public function visibleTo(User $user): Builder
+    {
+        return $this->limitToVisible(Approval::query(), $user);
+    }
+
+    /**
+     * @template TBuilder of Builder
+     *
+     * @param  TBuilder  $query  an approvals query
+     * @return TBuilder
+     */
+    public function limitToVisible(Builder $query, User $user): Builder
+    {
+        return $query->where(function (Builder $q) use ($user) {
+            $q->where('requested_by', $user->id);
+
+            foreach (ApprovalType::cases() as $type) {
+                $permission = self::permission($type);
+
+                if (! $this->scope->hasAny($user, $permission)) {
+                    continue;
+                }
+
+                $ids = $this->scope->branchIdsFor($user, $permission);
+                $q->orWhere(function (Builder $t) use ($type, $ids) {
+                    $t->where('type', $type);
+
+                    if ($ids !== null) {
+                        $t->whereIn('branch_id', $ids === [] ? [0] : $ids);
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Pending approvals someone else asked for that this user may decide.
+     *
+     * @return Builder<Approval>
+     */
+    public function waitingFor(User $user): Builder
+    {
+        return $this->visibleTo($user)->where('status', ApprovalStatus::Pending)->where('requested_by', '<>', $user->id);
     }
 
     /**

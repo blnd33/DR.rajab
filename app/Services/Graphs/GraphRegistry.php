@@ -298,7 +298,7 @@ final class GraphRegistry
 
         SalesInvoice::query()
             ->whereNotIn('status', [SalesInvoiceStatus::Draft->value, SalesInvoiceStatus::Voided->value])
-            ->whereBetween('issued_at', [$c->from, $c->until])
+            ->whereBetween('issued_at', $c->bounds())
             ->when($c->branchIds !== null, fn ($q) => $q->whereIn('branch_id', $c->branchIds))
             ->select(['id', 'currency', 'total', 'fx_snapshot_id'])
             ->each(function (SalesInvoice $invoice) use (&$totals, $c, $report) {
@@ -374,7 +374,7 @@ final class GraphRegistry
     {
         $rows = WriteOff::query()
             ->where('status', WriteOffStatus::Approved->value)
-            ->whereBetween('reported_at', [$c->from, $c->until])
+            ->whereBetween('reported_at', $c->bounds())
             ->when($c->branchIds !== null, fn ($q) => $q->whereIn('branch_id', $c->branchIds))
             ->groupBy('reason')->selectRaw('reason, COUNT(*) AS n')->toBase()->get();
         $totals = [];
@@ -392,7 +392,7 @@ final class GraphRegistry
     private function transfers(GraphContext $c, string $date): Builder
     {
         return Transfer::query()
-            ->whereBetween($date, [$c->from, $c->until])
+            ->whereBetween($date, $c->bounds())
             ->when($c->branchIds !== null, fn ($q) => $q->where(fn ($w) => $w->whereIn('from_branch_id', $c->branchIds)->orWhereIn('to_branch_id', $c->branchIds)));
     }
 

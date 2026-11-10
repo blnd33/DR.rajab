@@ -55,9 +55,9 @@ class CashReport extends Report
         $rows = [];
 
         foreach ($boxes as $box) {
-            $opening = (string) (MoneyTransaction::query()->where('cash_box_id', $box->id)->where('occurred_at', '<', $context->from)
+            $opening = (string) (MoneyTransaction::query()->where('cash_box_id', $box->id)->where('occurred_at', '<', $context->bounds()[0])
                 ->orderByDesc('occurred_at')->orderByDesc('id')->value('balance_after') ?? '0');
-            $period = MoneyTransaction::query()->where('cash_box_id', $box->id)->whereBetween('occurred_at', [$context->from, $context->until]);
+            $period = MoneyTransaction::query()->where('cash_box_id', $box->id)->whereBetween('occurred_at', $context->bounds());
 
             $in = (string) ((clone $period)->where('amount', '>', 0)->where('type', '<>', MoneyTransactionType::ClosingAdjustment)->sum('amount') ?: '0');
             $out = (string) ((clone $period)->where('amount', '<', 0)->where('type', '<>', MoneyTransactionType::ClosingAdjustment)->sum('amount') ?: '0');

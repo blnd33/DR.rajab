@@ -66,7 +66,7 @@ class StockMovementsReport extends Report
         $branchSql = 'COALESCE(to_branch_id, from_branch_id)';
 
         $movements = StockMovement::query()
-            ->whereBetween('occurred_at', [$context->from, $context->until])
+            ->whereBetween('occurred_at', $context->bounds())
             ->when($context->branchIds !== null, fn ($q) => $q->where(fn ($w) => $w->whereIn('from_branch_id', $context->branchIds)->orWhereIn('to_branch_id', $context->branchIds)))
             ->groupByRaw("type, product_id, {$branchSql}, cost_currency, fx_snapshot_id")
             ->selectRaw("type, product_id, {$branchSql} AS branch_id, cost_currency, fx_snapshot_id, COUNT(*) AS movements, SUM(quantity) AS quantity, SUM(quantity * COALESCE(unit_cost, 0)) AS cost")

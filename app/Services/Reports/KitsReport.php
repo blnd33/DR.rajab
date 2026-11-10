@@ -58,7 +58,7 @@ class KitsReport extends Report
             ->orderBy('code')->get();
 
         $checkouts = KitCheckout::query()->whereIn('kit_id', $kits->pluck('id'))
-            ->whereBetween('checked_out_at', [$context->from, $context->until])
+            ->whereBetween('checked_out_at', $context->bounds())
             ->get()->groupBy('kit_id');
         $kitOfCheckout = $checkouts->flatten()->pluck('kit_id', 'id');
         $items = KitCheckoutItem::query()->whereIn('kit_checkout_id', $kitOfCheckout->keys())

@@ -54,29 +54,7 @@ class ApprovalResource extends Resource
      */
     public static function getEloquentQuery(): Builder
     {
-        $user = ServiceAction::user();
-        $scope = app(BranchScopeResolver::class);
-
-        return parent::getEloquentQuery()->where(function (Builder $q) use ($user, $scope) {
-            $q->where('requested_by', $user->id);
-
-            foreach (ApprovalType::cases() as $type) {
-                $permission = ApprovalService::permission($type);
-
-                if (! $scope->hasAny($user, $permission)) {
-                    continue;
-                }
-
-                $ids = $scope->branchIdsFor($user, $permission);
-                $q->orWhere(function (Builder $t) use ($type, $ids) {
-                    $t->where('type', $type);
-
-                    if ($ids !== null) {
-                        $t->whereIn('branch_id', $ids === [] ? [0] : $ids);
-                    }
-                });
-            }
-        });
+        return app(ApprovalService::class)->limitToVisible(parent::getEloquentQuery(), ServiceAction::user());
     }
 
     public static function getNavigationBadge(): ?string

@@ -55,6 +55,16 @@ final class GraphContext
         return now(config('orthotrack.timezone'))->startOfMonth()->subMonthsNoOverflow(11);
     }
 
+    /**
+     * The period for comparing with timestamp columns (stored in UTC).
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    public function bounds(): array
+    {
+        return [$this->from->copy()->utc(), $this->until->copy()->utc()];
+    }
+
     public function report(Report $report, ?string $group = null): ReportContext
     {
         return ReportContext::make($report, $this->user, array_filter([
