@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Actions;
 
 use App\Http\Controllers\LabelPrintController;
 use App\Models\LabelTemplate;
+use Closure;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Forms\Components\Field;
@@ -15,13 +16,13 @@ use Illuminate\Database\Eloquent\Model;
 use Livewire\Component;
 
 /**
- * "Print labels" for products, serial units and lots: pick a label template and copies,
+ * "Print labels" for products, serial units, lots, instruments and kits: pick a label template and copies,
  * the print sheet opens in a new tab (browser print → thermal printer).
  */
 final class PrintLabelsAction
 {
     /**
-     * @param  'product'|'unit'|'batch'  $kind
+     * @param  'product'|'unit'|'batch'|'instrument'|'kit'  $kind
      */
     public static function make(string $kind): Action
     {
@@ -37,7 +38,7 @@ final class PrintLabelsAction
     }
 
     /**
-     * @param  'product'|'unit'|'batch'  $kind
+     * @param  'product'|'unit'|'batch'|'instrument'|'kit'  $kind
      */
     public static function bulk(string $kind): BulkAction
     {
@@ -50,6 +51,31 @@ final class PrintLabelsAction
             ->action(function (Collection $records, array $data, Component $livewire) use ($kind) {
                 $url = LabelPrintController::url($kind, $records->modelKeys(), (int) $data['template'], (int) $data['copies']);
                 $livewire->js('window.open('.json_encode($url).', "_blank")');
+            });
+    }
+
+    /**
+     * Labels for a list worked out when clicked (e.g. every instrument in a kit).
+     *
+     * @param  'product'|'unit'|'batch'|'instrument'|'kit'  $kind
+     * @param  Closure(): list<int>  $ids
+     */
+    public static function ids(string $kind, Closure $ids, string $name = 'printAllLabels'): Action
+    {
+        return Action::make($name)
+            ->label(__('Print labels'))
+            ->icon(Heroicon::OutlinedPrinter)
+            ->color('gray')
+            ->schema(self::schema())
+            ->modalSubmitActionLabel(__('Open print sheet'))
+            ->action(function (array $data, Component $livewire) use ($kind, $ids) {
+                $list = $ids();
+
+                if ($list === []) {
+                    return;
+                }
+
+                $livewire->js('window.open('.json_encode(LabelPrintController::url($kind, $list, (int) $data['template'], (int) $data['copies'])).', "_blank")');
             });
     }
 

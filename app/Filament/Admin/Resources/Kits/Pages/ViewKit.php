@@ -3,16 +3,19 @@
 namespace App\Filament\Admin\Resources\Kits\Pages;
 
 use App\Enums\KitStatus;
+use App\Filament\Admin\Actions\PrintLabelsAction;
 use App\Filament\Admin\Resources\KitCheckouts\KitCheckoutResource;
 use App\Filament\Admin\Resources\Kits\KitResource;
 use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
+use App\Http\Controllers\LabelPrintController;
 use App\Models\Customer;
 use App\Models\Kit;
 use App\Models\Patient;
 use App\Models\User;
 use App\Services\Assets\KitService;
 use App\Services\Clinical\PatientService;
+use App\Support\Locale\Display;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -39,6 +42,47 @@ class ViewKit extends ViewRecord
         $available = fn () => $this->kit()->status === KitStatus::Available;
 
         return [
+            Action::make('fill')
+                ->label(__('Fill from its list'))
+                ->icon(Heroicon::OutlinedQueueList)
+                ->color('primary')
+                ->visible(fn () => $available() && $user->canInBranch('kits.prepare', $this->kit()->branch_id))
+                ->modalHeading(fn () => __('Fill :kit from its list', ['kit' => $this->kit()->code]))
+                ->modalDescription(__('Every instrument missing from the kit type\'s list goes into the kit: free instruments of that type on this branch\'s shelf first, then new ones registered with their own code.'))
+                ->modalContent(fn () => view('filament.kits.fill-plan', [
+                    'plan' => app(KitService::class)->fillPlan($this->kit()),
+                    'canRegister' => $user->canInBranch('instruments.manage', $this->kit()->branch_id),
+                ]))
+                ->modalSubmitActionLabel(__('Fill the kit'))
+                ->modalSubmitAction(function (Action $action) {
+                    $plan = app(KitService::class)->fillPlan($this->kit());
+
+                    return $plan['reuse'] + $plan['register'] > 0 ? $action : false;
+                })
+                ->modalCancelActionLabel(__('Close'))
+                ->action(function (Action $action) {
+                    $result = ServiceAction::run($action, fn ($u) => app(KitService::class)->fillFromList($this->kit(), $u));
+
+                    if ($result === null) {
+                        return;
+                    }
+
+                    $notification = Notification::make()
+                        ->title(trans_choice(':count instrument added to the kit.|:count instruments added to the kit.', $result['added'], ['count' => Display::number($result['added'])]))
+                        ->success();
+
+                    if ($result['registered'] !== []) {
+                        $notification->persistent()
+                            ->body(trans_choice(':count was registered new — print its label and stick it on.|:count were registered new — print their labels and stick them on.', count($result['registered']), ['count' => Display::number(count($result['registered']))]))
+                            ->actions([
+                                Action::make('labels')->label(__('Print labels'))->button()
+                                    ->url(LabelPrintController::url('instrument', $result['registered']), shouldOpenInNewTab: true),
+                            ]);
+                    }
+
+                    $notification->send();
+                    $this->refreshKit();
+                }),
             Action::make('scan')
                 ->label(__('Scan into kit'))
                 ->icon(Heroicon::OutlinedQrCode)
@@ -102,6 +146,7 @@ class ViewKit extends ViewRecord
                 ->color('success')
                 ->visible(fn () => $this->kit()->status === KitStatus::OutAtHospital && $this->kit()->current_checkout_id !== null)
                 ->url(fn () => KitCheckoutResource::getUrl('view', ['record' => $this->kit()->current_checkout_id])),
+            PrintLabelsAction::make('kit')->label(__('Print kit label')),
         ];
     }
 

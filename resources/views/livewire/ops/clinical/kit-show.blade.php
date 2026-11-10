@@ -30,6 +30,27 @@
     </nav>
 
     @if ($mode === 'prepare' && $canPrepare)
+        @if ($fillPlan !== null && $fillPlan['reuse'] + $fillPlan['register'] > 0)
+            <section class="ot-card space-y-3 p-4" aria-labelledby="fill-title">
+                <h2 id="fill-title" class="font-semibold">{{ __('Fill from its list') }}</h2>
+                <p class="text-sm text-muted-fg">
+                    {{ __('In total: :reuse from the shelf, :register registered new.', ['reuse' => \App\Support\Locale\Display::number($fillPlan['reuse']), 'register' => \App\Support\Locale\Display::number($fillPlan['register'])]) }}
+                </p>
+                <button type="button" wire:click="fillFromList" wire:loading.attr="disabled" class="ot-btn ot-btn-primary w-full"
+                    wire:confirm="{{ __('Put :count instruments into the kit?', ['count' => \App\Support\Locale\Display::number($fillPlan['reuse'] + $fillPlan['register'])]) }}">
+                    @svg('heroicon-o-queue-list', 'size-5')
+                    <span>{{ __('Fill the kit') }}</span>
+                </button>
+            </section>
+        @endif
+
+        @if ($labelsUrl)
+            <a href="{{ $labelsUrl }}" target="_blank" rel="noopener" class="ot-btn ot-btn-secondary w-full">
+                @svg('heroicon-o-printer', 'size-5')
+                <span>{{ __('Print labels for the new instruments') }}</span>
+            </a>
+        @endif
+
         <x-ops.scan-box id="kit-prepare-code" :hint="__('Scan each item')">
             <button type="button" wire:click="markPrepared" class="ot-btn ot-btn-secondary w-full">
                 @svg('heroicon-o-clipboard-document-check', 'size-5')

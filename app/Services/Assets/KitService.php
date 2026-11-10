@@ -37,6 +37,7 @@ use App\Services\Settings\SettingsRepository;
 use App\Services\Stock\StockMovementService;
 use App\Support\Msg;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -56,6 +57,7 @@ class KitService
         private readonly SettingsRepository $settings,
         private readonly AssetLookup $lookup,
         private readonly ScanResolver $scanner,
+        private readonly InstrumentService $instruments,
     ) {}
 
     /**
@@ -203,6 +205,138 @@ class KitService
             $kit->forceFill(['last_prepared_at' => now()])->save();
             $this->assets->move($kit, AssetMovementType::Prepare, $by, note: $note);
         });
+    }
+
+    /**
+     * What "Fill from its list" would do: per instrument type of the kit type's list, how many
+     * are missing, how many free instruments of that type wait on the branch shelf, and how many
+     * would be registered new. Implant lines are only counted (they come in by scanning).
+     *
+     * @return array{lines: list<array{instrument_type_id: int, label: string, expected: int, present: int, reuse: int, register: int}>, reuse: int, register: int, products_missing: int}
+     */
+    public function fillPlan(Kit $kit): array
+    {
+        $kit->loadMissing(['type.templateItems.product', 'type.templateItems.instrumentType']);
+
+        $expected = [];
+        $labels = [];
+        $productsMissing = 0;
+
+        foreach ($kit->type->templateItems as $item) {
+            if ($item->instrument_type_id === null) {
+                continue;
+            }
+
+            $expected[$item->instrument_type_id] = ($expected[$item->instrument_type_id] ?? 0) + $item->expected_qty;
+            $labels[$item->instrument_type_id] = trim(($item->instrumentType->code ?? '').' · '.$item->label(), ' ·');
+        }
+
+        foreach ($this->compare($kit)['lines'] as $line) {
+            if ($line['kind'] !== 'instrument' && $line['required']) {
+                $productsMissing += $line['missing'];
+            }
+        }
+
+        $typeIds = array_keys($expected);
+        $present = $typeIds === [] ? collect() : Instrument::query()->where('kit_id', $kit->id)
+            ->whereIn('status', [InstrumentStatus::InKit, InstrumentStatus::OutAtHospital])
+            ->whereIn('instrument_type_id', $typeIds)->get(['instrument_type_id'])->countBy('instrument_type_id');
+        $free = $typeIds === [] ? collect() : $this->freeInstruments($kit, $typeIds)->get(['instrument_type_id'])->countBy('instrument_type_id');
+
+        $lines = [];
+
+        foreach ($expected as $typeId => $qty) {
+            $missing = max(0, $qty - (int) ($present[$typeId] ?? 0));
+            $reuse = min($missing, (int) ($free[$typeId] ?? 0));
+
+            $lines[] = [
+                'instrument_type_id' => (int) $typeId,
+                'label' => $labels[$typeId],
+                'expected' => $qty,
+                'present' => (int) ($present[$typeId] ?? 0),
+                'reuse' => $reuse,
+                'register' => $missing - $reuse,
+            ];
+        }
+
+        return [
+            'lines' => $lines,
+            'reuse' => array_sum(array_column($lines, 'reuse')),
+            'register' => array_sum(array_column($lines, 'register')),
+            'products_missing' => $productsMissing,
+        ];
+    }
+
+    /**
+     * "Fill from its list": puts every missing instrument of the kit type's list into the kit —
+     * free instruments of that type on the branch shelf first, then new ones registered with their
+     * own code (INS-<branch>-NNNN). Implants are not touched; they are scanned in as before.
+     *
+     * @return array{added: int, reused: int, registered: list<int>}
+     */
+    public function fillFromList(Kit $kit, User $by): array
+    {
+        $this->authorize($by, 'kits.prepare', $kit->branch_id);
+
+        return DB::transaction(function () use ($kit, $by) {
+            /** @var Kit $locked */
+            $locked = Kit::query()->with('branch')->lockForUpdate()->findOrFail($kit->id);
+            $this->assertAvailable($locked);
+
+            $plan = $this->fillPlan($locked);
+
+            if ($plan['reuse'] + $plan['register'] === 0) {
+                throw new StockRuleViolation(__('Nothing to add — every instrument on the list is already in the kit.'));
+            }
+
+            if ($plan['register'] > 0 && ! $this->scope->allows($by, 'instruments.manage', $locked->branch_id)) {
+                throw new AuthorizationException(__('Registering new instruments needs the permission ":permission".', ['permission' => __('Create and edit instruments')]));
+            }
+
+            $reused = 0;
+            $registered = [];
+
+            foreach ($plan['lines'] as $line) {
+                $missing = $line['reuse'] + $line['register'];
+
+                if ($missing === 0) {
+                    continue;
+                }
+
+                $shelf = $this->freeInstruments($locked, [$line['instrument_type_id']])
+                    ->orderBy('code')->limit($missing)->lockForUpdate()->get();
+
+                foreach ($shelf as $instrument) {
+                    $this->addInstrument($locked, $instrument, $by);
+                    $reused++;
+                }
+
+                for ($n = $shelf->count(); $n < $missing; $n++) {
+                    $instrument = $this->instruments->create($locked->branch, ['instrument_type_id' => $line['instrument_type_id']], $by);
+                    $this->addInstrument($locked, $instrument, $by);
+                    $registered[] = $instrument->id;
+                }
+            }
+
+            $kit->refresh();
+
+            return ['added' => $reused + count($registered), 'reused' => $reused, 'registered' => $registered];
+        });
+    }
+
+    /**
+     * Instruments of these types loose on the kit's branch shelf, ready to go into a kit.
+     *
+     * @param  list<int>  $typeIds
+     * @return Builder<Instrument>
+     */
+    private function freeInstruments(Kit $kit, array $typeIds): Builder
+    {
+        return Instrument::query()
+            ->where('branch_id', $kit->branch_id)
+            ->whereNull('kit_id')
+            ->where('status', InstrumentStatus::Available)
+            ->whereIn('instrument_type_id', $typeIds);
     }
 
     /**

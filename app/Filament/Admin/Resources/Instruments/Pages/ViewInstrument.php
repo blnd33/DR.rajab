@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Instruments\Pages;
 
 use App\Enums\InstrumentStatus;
+use App\Filament\Admin\Actions\PrintLabelsAction;
 use App\Filament\Admin\Resources\Instruments\InstrumentResource;
 use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
@@ -36,6 +37,7 @@ class ViewInstrument extends ViewRecord
         $note = Textarea::make('note')->label(__('Note'))->rows(2);
 
         return [
+            PrintLabelsAction::make('instrument'),
             EditAction::make(),
             ActionGroup::make([
                 Action::make('maintenance_in')->label(__('Send to maintenance'))->icon(Heroicon::OutlinedWrenchScrewdriver)

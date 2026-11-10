@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Instruments;
 
 use App\Enums\InstrumentStatus;
+use App\Filament\Admin\Actions\PrintLabelsAction;
 use App\Filament\Admin\Resources\Instruments\Pages\CreateInstrument;
 use App\Filament\Admin\Resources\Instruments\Pages\EditInstrument;
 use App\Filament\Admin\Resources\Instruments\Pages\ListInstruments;
@@ -110,7 +111,8 @@ class InstrumentResource extends Resource
                 SelectFilter::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('kits.view_any')),
                 TernaryFilter::make('kit_id')->label(__('In a kit'))->nullable(),
             ])
-            ->recordActions([ViewAction::make()])
+            ->recordActions([ViewAction::make(), PrintLabelsAction::make('instrument')->hiddenLabel()->tooltip(__('Print labels'))])
+            ->toolbarActions([PrintLabelsAction::bulk('instrument')])
             ->emptyStateHeading(__('No instruments yet'));
     }
 

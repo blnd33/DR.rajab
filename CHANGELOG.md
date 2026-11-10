@@ -2,6 +2,13 @@
 
 All notable changes per build phase.
 
+## [Kits: fill from its list, instrument and kit labels] — 2026-11-10
+
+### Added
+- **Fill from its list** on a kit (admin *Kit* page and phone app *Prepare / refill*, `kits.prepare`): every instrument missing from the kit type's list goes into the kit in one step — free instruments of that type on the kit's branch shelf first, then new instruments registered with their own code (`INS-<branch>-NNNN`, needs `instruments.manage`). Before filling, a table shows per instrument type how many are missing, how many come from the shelf and how many are registered new; implants are not added this way (the count still missing is shown — they are scanned in as before). One ledger row per instrument; refused while the kit is out or when nothing is missing. With the Lima sets imported as kit types, a box with 30–40 instruments is ready in one press instead of registering each instrument by hand.
+- **Labels for instruments and kits**: the barcode holds the instrument's or kit's own code (what *Scan into kit* and the return check read); the text shows the name, the code and the catalogue code (`REF …`). *Print labels* on the instruments list (one or many), the instrument page, the kit's *Instruments* tab (*Print all labels*) and *Print kit label* on the kit page; after a fill, the message offers the labels of the new instruments (phone: *Print labels for the new instruments*). Only people who may see the instrument or kit can print it.
+- **Tests**: the plan (shelf first, other branches not used, optional implants not counted), the fill with codes and ledger rows, filling only what is missing, refused for a kit that is out and without permission, labels and their access, the admin action and the phone screen.
+
 ## [Hostinger: PHP 8.4 and WAL] — 2026-11-10
 
 ### Fixed

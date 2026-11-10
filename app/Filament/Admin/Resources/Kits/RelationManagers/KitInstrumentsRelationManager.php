@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Kits\RelationManagers;
 
 use App\Enums\KitStatus;
+use App\Filament\Admin\Actions\PrintLabelsAction;
 use App\Filament\Admin\Resources\Instruments\InstrumentResource;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Filament\Admin\Tables\Columns\CodeColumn;
@@ -48,6 +49,11 @@ class KitInstrumentsRelationManager extends RelationManager
                 CodeColumn::make('manufacturer_serial')->label(__('Maker serial'))->placeholder('—')->toggleable(),
                 TextColumn::make('status')->label(__('Status'))->badge(),
             ])
+            ->headerActions([
+                PrintLabelsAction::ids('instrument', fn () => $this->kit()->instruments()->orderBy('code')->pluck('id')->map(fn ($id) => (int) $id)->all())
+                    ->label(__('Print all labels')),
+            ])
+            ->toolbarActions([PrintLabelsAction::bulk('instrument')])
             ->recordActions([
                 Action::make('remove')
                     ->label(__('Take out'))

@@ -3,6 +3,8 @@
 namespace App\Services\Labels;
 
 use App\Enums\LabelSymbology;
+use App\Models\Instrument;
+use App\Models\Kit;
 use App\Models\LabelTemplate;
 use App\Models\Product;
 use App\Models\StockBatch;
@@ -15,7 +17,7 @@ use Illuminate\Support\Carbon;
 /**
  * Our own labels (Module 5) for products, serial units and lots without a usable
  * barcode. Output is inline SVG placed on a page exactly the label size, printed by
- * the browser to the thermal printer's driver (P1-2). Kits and instruments: Phase 3.
+ * the browser to the thermal printer's driver (P1-2). Kits and instruments carry their own code.
  *
  * What the barcode contains:
  *   Code 128          unit → serial · product → SKU · lot → OT1|L|sku|lot|expiry
@@ -100,6 +102,65 @@ class LabelRenderer
             'expiry' => '',
             'branch' => '',
         ]);
+    }
+
+    /**
+     * An instrument: the barcode holds its own label code (what scanning into a kit and the
+     * return check look up). Text: type name, the instrument's code, the catalogue code, branch.
+     */
+    public function forInstrument(LabelTemplate $template, Instrument $instrument): LabelItem
+    {
+        return $this->asset($template, $instrument->barcode, [
+            'name' => (string) $instrument->type?->name,
+            'sku' => $instrument->code,
+            'size' => '',
+            'serial' => filled($instrument->type?->code) ? 'REF '.$instrument->type->code : '',
+            'lot' => '',
+            'expiry' => '',
+            'branch' => (string) $instrument->branch?->code,
+        ]);
+    }
+
+    /**
+     * A kit box: the barcode holds the kit's label code. Text: kit type, the kit's code, home branch.
+     */
+    public function forKit(LabelTemplate $template, Kit $kit): LabelItem
+    {
+        return $this->asset($template, $kit->barcode, [
+            'name' => (string) $kit->type?->name,
+            'sku' => $kit->code,
+            'size' => '',
+            'serial' => filled($kit->type?->code) ? 'REF '.$kit->type->code : '',
+            'lot' => '',
+            'expiry' => '',
+            'branch' => (string) $kit->homeBranch?->code,
+        ]);
+    }
+
+    /**
+     * Kits and instruments carry their plain code in every symbology (no GS1 data to encode, so a
+     * GS1 DataMatrix template prints a plain DataMatrix). The code line is always printed.
+     *
+     * @param  array<string, string>  $values
+     */
+    private function asset(LabelTemplate $template, string $code, array $values): LabelItem
+    {
+        $symbology = match ($template->symbology) {
+            LabelSymbology::Code128 => LabelSymbology::Code128,
+            LabelSymbology::Qr => LabelSymbology::Qr,
+            default => LabelSymbology::DataMatrix,
+        };
+
+        $item = $this->item($template, $code, $symbology, $values);
+
+        if (isset($item->lines['sku'])) {
+            return $item;
+        }
+
+        // The template leaves the code line out: put it right after the name anyway.
+        $lines = array_intersect_key($item->lines, ['name' => true]) + ['sku' => $values['sku']] + $item->lines;
+
+        return new LabelItem($item->payload, $item->svg, $item->twoDimensional, $lines);
     }
 
     /**

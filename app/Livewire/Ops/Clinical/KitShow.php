@@ -5,6 +5,7 @@ namespace App\Livewire\Ops\Clinical;
 use App\Enums\CheckoutItemKind;
 use App\Enums\KitStatus;
 use App\Enums\StockStatus;
+use App\Http\Controllers\LabelPrintController;
 use App\Livewire\Ops\Concerns\RunsStockActions;
 use App\Models\Customer;
 use App\Models\Instrument;
@@ -16,6 +17,7 @@ use App\Models\User;
 use App\Services\Assets\AssetLookup;
 use App\Services\Assets\KitService;
 use App\Support\Locale\DigitConverter;
+use App\Support\Locale\Display;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -48,6 +50,9 @@ class KitShow extends Component
 
     /** @var array<int, int> checkout item id → quantity back */
     public array $lotReturned = [];
+
+    /** Print sheet for the instruments "Fill from its list" just registered. */
+    public ?string $labelsUrl = null;
 
     public function mount(Kit $kit): void
     {
@@ -102,6 +107,20 @@ class KitShow extends Component
         $this->attempt(fn () => $kits->removeBatch($batch, $batch->quantity, $this->user()), __('Taken out of the kit.'));
     }
 
+    /** "Fill from its list": every missing instrument of the list into the kit (shelf first, then new). */
+    public function fillFromList(KitService $kits): void
+    {
+        $result = $this->attempt(fn () => $kits->fillFromList($this->kit, $this->user()));
+
+        if ($result === null) {
+            return;
+        }
+
+        $this->labelsUrl = $result['registered'] !== [] ? LabelPrintController::url('instrument', $result['registered']) : null;
+        $this->dispatch('toast', type: 'success', message: trans_choice(':count instrument added to the kit.|:count instruments added to the kit.', $result['added'], ['count' => Display::number($result['added'])]));
+        $this->kit->refresh();
+    }
+
     public function markPrepared(KitService $kits): void
     {
         $this->attempt(fn () => $kits->markPrepared($this->kit, $this->user()), __('Kit marked as prepared.'));
@@ -150,6 +169,7 @@ class KitShow extends Component
 
         return view('livewire.ops.clinical.kit-show', [
             'compare' => app(KitService::class)->compare($this->kit),
+            'fillPlan' => $this->mode === 'prepare' && $available && $user->canInBranch('kits.prepare', $this->kit->branch_id) ? app(KitService::class)->fillPlan($this->kit) : null,
             'units' => StockUnit::query()->with('product')->where('kit_id', $this->kit->id)->whereIn('status', [StockStatus::InKit, StockStatus::OutAtHospital])->orderBy('expiry_date')->get(),
             'batches' => StockBatch::query()->with('product')->where('kit_id', $this->kit->id)->where('quantity', '>', 0)->orderBy('expiry_date')->get(),
             'instruments' => Instrument::query()->with('type')->where('kit_id', $this->kit->id)->orderBy('code')->get(),

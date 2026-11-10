@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Instrument;
+use App\Models\Kit;
 use App\Models\LabelTemplate;
 use App\Models\Product;
 use App\Models\StockBatch;
@@ -20,7 +22,7 @@ use Illuminate\Support\Facades\URL;
  */
 class LabelPrintController extends Controller
 {
-    public const KINDS = ['product', 'unit', 'batch'];
+    public const KINDS = ['product', 'unit', 'batch', 'instrument', 'kit'];
 
     public const MAX_LABELS = 500;
 
@@ -62,6 +64,12 @@ class LabelPrintController extends Controller
             'batch' => StockBatch::query()->with(['product', 'branch'])->whereIn('id', $ids)->get()
                 ->each(fn (StockBatch $b) => abort_unless($user->can('printLabel', $b), 403))
                 ->map(fn (StockBatch $b) => $renderer->forBatch($template, $b)),
+            'instrument' => Instrument::query()->with(['type', 'branch'])->whereIn('id', $ids)->orderBy('code')->get()
+                ->each(fn (Instrument $i) => abort_unless($user->can('view', $i), 403))
+                ->map(fn (Instrument $i) => $renderer->forInstrument($template, $i)),
+            'kit' => Kit::query()->with(['type', 'homeBranch'])->whereIn('id', $ids)->orderBy('code')->get()
+                ->each(fn (Kit $k) => abort_unless($user->can('view', $k), 403))
+                ->map(fn (Kit $k) => $renderer->forKit($template, $k)),
         };
 
         $labels = $items->flatMap(fn ($item) => array_fill(0, $copies, $item))->take(self::MAX_LABELS)->values();
