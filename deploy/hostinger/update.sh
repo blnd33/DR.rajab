@@ -4,12 +4,25 @@
 # Run over SSH from the app folder:
 #   bash deploy/hostinger/update.sh ~/orthotrack-<commit>.zip
 # Keeps .env, storage/ (uploads, logs, backups) and the SQLite database (outside this folder).
-# PHP=/opt/alt/php83/usr/bin/php bash deploy/hostinger/update.sh …   if `php -v` is older than 8.3.
+# Uses PHP 8.4 (/opt/alt/php84/usr/bin/php) when the server has it — the SQLite settings need 8.4.
+# Another PHP: PHP=/path/to/php bash deploy/hostinger/update.sh …
 #
 set -euo pipefail
 
 ZIP="${1:?Give the package: bash deploy/hostinger/update.sh ~/orthotrack-<commit>.zip}"
-PHP="${PHP:-php}"
+
+if [[ -z "${PHP:-}" ]]; then
+    if [[ -x /opt/alt/php84/usr/bin/php ]]; then
+        PHP=/opt/alt/php84/usr/bin/php
+    else
+        PHP=php
+    fi
+fi
+
+if ! $PHP -r 'exit(PHP_VERSION_ID >= 80400 ? 0 : 1);'; then
+    echo "⚠ $($PHP -r 'echo PHP_VERSION;') is older than 8.4: imports can fail with \"database is locked\" (see docs/HOSTINGER.md)."
+fi
+echo "▶ Using $($PHP -r 'echo PHP_BINARY, " (PHP ", PHP_VERSION, ")";')"
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$APP_DIR"
 

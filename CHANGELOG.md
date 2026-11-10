@@ -2,6 +2,13 @@
 
 All notable changes per build phase.
 
+## [Hostinger: PHP 8.4 and WAL] — 2026-11-10
+
+### Fixed
+- **Imports on the test site failed with "database is locked".** Laravel applies `DB_TRANSACTION_MODE=IMMEDIATE` only on PHP 8.4, and Hostinger's command-line `php` is 8.3, so a queue job that met a page writing at the same moment failed at once. Every server command and the cron now use `/opt/alt/php84/usr/bin/php`; `deploy/hostinger/env.hostinger` adds `DB_JOURNAL_MODE=WAL` (pages read while the queue writes).
+- `deploy/hostinger/update.sh` picks PHP 8.4 by itself when the server has it, prints which PHP it uses and warns when it is older than 8.4.
+- [docs/HOSTINGER.md](docs/HOSTINGER.md): the `php` alias for 8.4, the cron in hPanel step by step (no *once per minute* preset; leave other sites' jobs alone; *View Output*), the two import steps (check → *Import N rows*), how to see where an import stands, and how to start a failed import again (rows already written are skipped).
+
 ## [Test site for the doctor] — 2026-11-08
 
 Guide: [docs/TEST-SITE.md](docs/TEST-SITE.md) · server files: [deploy/test-site/](deploy/test-site/).
