@@ -11,6 +11,11 @@ use App\Models\StockBatch;
 use App\Models\StockUnit;
 use App\Models\User;
 use App\Support\Gs1\Gtin;
+use App\Support\Locale\DigitConverter;
+use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException;
+use Brick\Math\RoundingMode;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -53,6 +58,99 @@ class ProductService
 
             return $product;
         });
+    }
+
+    /**
+     * "Set price" for many products at once (selling, purchase or both):
+     *   set     — one amount in one currency; optionally only where the price is still empty;
+     *   percent — change existing prices by a percentage (10 = 10 % more, -5 = 5 % less);
+     *             products without that price are skipped and the currency stays.
+     * Each changed product is saved on its own, so the catalog history shows old → new.
+     *
+     * @param  list<int>  $productIds
+     * @param  array{price: string, mode: string, amount?: mixed, currency?: ?string, only_empty?: bool, percent?: mixed}  $data
+     * @return array{changed: int, skipped: int}
+     */
+    public function setPrices(array $productIds, array $data, User $by): array
+    {
+        if (! $by->can('products.manage')) {
+            throw new AuthorizationException(__('You are not allowed to change products.'));
+        }
+
+        $sides = match ($data['price'] ?? null) {
+            'selling' => ['selling'],
+            'purchase' => ['purchase'],
+            'both' => ['selling', 'purchase'],
+            default => throw ValidationException::withMessages(['price' => __('Choose which price to change.')]),
+        };
+
+        $mode = $data['mode'] ?? null;
+        $amount = null;
+        $factor = null;
+
+        if ($mode === 'set') {
+            $amount = $this->decimal($data['amount'] ?? null, 'amount');
+
+            if ($amount->isNegative()) {
+                throw ValidationException::withMessages(['amount' => __('The price cannot be negative.')]);
+            }
+
+            if (! in_array($data['currency'] ?? null, config('orthotrack.currencies'), true)) {
+                throw ValidationException::withMessages(['currency' => __('Choose a currency.')]);
+            }
+        } elseif ($mode === 'percent') {
+            $percent = $this->decimal($data['percent'] ?? null, 'percent');
+
+            if ($percent->isLessThanOrEqualTo(-100) || $percent->isGreaterThan(1000) || $percent->isZero()) {
+                throw ValidationException::withMessages(['percent' => __('Give a percentage between -99 and 1000, not 0.')]);
+            }
+
+            $factor = BigDecimal::one()->plus($percent->dividedBy(100, 8, RoundingMode::HalfUp));
+        } else {
+            throw ValidationException::withMessages(['mode' => __('Choose how to change the price.')]);
+        }
+
+        $changed = 0;
+        $skipped = 0;
+
+        DB::transaction(function () use ($productIds, $sides, $mode, $amount, $factor, $data, &$changed, &$skipped) {
+            foreach ($productIds as $id) {
+                $product = Product::query()->lockForUpdate()->findOrFail($id);
+
+                foreach ($sides as $side) {
+                    $current = $product->getAttribute("{$side}_price");
+
+                    if ($mode === 'set') {
+                        if (($data['only_empty'] ?? false) && $current !== null) {
+                            continue;
+                        }
+
+                        $product->setAttribute("{$side}_price", (string) $amount->toScale(4, RoundingMode::HalfUp));
+                        $product->setAttribute("{$side}_currency", $data['currency']);
+                    } elseif ($current !== null) {
+                        $product->setAttribute("{$side}_price", (string) BigDecimal::of($current)->multipliedBy($factor)->toScale(4, RoundingMode::HalfUp));
+                    }
+                }
+
+                if ($product->isDirty()) {
+                    $product->save();
+                    $changed++;
+                } else {
+                    $skipped++;
+                }
+            }
+        });
+
+        return ['changed' => $changed, 'skipped' => $skipped];
+    }
+
+    private function decimal(mixed $value, string $field): BigDecimal
+    {
+        try {
+            return BigDecimal::of(trim((string) DigitConverter::toWestern((string) $value)));
+        } catch (MathException) {
+            throw ValidationException::withMessages([$field => __('Type a number.')]);
+        }
     }
 
     public function hasStock(Product $product): bool

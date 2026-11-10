@@ -2,6 +2,15 @@
 
 All notable changes per build phase.
 
+## [Set price for many products] — 2026-11-10
+
+### Added
+- **Set price** on the products list (*Bulk actions*, `products.manage`): tick the products — or *Select all* to take the whole filtered list, e.g. the 1,828 imported Lima implants — and change the **selling price, the purchase price or both** in one step:
+  - *One price for all*: an amount in USD, EUR or IQD (Arabic / Kurdish digits accepted); optionally *only products that have no price yet*.
+  - *Up or down by %*: e.g. `10` = 10 % more, `-5` = 5 % less; products without that price are skipped and the currency stays.
+  The message says how many prices changed and how many products were left as they were (same price already, or skipped). Every changed product is saved on its own, so its history shows old → new; amounts use exact decimal maths (4 decimals). Replaces the server command used on the test site on 2026-11-10.
+- **Tests**: one price with history, unchanged when the same, only empty prices, both prices, percentage up / down keeping the currency, wrong input refused (no price chosen, negative, unknown currency, not a number, 0 % or −100 %), people without `products.manage` refused, both modes from the list.
+
 ## [Kits: fill from its list, instrument and kit labels] — 2026-11-10
 
 ### Added

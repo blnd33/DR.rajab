@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Products\Tables;
 use App\Enums\TrackingType;
 use App\Enums\UsageLevel;
 use App\Filament\Admin\Actions\PrintLabelsAction;
+use App\Filament\Admin\Actions\SetPricesAction;
 use App\Filament\Admin\Tables\Columns\CodeColumn;
 use App\Models\Brand;
 use App\Models\Category;
@@ -83,6 +84,7 @@ class ProductsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    SetPricesAction::make(),
                     PrintLabelsAction::bulk('product')
                         ->visible(fn () => app(BranchScopeResolver::class)->hasAny(Auth::user(), 'products.print_labels')),
                 ]),
