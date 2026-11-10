@@ -24,7 +24,7 @@ enum ImportType: string implements HasIcon, HasLabel
             self::Products => __('Product catalog'),
             self::Stock => __('Stock (serials and lots)'),
             self::MinStock => __('Minimum stock per branch'),
-            self::SupplierCatalog => __('Supplier catalog (Lima / Enovis workbook)'),
+            self::SupplierCatalog => __('Supplier catalog (Lima / Enovis or Mikron workbook)'),
         };
     }
 

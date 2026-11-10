@@ -2343,5 +2343,11 @@
     "Percent": "Percent",
     "10 = 10 % more, -5 = 5 % less. Products without that price are skipped; the currency stays.": "10 = 10 % more, -5 = 5 % less. Products without that price are skipped; the currency stays.",
     ":count price changed.|:count prices changed.": ":count price changed.|:count prices changed.",
-    ":count product was left as it was.|:count products were left as they were.": ":count product was left as it was.|:count products were left as they were."
+    ":count product was left as it was.|:count products were left as they were.": ":count product was left as it was.|:count products were left as they were.",
+    "Supplier catalog (Lima / Enovis or Mikron workbook)": "Supplier catalog (Lima / Enovis or Mikron workbook)",
+    "No supplier catalog sheets found. Each sheet needs a header row with Ref Code and Description.": "No supplier catalog sheets found. Each sheet needs a header row with Ref Code and Description.",
+    "No supplier catalog sheets found. Upload the Lima / Enovis workbook (Hip, Knee, Shoulder sheets) or the Mikron workbook (Plates, Nails, Instrument Sets sheets) as it is.": "No supplier catalog sheets found. Upload the Lima / Enovis workbook (Hip, Knee, Shoulder sheets) or the Mikron workbook (Plates, Nails, Instrument Sets sheets) as it is.",
+    "The Mikron trauma workbook works too: the Plates, Screws and Nails sheets become products under Trauma, the Instrument Sets Summary and Details become sets with their instruments.": "The Mikron trauma workbook works too: the Plates, Screws and Nails sheets become products under Trauma, the Instrument Sets Summary and Details become sets with their instruments.",
+    ":count hole|:count holes": ":count hole|:count holes",
+    "Trauma": "Trauma"
 }

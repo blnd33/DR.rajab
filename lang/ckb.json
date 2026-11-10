@@ -2546,5 +2546,11 @@
     "Percent": "ڕێژە",
     "10 = 10 % more, -5 = 5 % less. Products without that price are skipped; the currency stays.": "10 = 10 % زیاتر، -5 = 5 % کەمتر. ئەو بەرهەمانەی ئەو نرخەیان نییە تێدەپەڕێنرێن؛ دراوەکە وەک خۆی دەمێنێتەوە.",
     ":count price changed.|:count prices changed.": "نرخی :count بەرهەم گۆڕدرا.|نرخی :count بەرهەم گۆڕدران.",
-    ":count product was left as it was.|:count products were left as they were.": ":count بەرهەم وەک خۆی مایەوە.|:count بەرهەم وەک خۆیان مانەوە."
+    ":count product was left as it was.|:count products were left as they were.": ":count بەرهەم وەک خۆی مایەوە.|:count بەرهەم وەک خۆیان مانەوە.",
+    "Supplier catalog (Lima / Enovis or Mikron workbook)": "کەتەلۆگی دابینکەر (فایلی Lima / Enovis یان Mikron)",
+    "No supplier catalog sheets found. Each sheet needs a header row with Ref Code and Description.": "هیچ پەڕەیەکی کەتەلۆگی دابینکەر نەدۆزرایەوە. هەر پەڕەیەک پێویستی بە ڕیزێکی سەردێڕ هەیە کە Ref Code و Description تێدابێت.",
+    "No supplier catalog sheets found. Upload the Lima / Enovis workbook (Hip, Knee, Shoulder sheets) or the Mikron workbook (Plates, Nails, Instrument Sets sheets) as it is.": "هیچ پەڕەیەکی کەتەلۆگی دابینکەر نەدۆزرایەوە. فایلی Lima / Enovis (پەڕەکانی Hip و Knee و Shoulder) یان فایلی Mikron (پەڕەکانی Plates و Nails و Instrument Sets) وەک خۆی باربکە.",
+    "The Mikron trauma workbook works too: the Plates, Screws and Nails sheets become products under Trauma, the Instrument Sets Summary and Details become sets with their instruments.": "فایلی Mikron ی شکانی ئێسکیش کار دەکات: پەڕەکانی پلەیت و بورغی و بزمار دەبنە بەرهەم لەژێر شکانی ئێسک، و پەڕەکانی Instrument Sets Summary و Details دەبنە سێت لەگەڵ ئامرازەکانیان.",
+    ":count hole|:count holes": ":count کون|:count کون",
+    "Trauma": "شکانی ئێسک"
 }

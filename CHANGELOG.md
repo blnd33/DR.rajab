@@ -2,6 +2,17 @@
 
 All notable changes per build phase.
 
+## [Mikron trauma workbook import] — 2026-11-10
+
+### Added
+- **Supplier catalog import reads the Mikron trauma workbook** as the doctor sends it (*Supplier catalog (Lima / Enovis or Mikron workbook)*). The import looks at the sheet names and picks the Lima or the Mikron reader by itself; the checks, preview and *Import N rows* step are the same.
+  - *ALL PLATES*, *CANN&HER&HEAD*, *ALL NAILS*: every item becomes a product (brand Mikron, lot-tracked implant) under the new area **Trauma**, grouped by the sheet's heading rows (*Cranial Plates*, *SCREWS for SMALL FRAGMENT Plates*, *HUMERUS Nail*…). The EAN code becomes the product's GTIN, so the box scans by itself. Size from the description: `3.5 × 35 mm`, `9 holes · Right`. Code ranges such as `MX3001002506-40` (*Same as for MINI Plates*) point at items listed elsewhere and are skipped.
+  - *ALL Instrument Sets Summary*: each set's group (*Plate*, *Nail*…) and usage from the colour key beside the table; red *Not ordered / Not available / Factory don't produce it* = *Not used* (kept usable, sorts last).
+  - *ALL Instrument Sets Details*: the instruments of each set, with their quantities (size variants such as reamers `MTFN25-10.0` are their own instruments). The three *Miscellaneous* entries (two trays and a plate bender) are already part of the Small Fragment set, so they are instruments, not sets.
+  - Columns are found by their header text (the sheets differ), typos fixed (*ARTHRODRSIS* → *ARTHRODESIS*).
+  - The doctor's file of 09.11.2026: **2,004 products, 555 instruments, 19 sets, no errors**; checked in 2 s, written in 10 s; importing it again changes nothing.
+- **Tests**: groups, barcodes, sizes, skipped ranges, typos, set usage from the key, set contents with quantities and dashed codes, a tray that stays an instrument, the full import under Trauma (Arabic area name), re-import unchanged, a recoloured set updated, an unknown workbook refused with a message naming both formats.
+
 ## [Set price for many products] — 2026-11-10
 
 ### Added

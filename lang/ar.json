@@ -2546,5 +2546,11 @@
     "Percent": "النسبة",
     "10 = 10 % more, -5 = 5 % less. Products without that price are skipped; the currency stays.": "10 = زيادة 10 %، و-5 = نقصان 5 %. تُتخطّى المنتجات التي ليس لها هذا السعر، وتبقى العملة كما هي.",
     ":count price changed.|:count prices changed.": "تم تغيير أسعار :count منتجات.|تم تغيير سعر :count منتج.|تم تغيير أسعار :count منتجات.|تم تغيير أسعار :count منتجات.|تم تغيير أسعار :count منتجاً.|تم تغيير أسعار :count منتج.",
-    ":count product was left as it was.|:count products were left as they were.": "بقيت :count منتجات كما هي.|بقي :count منتج كما هو.|بقيت :count منتجات كما هي.|بقيت :count منتجات كما هي.|بقي :count منتجاً كما هو.|بقي :count منتج كما هو."
+    ":count product was left as it was.|:count products were left as they were.": "بقيت :count منتجات كما هي.|بقي :count منتج كما هو.|بقيت :count منتجات كما هي.|بقيت :count منتجات كما هي.|بقي :count منتجاً كما هو.|بقي :count منتج كما هو.",
+    "Supplier catalog (Lima / Enovis or Mikron workbook)": "كتالوج المورّد (ملف Lima / Enovis أو Mikron)",
+    "No supplier catalog sheets found. Each sheet needs a header row with Ref Code and Description.": "لم يتم العثور على أوراق كتالوج المورّد. يجب أن تحتوي كل ورقة على صف عناوين فيه Ref Code و Description.",
+    "No supplier catalog sheets found. Upload the Lima / Enovis workbook (Hip, Knee, Shoulder sheets) or the Mikron workbook (Plates, Nails, Instrument Sets sheets) as it is.": "لم يتم العثور على أوراق كتالوج المورّد. ارفع ملف Lima / Enovis (أوراق Hip و Knee و Shoulder) أو ملف Mikron (أوراق Plates و Nails و Instrument Sets) كما هو.",
+    "The Mikron trauma workbook works too: the Plates, Screws and Nails sheets become products under Trauma, the Instrument Sets Summary and Details become sets with their instruments.": "يعمل ملف Mikron للكسور أيضاً: تصبح أوراق الصفائح والبراغي والمسامير منتجات تحت قسم الكسور، وتصبح أوراق Instrument Sets Summary و Details أطقماً مع أدواتها.",
+    ":count hole|:count holes": ":count ثقوب|:count ثقب|:count ثقبان|:count ثقوب|:count ثقباً|:count ثقب",
+    "Trauma": "الكسور"
 }

@@ -65,7 +65,8 @@ enum UsageLevel: string implements HasColor, HasLabel
         $text = mb_strtolower(preg_replace('/\s+/u', ' ', $text) ?? '');
 
         return match (true) {
-            str_contains($text, 'will not be ordered'), str_contains($text, 'not used'), str_contains($text, 'not produced') => self::NotUsed,
+            str_contains($text, 'will not be ordered'), str_contains($text, 'not ordered'), str_contains($text, 'not used'), str_contains($text, 'not produced'),
+            str_contains($text, 'not available'), str_contains($text, "don't produce"), str_contains($text, 'don’t produce') => self::NotUsed,
             str_contains($text, 'almost never'), str_contains($text, 'rarely') => self::Rarely,
             str_contains($text, 'sometimes') => self::Sometimes,
             str_contains($text, 'less commonly'), str_contains($text, 'less used') => self::LessUsed,

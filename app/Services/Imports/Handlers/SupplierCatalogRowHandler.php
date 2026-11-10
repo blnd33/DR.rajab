@@ -19,23 +19,23 @@ use App\Services\Imports\Contracts\ReadsWorkbook;
 use App\Services\Imports\Contracts\RowHandler;
 use App\Services\Imports\ImportFileInvalid;
 use App\Services\Imports\ImportPipeline;
-use App\Services\Imports\Lima\LimaWorkbookReader;
 use App\Services\Imports\RowFailed;
 use App\Services\Imports\RowResult;
+use App\Services\Imports\SupplierWorkbookReader;
 use App\Support\Gs1\Gtin;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Supplier catalog (the doctor's Lima / Enovis workbook, as he sends it): implants become
- * products, instrument sets become kit types with their contents, the other instrument codes
- * become instrument types. Matched by code: re-importing a newer workbook updates them.
+ * Supplier catalog (the doctor's Lima / Enovis or Mikron workbook, as he sends it): implants
+ * become products, instrument sets become kit types with their contents, the other instrument
+ * codes become instrument types. Matched by code: re-importing a newer workbook updates them.
  */
 class SupplierCatalogRowHandler implements ReadsWorkbook, RowHandler
 {
     private ?int $pieceUom = null;
 
     public function __construct(
-        private readonly LimaWorkbookReader $reader,
+        private readonly SupplierWorkbookReader $reader,
         private readonly ProductService $products,
         private readonly SupplierCatalogService $catalog,
     ) {}
@@ -70,6 +70,7 @@ class SupplierCatalogRowHandler implements ReadsWorkbook, RowHandler
         return [
             __('Upload the supplier workbook as it is: per area (Hip, Knee, Shoulder) an Implants sheet, an Instrument Sets Summary and the Instrument Sets Details.'),
             __('Colours are read from each sheet\'s own key (colour in column D, meaning in column E).'),
+            __('The Mikron trauma workbook works too: the Plates, Screws and Nails sheets become products under Trauma, the Instrument Sets Summary and Details become sets with their instruments.'),
         ];
     }
 

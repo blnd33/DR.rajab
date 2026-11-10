@@ -44,6 +44,24 @@ class LimaWorkbookReader
     private array $sets = [];
 
     /**
+     * Does a workbook with these sheet names look like the Lima file (an area and a kind)?
+     *
+     * @param  list<string>  $titles
+     */
+    public static function recognises(array $titles): bool
+    {
+        $reader = new self;
+
+        foreach ($titles as $title) {
+            if ($reader->area($title) !== null && $reader->sheetKind($title) !== null) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * @return array{implants: list<array<string, mixed>>, instruments: list<array<string, mixed>>, sets: list<array<string, mixed>>}
      */
     public function read(string $path): array

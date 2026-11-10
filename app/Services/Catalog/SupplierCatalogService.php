@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
 class SupplierCatalogService
 {
     /** Area codes of the workbook → English name (translated through the language files). */
-    public const AREAS = ['HIP' => 'Hip', 'KNEE' => 'Knee', 'SHOULDER' => 'Shoulder'];
+    public const AREAS = ['HIP' => 'Hip', 'KNEE' => 'Knee', 'SHOULDER' => 'Shoulder', 'TRAUMA' => 'Trauma'];
 
     /**
      * "Hip → Acetabular Cups": the area category, and under it the section (both created
