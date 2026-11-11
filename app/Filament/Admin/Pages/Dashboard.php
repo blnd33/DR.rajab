@@ -8,6 +8,7 @@ use App\Filament\Admin\Widgets\Charts\SurgeriesTrendChart;
 use App\Filament\Admin\Widgets\ClinicalOverview;
 use App\Filament\Admin\Widgets\ExpiryByBranch;
 use App\Filament\Admin\Widgets\MoneyOverview;
+use App\Filament\Admin\Widgets\MorningSummaryCard;
 use App\Filament\Admin\Widgets\PendingWork;
 use App\Filament\Admin\Widgets\StockOverview;
 use App\Filament\Admin\Widgets\SystemAlerts;
@@ -16,7 +17,8 @@ use App\Filament\Admin\Widgets\TopImplants;
 use Filament\Pages\Dashboard as BaseDashboard;
 
 /**
- * Admin dashboard (Module 26): system alerts and status, stock, money, waiting work, clinical,
+ * Admin dashboard (Module 26): system alerts, the morning summary line, status, stock, money,
+ * waiting work, clinical,
  * expiry per branch, then the trends (sales, surgeries, stock value) and the most used implants.
  * Each widget shows only what the user may see.
  */
@@ -36,6 +38,7 @@ class Dashboard extends BaseDashboard
     {
         return [
             SystemAlerts::class,
+            MorningSummaryCard::class,
             SystemOverview::class,
             StockOverview::class,
             MoneyOverview::class,

@@ -35,6 +35,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property bool $all_branches
  * @property ?int $primary_branch_id
  * @property bool $is_active
+ * @property ?array<string, mixed> $summary_settings
  */
 class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasLocalePreference
 {
@@ -59,6 +60,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         'primary_branch_id',
         'is_active',
         'session_timeout_minutes',
+        'summary_settings',
     ];
 
     protected $hidden = [
@@ -76,6 +78,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'password_changed_at' => 'datetime',
             'last_login_at' => 'datetime',
             'deactivated_at' => 'datetime',
+            'summary_settings' => 'array',
         ];
     }
 

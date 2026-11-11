@@ -2,15 +2,25 @@
 
 namespace App\Filament\Admin\Auth;
 
+use App\Models\User;
+use App\Services\Insight\MorningSummaryService;
+use App\Services\Insight\SummarySettings;
 use App\Support\Locale\LocaleRegistry;
 use Filament\Auth\Pages\EditProfile as BaseEditProfile;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use SensitiveParameter;
 
 /**
- * Profile: name, email, language, password. Two-factor setup is added by Filament.
+ * Profile: name, email, language, password, and (for people who receive it) the morning
+ * summary settings. Two-factor setup is added by Filament.
  */
 class EditProfile extends BaseEditProfile
 {
@@ -29,6 +39,7 @@ class EditProfile extends BaseEditProfile
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
                 $this->getCurrentPasswordFormComponent(),
+                $this->getSummaryFormComponent(),
             ]);
     }
 
@@ -51,9 +62,71 @@ class EditProfile extends BaseEditProfile
             ->native(false);
     }
 
+    protected function getSummaryFormComponent(): Component
+    {
+        return Section::make(__('Morning summary'))
+            ->description(__('A short report of yesterday and what needs attention today, in your bell and as a phone notification.'))
+            ->visible(fn () => $this->user() !== null && MorningSummaryService::canReceive($this->user()))
+            ->columns(['default' => 1, 'md' => 2])
+            ->schema([
+                Toggle::make('summary.enabled')->label(__('Send me the morning summary'))->columnSpanFull(),
+                TextInput::make('summary.time')->label(__('Time'))->type('time')->required()
+                    ->helperText(__('Business time (Baghdad).'))
+                    ->extraInputAttributes(['dir' => 'ltr']),
+                Select::make('summary.branch_id')->label(__('Branch'))
+                    ->placeholder(__('All my branches'))
+                    ->options(fn () => SummarySettings::branchOptions($this->user()))
+                    ->native(false),
+                CheckboxList::make('summary.sections')->label(__('Sections'))
+                    ->options(fn () => SummarySettings::sectionOptions())
+                    ->columns(2),
+                Toggle::make('summary.skip_fridays')->label(__('Not on Fridays')),
+            ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $user = $this->user();
+
+        if ($user !== null) {
+            $data['summary'] = SummarySettings::for($user)->toArray();
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    protected function handleRecordUpdate(Model $record, #[SensitiveParameter] array $data): Model
+    {
+        $summary = $data['summary'] ?? null;
+        unset($data['summary']);
+
+        $record = parent::handleRecordUpdate($record, $data);
+
+        if (is_array($summary) && $record instanceof User && MorningSummaryService::canReceive($record)) {
+            $summary['time'] = substr((string) ($summary['time'] ?? ''), 0, 5);
+            SummarySettings::save($record, $summary);
+        }
+
+        return $record;
+    }
+
     protected function getRedirectUrl(): ?string
     {
         // Reload so a language change applies (direction, fonts, digits).
         return static::getUrl();
+    }
+
+    private function user(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
     }
 }

@@ -113,6 +113,11 @@ return [
 
         'kits.overdue_days' => 7,
 
+        // Morning summary (Phase 6): defaults for people who have not chosen their own.
+        'summary.time' => '07:30',
+        'summary.skip_fridays' => false,
+        'summary.sections' => ['day', 'money', 'kits', 'stock', 'attention'],
+
         'fx.eur_usd_auto_fetch' => true,
         'fx.eur_usd_auto_confirm' => false,
 

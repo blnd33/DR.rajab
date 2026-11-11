@@ -2,6 +2,17 @@
 
 All notable changes per build phase.
 
+## [Phase 6 — morning summary] — 2026-11-11
+
+Each person who may receive it gets **yesterday's numbers and what needs attention today**, once a day at their own time, in the bell and as a phone notification ([plan](docs/phases/PHASE-6-PLAN.md) §2).
+
+### Added
+- **Morning summary**: built from the facts (five sections — *At a glance*, *Money*, *Kits*, *Expiry and stock*, *Needs attention*); empty facts are left out; written in the person's own language; only what the person may see, for all their branches or the one they chose.
+- **Sending**: `summary:send` runs every 15 minutes and sends to everyone whose time has come and who has not had today's summary (`--user=` sends one person's now). Every sent summary is kept (`morning_summaries`, one per person per day). The notification line has counts only (*Yesterday: 1 kit overdue · 3 open issues*), never patient or hospital names, because it shows on a locked phone. The system-health page watches the job.
+- **Screens**: admin *Insight → Morning summary* (any earlier morning by date, as sent or built now; *Send it to me now*; a note when it was written in another language) and a dashboard card with today's line; on the phone *Morning summary* (`/app/summary`) and a card on *Home*.
+- **Settings**: each person in their profile (admin) or *Me* (phone) — on/off, time, branch, sections, not on Fridays. Defaults for everyone in *Settings → Morning summary* (07:30, all sections, Fridays included).
+- **Tests**: defaults and own settings, validation, due once a day at the person's time, skipped Fridays, the permission, sent once and kept, counts-only notification, chosen sections, the person's language, the admin and phone pages, both settings forms, the command.
+
 ## [Phase 6 — facts engine] — 2026-11-10
 
 The shared building blocks of the coming **morning summary** and **Quick answers** ([plan](docs/phases/PHASE-6-PLAN.md) §1). No screens yet.

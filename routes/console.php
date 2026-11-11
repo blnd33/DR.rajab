@@ -7,6 +7,7 @@ use App\Services\Assets\OverdueKitNotifier;
 use App\Services\Expenses\RecurringExpenseService;
 use App\Services\Expiry\ExpiryTransitionNotifier;
 use App\Services\Health\Heartbeat;
+use App\Services\Insight\MorningSummaryService;
 use App\Services\Money\FxService;
 use App\Services\Purchasing\OverduePayablesNotifier;
 use App\Services\Reports\StockValueSnapshotter;
@@ -112,6 +113,34 @@ Artisan::command('reports:snapshot', function (StockValueSnapshotter $snapshotte
 })->purpose('Nightly stock value snapshot per branch and currency');
 
 Heartbeat::track(Schedule::command('reports:snapshot')->dailyAt('23:50')->timezone($tz)->onOneServer()->withoutOverlapping(), 'reports:snapshot');
+
+/*
+| Morning summary (Phase 6): every 15 minutes, each person whose time has come gets today's
+| summary once (in-app + phone push). Run by hand: php artisan summary:send
+|   --user=admin   one person now, even if already sent today (to try it)
+*/
+Artisan::command('summary:send {--user= : Username: send this person\'s summary now}', function (MorningSummaryService $summaries) {
+    if (filled($this->option('user'))) {
+        $user = User::query()->where('username', (string) $this->option('user'))->first();
+
+        if ($user === null || ! MorningSummaryService::canReceive($user)) {
+            $this->error('No such active user with the "Receive the morning summary" permission.');
+
+            return 1;
+        }
+
+        $summaries->send($user);
+        $this->info('Morning summary sent to '.$user->username.'.');
+
+        return 0;
+    }
+
+    $this->info('Morning summaries sent: '.$summaries->sendDue());
+
+    return 0;
+})->purpose('Send the morning summaries that are due');
+
+Heartbeat::track(Schedule::command('summary:send')->everyFifteenMinutes()->onOneServer()->withoutOverlapping(), 'summary:send');
 
 /*
 | New servers and the client's test site (docs/TEST-SITE.md).

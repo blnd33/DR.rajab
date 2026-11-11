@@ -22,6 +22,7 @@ class Heartbeat
         'stock:alerts' => 26,
         'money:daily' => 26,
         'reports:snapshot' => 26,
+        'summary:send' => 1,
     ];
 
     /**

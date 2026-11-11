@@ -33,6 +33,7 @@ use App\Livewire\Ops\Stock\Index as StockIndex;
 use App\Livewire\Ops\Stock\ProductShow;
 use App\Livewire\Ops\Stock\Receive;
 use App\Livewire\Ops\Stock\UnitShow;
+use App\Livewire\Ops\Summary;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -46,6 +47,7 @@ Route::livewire('/', Home::class)->name('home');
 Route::livewire('/scan', Scan::class)->name('scan');
 Route::livewire('/notifications', Notifications::class)->name('notifications');
 Route::livewire('/profile', Profile::class)->name('profile');
+Route::livewire('/summary', Summary::class)->name('summary');
 
 // Stock (Phase 1)
 Route::livewire('/stock', StockIndex::class)->name('stock.index');

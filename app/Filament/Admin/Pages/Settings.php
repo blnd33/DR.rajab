@@ -3,10 +3,12 @@
 namespace App\Filament\Admin\Pages;
 
 use App\Enums\DigitSystem;
+use App\Services\Insight\SummarySettings;
 use App\Services\Settings\SettingsRepository;
 use App\Support\Locale\LocaleRegistry;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -154,6 +156,20 @@ class Settings extends Page
                             ->schema([
                                 Toggle::make('fx.eur_usd_auto_fetch')->label(__('Fetch EUR/USD automatically every day (as a suggestion)')),
                                 Toggle::make('fx.eur_usd_auto_confirm')->label(__('Use the fetched EUR/USD rate without manual confirmation')),
+                            ]),
+
+                        Tab::make(__('Morning summary'))
+                            ->icon(Heroicon::OutlinedSun)
+                            ->columns(['default' => 1, 'md' => 2])
+                            ->schema([
+                                TextInput::make('summary.time')->label(__('Default time'))->type('time')->required()
+                                    ->helperText(__('For people who have not chosen their own time (Profile → Morning summary).'))
+                                    ->extraInputAttributes(['dir' => 'ltr']),
+                                Toggle::make('summary.skip_fridays')->label(__('Not on Fridays by default')),
+                                CheckboxList::make('summary.sections')->label(__('Default sections'))
+                                    ->options(fn () => SummarySettings::sectionOptions())
+                                    ->columns(['default' => 1, 'md' => 3])
+                                    ->columnSpanFull(),
                             ]),
 
                         Tab::make(__('Optional features'))

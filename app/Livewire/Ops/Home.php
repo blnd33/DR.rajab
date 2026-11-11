@@ -6,9 +6,13 @@ use App\Enums\Panel;
 use App\Enums\SurgeryStatus;
 use App\Models\Kit;
 use App\Models\LowStock;
+use App\Models\MorningSummary;
 use App\Models\Surgery;
 use App\Models\User;
 use App\Services\Clinical\SurgeryService;
+use App\Services\Insight\MorningSummaryBuilder;
+use App\Services\Insight\MorningSummaryService;
+use App\Services\Insight\SummarySettings;
 use App\Services\Stock\StockQuery;
 use App\Support\CurrentBranch;
 use Illuminate\Contracts\View\View;
@@ -33,8 +37,15 @@ class Home extends Component
         $canStock = $branchId !== null && $user->canInBranch('stock.view', $branchId);
         $clinical = $user->can('create', Surgery::class);
 
+        $canSummary = MorningSummaryService::canReceive($user);
+        $summary = $canSummary ? MorningSummary::query()->where('user_id', $user->id)
+            ->whereDate('summary_date', MorningSummaryService::today())->whereNotNull('sent_at')->first() : null;
+
         return view('livewire.ops.home', [
             'user' => $user,
+            'canSummary' => $canSummary,
+            'summaryLine' => $summary !== null ? MorningSummaryBuilder::headline($summary->payload) : null,
+            'summaryTime' => $canSummary ? SummarySettings::for($user)->time : null,
             'branch' => CurrentBranch::get(),
             'clinical' => $clinical,
             'drafts' => $clinical ? app(SurgeryService::class)->visibleTo($user)->where('status', SurgeryStatus::Draft)->where('created_by', $user->id)->count() : 0,
