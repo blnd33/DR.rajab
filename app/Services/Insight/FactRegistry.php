@@ -37,6 +37,11 @@ final class FactRegistry
         Facts\DraftSurgeries::class,
     ];
 
+    /** Facts only Quick answers ask for (not in the morning summary). @var list<class-string<Fact>> */
+    public const QUESTION_FACTS = [
+        Facts\ExpiringWithin::class,
+    ];
+
     /**
      * @return list<Fact>
      */
@@ -47,7 +52,7 @@ final class FactRegistry
 
     public function find(string $key): ?Fact
     {
-        foreach (self::FACTS as $class) {
+        foreach ([...self::FACTS, ...self::QUESTION_FACTS] as $class) {
             if ($class::key() === $key) {
                 return app($class);
             }

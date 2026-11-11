@@ -88,6 +88,8 @@ Everything starts empty, in this order:
 6. **Finance → Cash boxes & banks** — at least one per branch and currency.
 7. Then try the daily work: receive stock (scan the boxes), transfers **with the two photos**, sales **per item or one price split by %**, surgeries, kits, expenses, the daily closing, reports and **Graphs** (Pie / Bars / Line).
 
+8. **Insight → Morning summary** and **Quick answers** (phone: **Home → Ask**) — the summary arrives at 07:30 by default (set your own time in your profile); Quick answers answers the ready-made questions and any code you type or scan.
+
 Please use **made-up patient names** on the test site.
 
 ## 4. Empty it again

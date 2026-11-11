@@ -134,6 +134,12 @@ Daily stock alerts (expiry levels, low stock) run at 06:00 via the scheduler; ru
 
 On Windows, stop the preview server before `composer require` / `composer dump-autoload` — the running server keeps the autoload files open and Composer silently fails to rewrite them.
 
+### Try the morning summary and Quick answers (Phase 6)
+
+* **Insight → Morning summary** — yesterday's numbers and what needs attention; pick any earlier morning, *Send it to me now*. Each person sets the time, branch, sections and Fridays in their profile (phone: *Me*); defaults in **Settings → Morning summary**. Sent by `php artisan summary:send` (scheduled every 15 minutes).
+* **Insight → Quick answers** — tap a question (*Which kits are overdue?*, *What expires in the next 30 days?*, *Sales by hospital* for a period…) or type / scan a code: serial `NJ-FEM4-90001`, kit `KIT-DHK-0001`, transfer `TRF-BGW-2026-00001`, a SKU or a lot. A few words also work, in English, Arabic or Kurdish (*overdue kits*, *مبيعات*, *خەرجی*). No AI: it answers the listed questions only.
+* **Phone app** → **Home → Ask** — the same, with the camera.
+
 ### Quality checks
 
 ```bash

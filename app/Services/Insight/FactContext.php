@@ -22,10 +22,12 @@ final class FactContext
         public readonly Carbon $until,
         public readonly ?int $branch,
         public readonly string $currency,
+        /** @var array<string, mixed> question choices a fact may read (e.g. days, overdue, by) */
+        public readonly array $options = [],
     ) {}
 
     /**
-     * @param  array<string, mixed>  $input  from, until (YYYY-MM-DD), branch (id), currency; default today
+     * @param  array<string, mixed>  $input  from, until (YYYY-MM-DD), branch (id), currency, options; default today
      */
     public static function make(User $user, array $input = []): self
     {
@@ -40,7 +42,9 @@ final class FactContext
         $branch = filled($input['branch'] ?? null) ? (int) $input['branch'] : null;
         $currency = in_array($input['currency'] ?? null, config('orthotrack.currencies'), true) ? (string) $input['currency'] : 'USD';
 
-        return new self($user, $from, $until, $branch, $currency);
+        $options = is_array($input['options'] ?? null) ? $input['options'] : [];
+
+        return new self($user, $from, $until, $branch, $currency, $options);
     }
 
     /**
@@ -132,6 +136,11 @@ final class FactContext
         return [$this->from->toDateString(), $this->until->toDateString()];
     }
 
+    public function option(string $key, mixed $default = null): mixed
+    {
+        return $this->options[$key] ?? $default;
+    }
+
     public function isOneDay(): bool
     {
         return $this->from->toDateString() === $this->until->toDateString();
@@ -163,6 +172,7 @@ final class FactContext
             'until' => $this->until->toDateString(),
             'branch' => $this->branch,
             'currency' => $this->currency,
+            'options' => $this->options,
         ], $input));
     }
 }

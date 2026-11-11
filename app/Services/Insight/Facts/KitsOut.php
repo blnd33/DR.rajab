@@ -10,7 +10,7 @@ use App\Services\Insight\FactResult;
 use App\Services\Insight\FactSection;
 
 /**
- * Kits at hospitals now; overdue ones first, with how many days late.
+ * Kits at hospitals now; overdue ones first, with how many days late. Option overdue: only the late ones.
  */
 class KitsOut extends Fact
 {
@@ -45,6 +45,10 @@ class KitsOut extends Fact
 
         $now = now();
         $overdue = $out->filter(fn (KitCheckout $c) => $c->due_back_at !== null && $c->due_back_at->lessThan($now));
+
+        if ($context->option('overdue')) {
+            $out = $overdue->values();
+        }
 
         $lines = $out->map(function (KitCheckout $checkout) use ($now) {
             $late = $checkout->due_back_at !== null && $checkout->due_back_at->lessThan($now);

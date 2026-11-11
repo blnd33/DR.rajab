@@ -2,6 +2,21 @@
 
 All notable changes per build phase.
 
+## [Phase 6 — Quick answers] — 2026-11-11
+
+A chat-style screen with **ready-made questions** and a box to **type or scan any code** ([plan](docs/phases/PHASE-6-PLAN.md) §3). No AI: answers come straight from the facts and the existing lookups, so they are exact and cost nothing to run.
+
+### Added
+- **Questions** (`QuickQuestions`): *What happened today / yesterday?* (the morning summary's content for that day), *What expires in the next 30 / 60 / 90 days?*, *What is below minimum?*, *Which kits are out / overdue?*, *What is missing from returned kits?*, *Surgeries by hospital / by doctor*, *Surgeries not finished*, *Sales by hospital*, *Payments received*, *Unpaid hospital balances*, *Supplier invoices due*, *Cash in the cash boxes now*, *Expenses by category*, *Profit*, *Open issues*, *Approvals waiting for me*, *Transfers waiting to be received*; plus *How many of an item…?*, *Where is a serial number?* and *Is a kit complete?*, which ask for a code. Each person sees only the questions their permissions answer. Choices: period (today / yesterday / this week from Saturday / this month / dates), branch, currency.
+- **Type or scan anything** (`CodeLookup`): a serial (status, where, lot, expiry, last movements), a SKU / GTIN / GS1 label / extra barcode (how many per branch, first expiry), a lot, a kit (complete or what is missing), an instrument, a document number (`TRF-…`, `SRG-…`, `INV-…`, `PUR-…`, `RCP-…`… — through the admin screen's own permission and branch rules) and a patient file number (only the patients the person may see; the opening is logged). Typed codes nobody knows are not saved as unknown scans.
+- **Words** (`KeywordMatcher`): a few words in English, Arabic or Kurdish (*overdue kits*, *انتهاء الصلاحية*, *خەرجی*) suggest the closest questions; Arabic and Kurdish spellings are folded together. Otherwise: *"I can answer these:"* and the list.
+- **Screens**: admin *Insight → Quick answers*; on the phone *Ask* (`/app/ask`, with the camera and scanner gun) and a card on *Home*. Nothing typed is stored.
+- New fact *Expires soon* (items expiring within N days, by product); *Kits out* can show only the overdue ones, *Surgeries* can count by doctor.
+- **Tests**: questions per role, a period and a branch, the Saturday week, expiry windows, today's facts, serial / product / lot / kit / document / patient lookups and who sees them, unknown codes, words in three languages, both screens, the permission.
+
+### Changed
+- The morning summary and Quick answers share one answer card (admin and phone); cards for a single thing say *Open* instead of *Open the full list*, and long values wrap.
+
 ## [Phase 6 — morning summary] — 2026-11-11
 
 Each person who may receive it gets **yesterday's numbers and what needs attention today**, once a day at their own time, in the bell and as a phone notification ([plan](docs/phases/PHASE-6-PLAN.md) §2).

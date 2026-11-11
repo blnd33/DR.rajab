@@ -20,7 +20,10 @@ use Illuminate\Support\Collection;
  */
 class ScanResolver
 {
-    public function resolve(string $raw, ScanContext $context = ScanContext::Lookup, ?User $user = null, ?int $branchId = null): ScanResult
+    /**
+     * @param  bool  $record  keep an unknown code in unrecognized_scans (off for typed questions)
+     */
+    public function resolve(string $raw, ScanContext $context = ScanContext::Lookup, ?User $user = null, ?int $branchId = null, bool $record = true): ScanResult
     {
         $parsed = $this->parse($raw);
 
@@ -28,7 +31,7 @@ class ScanResolver
             ? new ScanResult(ScanResultKind::Unknown, new ParsedScan(parser: 'none', raw: $raw))
             : $this->interpret($parsed);
 
-        if (! $result->found() && trim($raw) !== '') {
+        if ($record && ! $result->found() && trim($raw) !== '') {
             UnrecognizedScan::query()->create([
                 'raw' => mb_substr($raw, 0, 2000),
                 'raw_hex' => bin2hex(substr($raw, 0, 1000)),

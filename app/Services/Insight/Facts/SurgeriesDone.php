@@ -4,14 +4,16 @@ namespace App\Services\Insight\Facts;
 
 use App\Enums\SurgeryStatus;
 use App\Models\Customer;
+use App\Models\User;
 use App\Services\Clinical\SurgeryService;
 use App\Services\Insight\Fact;
 use App\Services\Insight\FactContext;
 use App\Services\Insight\FactResult;
 use App\Services\Insight\FactSection;
+use Illuminate\Support\Facades\DB;
 
 /**
- * Surgeries completed in the period, by hospital. Same visibility as the surgeries list
+ * Surgeries completed in the period, by hospital (option by = doctor: by doctor). Same visibility as the surgeries list
  * (without patients.view_all only the person's own surgeries).
  */
 class SurgeriesDone extends Fact
@@ -50,6 +52,17 @@ class SurgeriesDone extends Fact
             ->whereBetween('surgery_date', $context->dates());
 
         $total = (clone $query)->count();
+
+        if ($context->option('by') === 'doctor') {
+            $byDoctor = DB::table('surgery_doctors')->whereIn('surgery_id', (clone $query)->select('surgeries.id'))
+                ->groupBy('user_id')->selectRaw('user_id, COUNT(DISTINCT surgery_id) AS n')
+                ->orderByDesc('n')->limit(self::MAX_LINES)->pluck('n', 'user_id');
+            $doctors = User::query()->whereIn('id', $byDoctor->keys())->pluck('name', 'id');
+            $lines = $byDoctor->map(fn ($n, $id) => self::line($doctors[$id] ?? '—', self::count((int) $n)))->values()->all();
+
+            return $this->result($context, self::count($total), $lines, ['surgeries' => $total], 'filament.admin.resources.surgeries.index');
+        }
+
         $byHospital = (clone $query)->toBase()->groupBy('customer_id')
             ->selectRaw('customer_id, COUNT(*) AS n')->orderByDesc('n')->limit(self::MAX_LINES)
             ->pluck('n', 'customer_id');

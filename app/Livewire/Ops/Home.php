@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Clinical\SurgeryService;
 use App\Services\Insight\MorningSummaryBuilder;
 use App\Services\Insight\MorningSummaryService;
+use App\Services\Insight\QuickAnswers;
 use App\Services\Insight\SummarySettings;
 use App\Services\Stock\StockQuery;
 use App\Support\CurrentBranch;
@@ -46,6 +47,7 @@ class Home extends Component
             'canSummary' => $canSummary,
             'summaryLine' => $summary !== null ? MorningSummaryBuilder::headline($summary->payload) : null,
             'summaryTime' => $canSummary ? SummarySettings::for($user)->time : null,
+            'canAsk' => QuickAnswers::canUse($user),
             'branch' => CurrentBranch::get(),
             'clinical' => $clinical,
             'drafts' => $clinical ? app(SurgeryService::class)->visibleTo($user)->where('status', SurgeryStatus::Draft)->where('created_by', $user->id)->count() : 0,

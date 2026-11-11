@@ -4,7 +4,6 @@
         use App\Support\Locale\Display;
 
         $payload = $summary['payload'];
-        $tones = ['good' => 'text-success', 'warning' => 'text-warning', 'danger' => 'text-danger'];
     @endphp
 
     <header class="space-y-2">
@@ -36,23 +35,7 @@
         <section class="space-y-3" aria-labelledby="summary-{{ $section->value }}">
             <h2 id="summary-{{ $section->value }}" class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ $section->label() }}</h2>
             @foreach ($payload['sections'][$section->value] as $fact)
-                <article class="ot-card space-y-2 p-4">
-                    <h3 class="text-sm font-medium text-muted-fg">{{ $fact['title'] }}</h3>
-                    <p @class(['text-2xl font-bold', $tones[$fact['tone'] ?? ''] ?? ''])>{{ $fact['headline'] }}</p>
-                    @if (filled($fact['note'] ?? null))
-                        <p class="text-xs text-muted-fg">{{ $fact['note'] }}</p>
-                    @endif
-                    @if (! empty($fact['lines']))
-                        <ul class="divide-y divide-border text-sm">
-                            @foreach ($fact['lines'] as $line)
-                                <li class="flex items-baseline justify-between gap-3 py-1.5">
-                                    <span class="min-w-0 break-words">{{ $line['label'] }}</span>
-                                    <span class="shrink-0 font-medium tabular-nums">{{ $line['value'] }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </article>
+                <x-ops.fact-card :fact="$fact" />
             @endforeach
         </section>
     @endforeach

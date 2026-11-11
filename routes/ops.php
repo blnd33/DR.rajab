@@ -5,6 +5,7 @@ use App\Http\Controllers\Ops\CountScanSyncController;
 use App\Http\Controllers\Ops\PatientLookupController;
 use App\Http\Controllers\Ops\PushSubscriptionController;
 use App\Http\Controllers\Ops\SurgerySyncController;
+use App\Livewire\Ops\Ask;
 use App\Livewire\Ops\Cash\CashHub;
 use App\Livewire\Ops\Cash\CloseDay;
 use App\Livewire\Ops\Cash\ExchangeCreate;
@@ -48,6 +49,7 @@ Route::livewire('/scan', Scan::class)->name('scan');
 Route::livewire('/notifications', Notifications::class)->name('notifications');
 Route::livewire('/profile', Profile::class)->name('profile');
 Route::livewire('/summary', Summary::class)->name('summary');
+Route::livewire('/ask', Ask::class)->name('ask');
 
 // Stock (Phase 1)
 Route::livewire('/stock', StockIndex::class)->name('stock.index');

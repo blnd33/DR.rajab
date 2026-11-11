@@ -24,6 +24,17 @@
         </a>
     @endif
 
+    @if ($canAsk)
+        <a href="{{ route('ops.ask') }}" wire:navigate class="ot-card flex items-center gap-3 p-4 hover:bg-subtle">
+            @svg('heroicon-o-chat-bubble-left-right', 'size-8 shrink-0 text-primary')
+            <span class="min-w-0 flex-1">
+                <span class="block font-semibold">{{ __('Ask') }}</span>
+                <span class="block text-sm text-muted-fg">{{ __('Kits, stock, sales, any code — answered from the system.') }}</span>
+            </span>
+            @svg('heroicon-m-chevron-right', 'size-5 shrink-0 text-muted-fg rtl:rotate-180')
+        </a>
+    @endif
+
     @if ($clinical)
         {{-- Doctors: one big action, then a few tiles. Scan stays in the bottom bar. --}}
         <a href="{{ route('ops.surgeries.create') }}" wire:navigate class="ot-btn ot-btn-primary w-full gap-3 py-6 text-xl">
