@@ -43,7 +43,8 @@ final class Pg
             return;
         }
 
-        DB::statement("ALTER TABLE {$table} ADD CONSTRAINT {$name} CHECK ({$expression})");
+        // Unprepared: PDO would read the jsonb "?" operator (name ? 'en') as a placeholder.
+        DB::unprepared("ALTER TABLE {$table} ADD CONSTRAINT {$name} CHECK ({$expression})");
     }
 
     /**
