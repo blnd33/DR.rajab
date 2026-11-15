@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Casts\DateOnly;
+use App\Enums\InvoiceKind;
 use App\Enums\PaymentTerms;
 use App\Enums\SalesInvoiceStatus;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +14,8 @@ use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
 /**
- * A sale (Module 13): units / lots sold, paid into a box.
+ * An invoice: a sale (Module 13, units / lots sold) or a surgery's fee. Paid into a box at once,
+ * or left unpaid until someone marks it paid.
  *
  * @property int $id
  * @property string $subtotal
@@ -32,6 +34,12 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $currency
  * @property string $pricing per_item | split
  * @property int $fx_snapshot_id
+ * @property InvoiceKind $kind sale | surgery
+ * @property ?int $surgery_id
+ * @property ?Carbon $paid_at
+ * @property ?int $paid_by
+ * @property ?int $paid_cash_box_id
+ * @property ?int $money_transaction_id
  */
 class SalesInvoice extends Model
 {
@@ -51,6 +59,8 @@ class SalesInvoice extends Model
             'status' => SalesInvoiceStatus::class,
             'issued_at' => 'datetime',
             'voided_at' => 'datetime',
+            'paid_at' => 'datetime',
+            'kind' => InvoiceKind::class,
         ];
     }
 
@@ -104,6 +114,37 @@ class SalesInvoice extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function payer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'paid_by');
+    }
+
+    /** @return BelongsTo<CashBox, $this> */
+    public function paidBox(): BelongsTo
+    {
+        return $this->belongsTo(CashBox::class, 'paid_cash_box_id');
+    }
+
+    /** @return BelongsTo<MoneyTransaction, $this> */
+    public function moneyTransaction(): BelongsTo
+    {
+        return $this->belongsTo(MoneyTransaction::class);
+    }
+
+    public function isPaid(): bool
+    {
+        return $this->status === SalesInvoiceStatus::Paid;
+    }
+
+    /**
+     * Unpaid invoices settled by hand ("Mark as paid"); credit invoices are settled by customer payments.
+     */
+    public function isOpenForMarking(): bool
+    {
+        return $this->status === SalesInvoiceStatus::Issued && $this->payment_terms !== PaymentTerms::Credit;
     }
 
     /** @return BelongsTo<FxSnapshot, $this> */

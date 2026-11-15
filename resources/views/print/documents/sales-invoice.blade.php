@@ -1,23 +1,36 @@
 @php
     use App\Support\Locale\Display;
     /** @var \App\Models\SalesInvoice $record */
-    $record->loadMissing(['branch', 'customer', 'items.product', 'items.stockUnit', 'items.stockBatch', 'creator']);
+    $record->loadMissing(['branch', 'customer', 'items.product', 'items.stockUnit', 'items.stockBatch', 'creator', 'surgery.type', 'surgery.patient']);
     $currency = $record->currency;
+    $isSurgery = $record->kind === \App\Enums\InvoiceKind::Surgery;
 @endphp
-<x-print.layout :title="__('Sales invoice').' '.$record->number" :pdf-url="$pdfUrl" :meta="array_filter([
+<x-print.layout :title="($isSurgery ? __('Invoice') : __('Sales invoice')).' '.$record->number" :pdf-url="$pdfUrl" :meta="array_filter([
     __('Number') => $record->number,
     __('Date') => Display::date($record->issued_at),
     __('Branch') => $record->branch->name,
     __('Buyer') => $record->customer->name ?? ($record->walk_in_name ?: __('Walk-in')),
     __('Terms') => $record->payment_terms->getLabel(),
     __('Due') => $record->due_date ? Display::date($record->due_date) : null,
-    __('Status') => $record->status->getLabel(),
+    __('Status') => $record->status === \App\Enums\SalesInvoiceStatus::Issued ? __('Not paid') : $record->status->getLabel(),
 ])">
     <table>
         <thead>
             <tr><th>#</th><th>{{ __('Product') }}</th><th>{{ __('Serial / lot') }}</th><th class="num">{{ __('Quantity') }}</th><th class="num">{{ __('Price') }}</th><th class="num">{{ __('Line total') }}</th></tr>
         </thead>
         <tbody>
+            @if ($isSurgery)
+                <tr>
+                    <td>{{ Display::number(1) }}</td>
+                    <td>{{ __('Surgery') }}: {{ $record->surgery?->type?->name ?? '—' }} <span class="code muted">{{ $record->surgery?->number }}</span>
+                        @if ($record->surgery?->patientName()) <br><span class="muted">{{ __('Patient') }}: {{ $record->surgery->patientName() }}</span> @endif
+                    </td>
+                    <td>{{ $record->surgery ? Display::date($record->surgery->surgery_date) : '—' }}</td>
+                    <td class="num">{{ Display::number(1) }}</td>
+                    <td class="num ltr">{{ Display::money($record->total, $currency) }}</td>
+                    <td class="num ltr">{{ Display::money($record->total, $currency) }}</td>
+                </tr>
+            @endif
             @foreach ($record->items as $i => $item)
                 <tr>
                     <td>{{ Display::number($i + 1) }}</td>

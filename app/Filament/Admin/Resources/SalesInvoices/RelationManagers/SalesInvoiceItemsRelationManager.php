@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\SalesInvoices\RelationManagers;
 
+use App\Enums\InvoiceKind;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Filament\Admin\Tables\Columns\ProductColumn;
 use App\Models\SalesInvoice;
@@ -22,6 +23,14 @@ class SalesInvoiceItemsRelationManager extends RelationManager
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
         return __('Items');
+    }
+
+    /**
+     * A surgery invoice has no items: just its fee.
+     */
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return $ownerRecord instanceof SalesInvoice && $ownerRecord->kind === InvoiceKind::Sale;
     }
 
     #[On('invoice-updated')]

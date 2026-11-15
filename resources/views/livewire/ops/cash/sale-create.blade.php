@@ -122,6 +122,16 @@
                 @endif
             </section>
 
+            <label class="ot-card flex min-h-14 cursor-pointer items-center gap-3 p-4">
+                <input type="checkbox" wire:model.live="paidNow" class="size-6 rounded">
+                <span class="flex-1">
+                    <span class="block font-semibold">{{ __('Already paid') }}</span>
+                    <span class="block text-sm text-muted-fg">
+                        {{ $paidNow ? __('The money goes into the :currency box now.', ['currency' => $currency]) : __('The invoice starts unpaid. Mark it paid in Invoices when the money comes.') }}
+                    </span>
+                </span>
+            </label>
+
             <div class="ot-safe-bottom sticky bottom-20 z-20">
                 <div class="ot-card flex items-center justify-between gap-4 p-4 shadow-lg">
                     <div>
@@ -133,8 +143,8 @@
                         @endif
                     </div>
                     <button type="button" wire:click="submit" wire:loading.attr="disabled" class="ot-btn ot-btn-primary px-6 py-4 text-lg">
-                        @svg('heroicon-o-banknotes', 'size-6')
-                        <span>{{ __('Take payment') }}</span>
+                        @svg($paidNow ? 'heroicon-o-banknotes' : 'heroicon-o-document-text', 'size-6')
+                        <span>{{ $paidNow ? __('Take payment') : __('Save invoice') }}</span>
                     </button>
                 </div>
             </div>

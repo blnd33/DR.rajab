@@ -42,7 +42,7 @@ it('has unique keys and at least one graph per section', function () {
     $graphs = $this->registry->all();
 
     expect(collect($graphs)->pluck('key')->duplicates())->toBeEmpty()
-        ->and(collect($graphs)->pluck('section')->unique()->count())->toBe(6)
+        ->and(collect($graphs)->pluck('section')->unique()->count())->toBe(7)
         ->and(count($graphs))->toBeGreaterThanOrEqual(30);
 });
 

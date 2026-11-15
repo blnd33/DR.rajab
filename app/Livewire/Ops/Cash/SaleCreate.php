@@ -44,6 +44,9 @@ class SaleCreate extends Component
 
     public string $discount = '';
 
+    /** Ticked: the money is taken now; otherwise the invoice starts unpaid. */
+    public bool $paidNow = false;
+
     /** per_item | split */
     public string $pricing = SalesService::PER_ITEM;
 
@@ -206,9 +209,9 @@ class SaleCreate extends Component
     public function submit(SalesService $sales): void
     {
         $branch = CurrentBranch::get();
-        $box = $this->boxes()->get($this->currency);
+        $box = $this->paidNow ? $this->boxes()->get($this->currency) : null;
 
-        if ($branch === null || $box === null) {
+        if ($branch === null || ($this->paidNow && $box === null)) {
             $this->dispatch('toast', type: 'error', message: __('There is no :currency cash box in this branch.', ['currency' => $this->currency]));
 
             return;
@@ -216,10 +219,10 @@ class SaleCreate extends Component
 
         $invoice = $this->attempt(fn () => $sales->sell($branch, [
             'currency' => $this->currency,
-            'payment_terms' => PaymentTerms::Cash->value,
+            'payment_terms' => $this->paidNow ? PaymentTerms::Cash->value : PaymentTerms::Later->value,
             'customer_id' => $this->customerId,
             'walk_in_name' => $this->walkIn ?: null,
-            'cash_box_id' => $box->id,
+            'cash_box_id' => $box?->id,
             'pricing' => $this->pricing,
             'sale_total' => $this->pricing === SalesService::SPLIT ? $this->western($this->saleTotal) : null,
             'discount' => $this->pricing === SalesService::SPLIT || $this->discount === '' ? '0' : $this->western($this->discount),
@@ -227,7 +230,9 @@ class SaleCreate extends Component
         ], $this->user()));
 
         if ($invoice !== null) {
-            $this->dispatch('toast', type: 'success', message: __('Sale :number done — :amount into :box.', ['number' => $invoice->number, 'amount' => Display::money($invoice->total, $invoice->currency), 'box' => $box->name]));
+            $this->dispatch('toast', type: 'success', message: $box !== null
+                ? __('Sale :number done — :amount into :box.', ['number' => $invoice->number, 'amount' => Display::money($invoice->total, $invoice->currency), 'box' => $box->name])
+                : __('Sale :number saved — :amount not paid yet.', ['number' => $invoice->number, 'amount' => Display::money($invoice->total, $invoice->currency)]));
             $this->redirectRoute('ops.cash', navigate: true);
         }
     }

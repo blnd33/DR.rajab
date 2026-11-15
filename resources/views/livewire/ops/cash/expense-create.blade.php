@@ -9,13 +9,33 @@
     </header>
 
     <form wire:submit="submit" class="space-y-4">
+        <fieldset>
+            <legend class="mb-1 block text-sm font-semibold">{{ __('Currency') }}</legend>
+            <div class="grid grid-cols-3 gap-2">
+                @foreach ($currencies as $code)
+                    <label @class([
+                        'flex min-h-12 cursor-pointer items-center justify-center rounded-xl border text-base font-bold',
+                        'border-primary bg-primary text-on-primary' => $currency === $code,
+                        'border-border-strong bg-card' => $currency !== $code,
+                    ])>
+                        <input type="radio" wire:model.live="currency" value="{{ $code }}" class="sr-only">
+                        <span dir="ltr">{{ $code }}</span>
+                    </label>
+                @endforeach
+            </div>
+            @error('currency') <p class="mt-1 text-sm text-danger">{{ $message }}</p> @enderror
+        </fieldset>
         <div>
             <label for="ex-box" class="mb-1 block text-sm font-semibold">{{ __('Paid from') }}</label>
-            <select id="ex-box" wire:model.live="boxId" class="ot-input" required>
-                @foreach ($boxes as $box)
-                    <option value="{{ $box->id }}">{{ $box->name }} · {{ \App\Support\Locale\Display::money($box->current_balance, $box->currency) }}</option>
-                @endforeach
-            </select>
+            @if ($boxes->isEmpty())
+                <p class="rounded-xl bg-subtle px-4 py-3 text-sm">{{ __('There is no :currency box you can pay from.', ['currency' => $currency]) }}</p>
+            @else
+                <select id="ex-box" wire:model.live="boxId" class="ot-input" required>
+                    @foreach ($boxes as $box)
+                        <option value="{{ $box->id }}">{{ $box->name }} · {{ \App\Support\Locale\Display::money($box->current_balance, $box->currency) }}</option>
+                    @endforeach
+                </select>
+            @endif
             @error('boxId') <p class="mt-1 text-sm text-danger">{{ $message }}</p> @enderror
         </div>
         <div>
@@ -30,7 +50,7 @@
         </div>
         <div>
             <label for="ex-amount" class="mb-1 block text-sm font-semibold">
-                {{ __('Amount (:currency)', ['currency' => $boxes->firstWhere('id', $boxId)?->currency ?? '…']) }}
+                {{ __('Amount (:currency)', ['currency' => $currency]) }}
             </label>
             <input id="ex-amount" wire:model="amount" inputmode="decimal" data-western-digits dir="ltr" class="ot-input text-xl font-bold" autocomplete="off" required>
             @error('amount') <p class="mt-1 text-sm text-danger">{{ $message }}</p> @enderror

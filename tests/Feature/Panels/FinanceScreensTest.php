@@ -157,10 +157,31 @@ it('sells a scanned implant at the counter into the branch box', function () {
         ->assertSet("items.u{$unit->id}.price", (string) BigDecimal::of($unit->product->selling_price)->toScale(2))
         ->set("items.u{$unit->id}.price", '800')
         ->set('walkIn', 'Dr. Shvan')
+        ->set('paidNow', true)
         ->call('submit')
         ->assertRedirect(route('ops.cash'));
 
     expect((string) BigDecimal::of($box->fresh()->current_balance)->minus($before))->toBe('800.0000')
+        ->and($unit->fresh()->status->value)->toBe('sold');
+});
+
+it('sells at the counter on an unpaid invoice when "already paid" is not ticked', function () {
+    $cashier = userWithRole(Role::Cashier, [branch('DHK')]);
+    $this->actingAs($cashier);
+    $box = CashBox::query()->where('branch_id', branch('DHK')->id)->where('currency', 'USD')->where('type', 'cash')->firstOrFail();
+    $before = (string) $box->current_balance;
+    $unit = StockUnit::query()->where('serial', 'NJ-TIB4-90001')->firstOrFail();
+
+    Livewire\Livewire::test(SaleCreate::class)
+        ->call('handleScan', 'NJ-TIB4-90001')
+        ->set("items.u{$unit->id}.price", '800')
+        ->call('submit')
+        ->assertRedirect(route('ops.cash'));
+
+    $invoice = SalesInvoice::query()->latest('id')->firstOrFail();
+    expect((string) $box->fresh()->current_balance)->toBe($before)
+        ->and($invoice->status->value)->toBe('issued')
+        ->and($invoice->payment_terms->value)->toBe('later')
         ->and($unit->fresh()->status->value)->toBe('sold');
 });
 

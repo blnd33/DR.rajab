@@ -79,6 +79,11 @@ class AppServiceProvider extends ServiceProvider
         // model abilities that are structurally forbidden: deletes, and anything on the
         // read-only activity log. Those still go through their policy.
         Gate::before(function (User $user, string $ability, array $arguments) {
+            // Technicians hold no permissions, whatever is attached to the account.
+            if ($user->isTechnician()) {
+                return false;
+            }
+
             if (! $user->is_active || ! $user->isSuperAdmin()) {
                 return null;
             }

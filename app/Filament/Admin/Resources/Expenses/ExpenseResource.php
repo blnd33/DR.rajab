@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Expenses;
 use App\Enums\ExpenseStatus;
 use App\Filament\Admin\Infolists\LocalDateTimeEntry;
 use App\Filament\Admin\Resources\Expenses\Pages\CreateExpense;
+use App\Filament\Admin\Resources\Expenses\Pages\EditExpense;
 use App\Filament\Admin\Resources\Expenses\Pages\ListExpenses;
 use App\Filament\Admin\Support\ServiceAction;
 use App\Filament\Admin\Tables\Columns\CodeColumn;
@@ -86,6 +87,9 @@ class ExpenseResource extends Resource
             ])
             ->recordActions([
                 ViewAction::make()->schema(fn (Schema $schema) => static::infolist($schema)),
+                Action::make('edit')->label(__('Edit'))->icon(Heroicon::OutlinedPencilSquare)
+                    ->visible(fn (Expense $r) => static::canEditExpense($r))
+                    ->url(fn (Expense $r) => static::getUrl('edit', ['record' => $r])),
                 Action::make('void')->label(__('Void'))->icon(Heroicon::OutlinedXMark)->color('danger')
                     ->visible(fn (Expense $r) => $r->status === ExpenseStatus::Posted && ServiceAction::user()->canInBranch('expenses.create', $r->branch_id))
                     ->schema([Textarea::make('reason')->label(__('Reason'))->required()->rows(2)])
@@ -121,11 +125,21 @@ class ExpenseResource extends Resource
         ]);
     }
 
+    /**
+     * Waiting or paid expenses can be edited by whoever may edit expenses in that branch.
+     */
+    public static function canEditExpense(Expense $expense): bool
+    {
+        return in_array($expense->status, [ExpenseStatus::PendingApproval, ExpenseStatus::Posted], true)
+            && ServiceAction::user()->canInBranch('expenses.update', $expense->branch_id);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListExpenses::route('/'),
             'create' => CreateExpense::route('/create'),
+            'edit' => EditExpense::route('/{record}/edit'),
         ];
     }
 }

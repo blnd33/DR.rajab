@@ -62,6 +62,12 @@ class RoleService
             }
 
             $role->save();
+
+            // The technician role never gets permissions.
+            if ($role->name === RoleEnum::Technician->value) {
+                $permissions = [];
+            }
+
             $role->syncPermissions(array_values(array_intersect($permissions, PermissionRegistry::names())));
 
             activity('permissions')->performedOn($role)->event('permissions_updated')

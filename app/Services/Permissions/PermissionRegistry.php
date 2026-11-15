@@ -105,6 +105,7 @@ final class PermissionRegistry
                 'surgeries.view_any' => ['View surgeries', true],
                 'surgeries.create' => ['Log surgeries', true],
                 'surgeries.cancel' => ['Cancel surgeries', true],
+                'technicians.manage' => ['Add and edit technicians', false],
             ],
             'kits' => [
                 'kits.view_any' => ['View kits and instruments', true],
@@ -140,9 +141,13 @@ final class PermissionRegistry
                 'sales.view_any' => ['View sales', true],
                 'sales.create' => ['Create sales', true],
                 'sales.void' => ['Void sales', true],
+                'invoices.view_any' => ['View invoices (sales and surgeries)', true],
+                'invoices.update' => ['Edit unpaid invoices', true],
+                'invoices.mark_paid' => ['Mark invoices paid (or not paid)', true],
                 'customer_payments.create' => ['Receive customer payments', true],
                 'expenses.view_any' => ['View expenses', true],
                 'expenses.create' => ['Record expenses', true],
+                'expenses.update' => ['Edit expenses (a paid one is corrected in its box)', true],
                 'expenses.approve' => ['Approve large expenses', true],
                 'expenses.recurring' => ['Manage recurring expenses', true],
                 'commissions.manage' => ['Manage doctor commissions', false],
@@ -249,7 +254,8 @@ final class PermissionRegistry
                 'purchases.view_any', 'purchases.create', 'purchases.landed_costs',
                 'supplier_payments.create',
                 'sales.view_any',
-                'expenses.view_any', 'expenses.create', 'expenses.recurring',
+                'invoices.view_any', 'invoices.update', 'invoices.mark_paid',
+                'expenses.view_any', 'expenses.create', 'expenses.update', 'expenses.recurring',
                 'reports.view', 'reports.profit', 'reports.export',
                 'summary.receive', 'assistant.use',
             ],
@@ -274,9 +280,13 @@ final class PermissionRegistry
                 'cash_boxes.view_any', 'cash_boxes.close_day',
                 'currency_exchange.create', 'exchange_rates.view_any',
                 'sales.view_any', 'sales.create', 'customer_payments.create',
+                'invoices.view_any', 'invoices.mark_paid',
                 'expenses.view_any', 'expenses.create',
                 'assistant.use',
             ],
+
+            // Technicians never sign in: no permissions, ever (RoleService keeps it empty).
+            Role::Technician->value => [],
 
             Role::BranchStaff->value => [
                 'ops.access',

@@ -16,12 +16,14 @@ enum SurgeryDoctorRole: string implements HasColor, HasIcon, HasLabel
 
     case Lead = 'lead';
     case Assistant = 'assistant';
+    case Technician = 'technician';
 
     public function getLabel(): string
     {
         return match ($this) {
             self::Lead => __('Lead surgeon'),
             self::Assistant => __('Assistant'),
+            self::Technician => __('Technician'),
         };
     }
 
@@ -30,6 +32,7 @@ enum SurgeryDoctorRole: string implements HasColor, HasIcon, HasLabel
         return match ($this) {
             self::Lead => 'primary',
             self::Assistant => 'gray',
+            self::Technician => 'info',
         };
     }
 
@@ -38,6 +41,7 @@ enum SurgeryDoctorRole: string implements HasColor, HasIcon, HasLabel
         return match ($this) {
             self::Lead => 'heroicon-m-star',
             self::Assistant => 'heroicon-m-user',
+            self::Technician => 'heroicon-m-wrench-screwdriver',
         };
     }
 }

@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Enums\Role;
+use App\Enums\SurgeryDoctorRole;
+use App\Enums\SurgeryStatus;
 use App\Models\Branch;
 use App\Models\CashBox;
 use App\Models\ExpenseCategory;
@@ -10,6 +12,7 @@ use App\Models\Product;
 use App\Models\RecurringExpense;
 use App\Models\StockBatch;
 use App\Models\Supplier;
+use App\Models\Surgery;
 use App\Models\User;
 use App\Services\Expenses\ExpenseService;
 use App\Services\Money\BoxTransferService;
@@ -21,7 +24,9 @@ use App\Services\Purchasing\LandedCostService;
 use App\Services\Purchasing\PurchaseReceiveService;
 use App\Services\Purchasing\PurchaseService;
 use App\Services\Purchasing\SupplierPaymentService;
+use App\Services\Sales\InvoiceService;
 use App\Services\Sales\SalesService;
+use App\Services\Users\TechnicianService;
 use Brick\Math\BigDecimal;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Auth;
@@ -172,7 +177,36 @@ class DemoMoneySeeder extends Seeder
         // Own money exchanged, a transfer on its way, a closing with a small gap (P4-5, P4-6).
         $exchanges->exchange($dhkUsd, $dhkIqd, '500', '1465', $admin, 'Exchange shop in Duhok bazaar');
         $transfers->send($dhkUsd, $eblUsd, '300', $admin, 'Change float for Erbil');
+
+        $this->technicianWork($admin, $dhkUsd);
         $closing = $closings->start($eblUsd, $admin);
         $closings->submit($closing, (string) BigDecimal::of($eblUsd->fresh()->current_balance)->minus(5), $admin, 'Five dollars short — rechecking receipts');
+    }
+
+    /**
+     * Two technicians on the completed demo surgeries, each surgery billed: one invoice paid,
+     * the other still waiting for the money.
+     */
+    private function technicianWork(User $admin, CashBox $box): void
+    {
+        $technicians = app(TechnicianService::class);
+        $karwan = $technicians->create(['name' => 'Karwan Hasan', 'phone' => '+964 750 000 0201'], $admin);
+        $rebin = $technicians->create(['name' => 'Rebin Saeed', 'phone' => '+964 750 000 0202'], $admin);
+        $invoices = app(InvoiceService::class);
+        $completed = Surgery::query()->where('status', SurgeryStatus::Completed)->orderBy('surgery_date')->get();
+
+        foreach ($completed as $i => $surgery) {
+            $team = $i === 0 ? [$karwan, $rebin] : [$karwan];
+
+            foreach ($team as $technician) {
+                $surgery->doctors()->syncWithoutDetaching([$technician->id => ['role' => SurgeryDoctorRole::Technician->value]]);
+            }
+
+            $invoice = $invoices->billSurgery($surgery, $i === 0 ? '1800' : '2200', 'USD', $admin);
+
+            if ($i === 0) {
+                $invoices->markPaid($invoice, $box, $admin);
+            }
+        }
     }
 }

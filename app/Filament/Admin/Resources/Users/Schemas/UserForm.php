@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Users\Schemas;
 
+use App\Enums\Role as RoleEnum;
 use App\Models\Branch;
 use App\Models\User;
 use App\Services\Permissions\RoleService;
@@ -92,7 +93,7 @@ class UserForm
                             ->label(__('Role'))
                             ->helperText(__('The role is a template. Extra permissions can be set per user on the Permissions page.'))
                             ->multiple()
-                            ->options(fn () => Role::query()->orderBy('id')->get()->mapWithKeys(fn (Role $r) => [$r->name => RoleService::label($r)]))
+                            ->options(fn () => Role::query()->where('name', '<>', RoleEnum::Technician->value)->orderBy('id')->get()->mapWithKeys(fn (Role $r) => [$r->name => RoleService::label($r)]))
                             ->required()
                             ->native(false),
 

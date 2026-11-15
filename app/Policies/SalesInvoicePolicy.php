@@ -7,19 +7,21 @@ use App\Models\User;
 use App\Services\Permissions\BranchScopeResolver;
 
 /**
- * Sales of a branch.
+ * Invoices of a branch (sales and surgeries): seen with "View sales" or "View invoices".
  * Never deleted (void / cancel with a reason instead).
  */
 class SalesInvoicePolicy
 {
     public function viewAny(User $user): bool
     {
-        return app(BranchScopeResolver::class)->hasAny($user, 'sales.view_any');
+        $scope = app(BranchScopeResolver::class);
+
+        return $scope->hasAny($user, 'sales.view_any') || $scope->hasAny($user, 'invoices.view_any');
     }
 
     public function view(User $user, SalesInvoice $salesInvoice): bool
     {
-        return $user->canInBranch('sales.view_any', $salesInvoice->branch_id);
+        return $user->canInBranch('sales.view_any', $salesInvoice->branch_id) || $user->canInBranch('invoices.view_any', $salesInvoice->branch_id);
     }
 
     public function create(User $user): bool
@@ -27,9 +29,12 @@ class SalesInvoicePolicy
         return app(BranchScopeResolver::class)->hasAny($user, 'sales.create');
     }
 
+    /**
+     * Only unpaid invoices settled by hand; InvoiceService::update does the change.
+     */
     public function update(User $user, SalesInvoice $salesInvoice): bool
     {
-        return false;
+        return $salesInvoice->isOpenForMarking() && $user->canInBranch('invoices.update', $salesInvoice->branch_id);
     }
 
     public function delete(User $user, SalesInvoice $salesInvoice): bool

@@ -2,6 +2,7 @@
 
 namespace App\Services\Sales;
 
+use App\Enums\BillingStatus;
 use App\Enums\LocationType;
 use App\Enums\MoneyTransactionType;
 use App\Enums\PartyEntryType;
@@ -18,6 +19,7 @@ use App\Models\Product;
 use App\Models\SalesInvoice;
 use App\Models\StockBatch;
 use App\Models\StockUnit;
+use App\Models\Surgery;
 use App\Models\User;
 use App\Services\Barcode\ScanResolver;
 use App\Services\Barcode\ScanResultKind;
@@ -108,7 +110,11 @@ class SalesService
                 'pricing' => $split ? self::SPLIT : self::PER_ITEM,
                 'fx_snapshot_id' => $snapshot->id,
                 'payment_terms' => $terms,
-                'due_date' => $terms === PaymentTerms::Credit ? ($data['due_date'] ?? now()->addDays(30)->toDateString()) : null,
+                'due_date' => match ($terms) {
+                    PaymentTerms::Credit => $data['due_date'] ?? now()->addDays(30)->toDateString(),
+                    PaymentTerms::Later => filled($data['due_date'] ?? null) ? $data['due_date'] : null,
+                    default => null,
+                },
                 'status' => SalesInvoiceStatus::Draft,
                 'notes' => $data['notes'] ?? null,
                 'created_by' => $by->id,
@@ -195,10 +201,22 @@ class SalesService
             ]);
 
             if ($terms === PaymentTerms::Cash) {
+                $receipt = null;
+
                 if ($total->isPositive()) {
-                    $this->ledger->post($box, MoneyTransactionType::SaleReceipt, (string) $total, $by, $invoice, $group, __('Sale :number', ['number' => $invoice->number]), $snapshot);
+                    $receipt = $this->ledger->post($box, MoneyTransactionType::SaleReceipt, (string) $total, $by, $invoice, $group, __('Sale :number', ['number' => $invoice->number]), $snapshot);
                 }
-                $invoice->forceFill(['paid_amount' => (string) $total, 'status' => SalesInvoiceStatus::Paid]);
+                $invoice->forceFill([
+                    'paid_amount' => (string) $total,
+                    'status' => SalesInvoiceStatus::Paid,
+                    'paid_at' => now(),
+                    'paid_by' => $by->id,
+                    'paid_cash_box_id' => $box->id,
+                    'money_transaction_id' => $receipt?->id,
+                ]);
+            } elseif ($terms === PaymentTerms::Later) {
+                // Unpaid until someone marks it paid (InvoiceService::markPaid).
+                $invoice->forceFill(['status' => SalesInvoiceStatus::Issued]);
             } else {
                 $this->party->record($customer, PartyEntryType::Invoice, $currency, (string) $total, $invoice, __('Invoice :number', ['number' => $invoice->number]), $by, $snapshot);
                 $invoice->forceFill(['status' => SalesInvoiceStatus::Issued]);
@@ -240,8 +258,11 @@ class SalesService
                     : $this->stock->unsellBatch($item->stockBatch, $item->quantity, $invoice->branch, $by, $invoice, $group, $reason);
             }
 
+            // Receipts still standing (one marked paid, then not paid, is already reversed).
             MoneyTransaction::query()->where('reference_type', $invoice->getMorphClass())->where('reference_id', $invoice->id)
-                ->where('type', MoneyTransactionType::SaleReceipt)->get()
+                ->where('type', MoneyTransactionType::SaleReceipt)
+                ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('money_transactions AS r')->whereColumn('r.reverses_id', 'money_transactions.id'))
+                ->get()
                 ->each(fn (MoneyTransaction $tx) => $this->ledger->reverse($tx, $by, $reason, $group));
 
             if ($invoice->payment_terms === PaymentTerms::Credit && $invoice->customer !== null) {
@@ -250,6 +271,10 @@ class SalesService
             }
 
             $invoice->forceFill(['status' => SalesInvoiceStatus::Voided, 'voided_by' => $by->id, 'voided_at' => now(), 'void_reason' => $reason])->save();
+
+            if ($invoice->surgery_id !== null) {
+                Surgery::query()->whereKey($invoice->surgery_id)->update(['billing_status' => BillingStatus::NotBilled->value]);
+            }
 
             return $invoice;
         });

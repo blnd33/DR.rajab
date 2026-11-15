@@ -95,11 +95,12 @@ it('keeps a draft with the reasons when something is missing, and completes once
         ->and(Patient::query()->count())->toBe(1);
 });
 
-it('needs the patient name to complete', function () {
+it('completes without a patient name (the patient is optional) and makes no patient file', function () {
     $surgery = $this->surgeries->sync(surgeryPayload($this, ['new_patient' => ['full_name' => ''], 'complete' => true]), $this->doctor);
 
-    expect($surgery->status)->toBe(SurgeryStatus::Draft)
-        ->and($surgery->problems)->toBe(['Enter the patient name.'])
+    expect($surgery->status)->toBe(SurgeryStatus::Completed)
+        ->and($surgery->problems)->toBeNull()
+        ->and($surgery->patient_id)->toBeNull()
         ->and(Patient::query()->count())->toBe(0);
 });
 

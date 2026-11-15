@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 
 /**
- * Cash or credit sale.
+ * Paid now, pay later (marked paid by hand), or on credit (customer payments, behind a switch).
  */
 enum PaymentTerms: string implements HasColor, HasIcon, HasLabel
 {
@@ -16,12 +16,14 @@ enum PaymentTerms: string implements HasColor, HasIcon, HasLabel
 
     case Cash = 'cash';
     case Credit = 'credit';
+    case Later = 'later';
 
     public function getLabel(): string
     {
         return match ($this) {
             self::Cash => __('Paid now'),
             self::Credit => __('On credit'),
+            self::Later => __('Pay later'),
         };
     }
 
@@ -30,6 +32,7 @@ enum PaymentTerms: string implements HasColor, HasIcon, HasLabel
         return match ($this) {
             self::Cash => 'success',
             self::Credit => 'warning',
+            self::Later => 'gray',
         };
     }
 
@@ -38,6 +41,7 @@ enum PaymentTerms: string implements HasColor, HasIcon, HasLabel
         return match ($this) {
             self::Cash => 'heroicon-m-banknotes',
             self::Credit => 'heroicon-m-clock',
+            self::Later => 'heroicon-m-document-text',
         };
     }
 }

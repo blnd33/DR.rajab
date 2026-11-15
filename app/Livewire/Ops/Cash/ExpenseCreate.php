@@ -25,6 +25,8 @@ class ExpenseCreate extends Component
     use RunsStockActions;
     use WithFileUploads;
 
+    public string $currency = '';
+
     public ?int $boxId = null;
 
     public ?int $categoryId = null;
@@ -41,20 +43,42 @@ class ExpenseCreate extends Component
     public function mount(): void
     {
         abort_unless($this->user()->canInBranch('expenses.create', CurrentBranch::id()), 403);
-        $this->boxId = $this->boxes()->first()?->id;
+        $first = $this->allBoxes()->first();
+        $this->currency = $first->currency ?? (config('orthotrack.currencies')[0] ?? 'USD');
+        $this->boxId = $first?->id;
     }
 
     /**
+     * Every open box of this branch.
+     *
+     * @return Collection<int, CashBox>
+     */
+    private function allBoxes()
+    {
+        return CashBox::query()->where('branch_id', CurrentBranch::id())->where('is_active', true)->orderBy('type')->orderBy('currency')->get();
+    }
+
+    /**
+     * The boxes holding the chosen currency.
+     *
      * @return Collection<int, CashBox>
      */
     private function boxes()
     {
-        return CashBox::query()->where('branch_id', CurrentBranch::id())->where('is_active', true)->orderBy('type')->orderBy('currency')->get();
+        return $this->allBoxes()->where('currency', $this->currency)->values();
+    }
+
+    public function updatedCurrency(): void
+    {
+        if ($this->boxes()->firstWhere('id', $this->boxId) === null) {
+            $this->boxId = $this->boxes()->first()?->id;
+        }
     }
 
     public function submit(ExpenseService $expenses): void
     {
         $this->validate([
+            'currency' => ['required', 'in:'.implode(',', config('orthotrack.currencies'))],
             'boxId' => ['required', 'integer'],
             'categoryId' => ['required', 'integer'],
             'amount' => ['required'],
@@ -71,6 +95,7 @@ class ExpenseCreate extends Component
         $expense = $this->attempt(fn () => $expenses->record($branch, [
             'expense_category_id' => (int) $this->categoryId,
             'cash_box_id' => $box->id,
+            'currency' => $this->currency,
             'amount' => str_replace(',', '', trim((string) DigitConverter::toWestern($this->amount))),
             'payee' => $this->payee ?: null,
             'description' => $this->description ?: null,
@@ -88,6 +113,7 @@ class ExpenseCreate extends Component
     {
         return view('livewire.ops.cash.expense-create', [
             'boxes' => $this->boxes(),
+            'currencies' => config('orthotrack.currencies'),
             'categories' => ExpenseCategory::options(),
         ])->title(__('Record an expense'));
     }

@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\ExpenseStatus;
 use App\Models\Expense;
 use App\Models\User;
 use App\Services\Permissions\BranchScopeResolver;
@@ -27,9 +28,13 @@ class ExpensePolicy
         return app(BranchScopeResolver::class)->hasAny($user, 'expenses.create');
     }
 
+    /**
+     * Waiting or paid expenses; the service corrects a paid one in its box.
+     */
     public function update(User $user, Expense $expense): bool
     {
-        return false;
+        return in_array($expense->status, [ExpenseStatus::PendingApproval, ExpenseStatus::Posted], true)
+            && $user->canInBranch('expenses.update', $expense->branch_id);
     }
 
     public function delete(User $user, Expense $expense): bool

@@ -19,6 +19,8 @@ enum Role: string implements HasColor, HasLabel
     case Cashier = 'cashier';
     case Accountant = 'accountant';
     case BranchStaff = 'branch_staff';
+    // A name to pick on surgeries; never signs in and holds no permissions.
+    case Technician = 'technician';
 
     public function getLabel(): string
     {
@@ -28,6 +30,7 @@ enum Role: string implements HasColor, HasLabel
             self::Cashier => __('Cashier'),
             self::Accountant => __('Accountant'),
             self::BranchStaff => __('Branch Staff'),
+            self::Technician => __('Technician'),
         };
     }
 
@@ -39,6 +42,7 @@ enum Role: string implements HasColor, HasLabel
             self::Cashier => 'warning',
             self::Accountant => 'success',
             self::BranchStaff => 'gray',
+            self::Technician => 'gray',
         };
     }
 
@@ -49,7 +53,7 @@ enum Role: string implements HasColor, HasLabel
     {
         return match ($this) {
             self::SuperAdmin, self::Accountant => Panel::Admin,
-            self::Doctor, self::Cashier, self::BranchStaff => Panel::Ops,
+            self::Doctor, self::Cashier, self::BranchStaff, self::Technician => Panel::Ops,
         };
     }
 

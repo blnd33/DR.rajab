@@ -2,6 +2,28 @@
 
 All notable changes per build phase.
 
+## [Client updates — language, expenses, technicians, invoices] — 2026-11-15
+
+Changes asked by the client: language from every page, currency and editing on expenses, technicians instead of assistants, and invoices for everything with a paid / not paid switch.
+
+### Added
+- **Language switcher in the top bar** of the admin panel and the phone app (still on the sign-in page too). The choice is saved on the account, so both apps follow it.
+- **Expense currency**: the expense form (admin and phone) asks the currency first (USD / EUR / IQD) and lists only the boxes holding it; the service refuses a box in another currency.
+- **Edit an expense** (`expenses.update`, Accountant): one waiting for approval is changed in place and its approval request follows; a paid one needs a reason and is corrected in its box — the old payment is reversed (new ledger row) and the corrected amount paid again.
+- **Technicians** (*Clinical → Technicians*, `technicians.manage`): one account per technician that never signs in and has no permissions (role `technician` kept empty, panels refused, `hasPermissionTo` always false). The surgery form (admin and phone) picks **technicians** instead of assistants; older surgeries keep their assistants. Each technician's page lists their surgeries, this month's count and the fees per currency.
+- **Graphs → Technicians**: surgeries by technician, technician work per month (one line each), surgery money by technician (in the chosen currency), technician work by surgery type.
+- **Surgery fee**: optional amount + currency on the surgery form; a completed surgery with a fee gets an **unpaid invoice**. *Make an invoice* on a completed surgery without one. Cancelling a surgery voids its unpaid invoice (a paid one must be marked not paid first).
+- **Invoices** (*Finance → Invoices*, the former *Sales*): sales and surgery invoices together, tabs *Not paid / Paid / All* and the unpaid total per currency. **Mark as paid** (`invoices.mark_paid`) takes the money into a box of the invoice's currency — only then it counts as received; **Mark as not paid** (with a reason) reverses it. **Edit** (`invoices.update`) while unpaid: buyer, notes, due date, a surgery's fee and currency, a sale's line amounts and discount (items stay; void to change them). Credit invoices keep their customer-payment flow.
+- New sale (admin and phone): an **Already paid** tick; without it the sale is saved on an unpaid *Pay later* invoice (stock leaves, the money waits).
+- Demo data: two technicians on the demo surgeries, one surgery invoice paid and one waiting.
+- **Tests**: expense currency and editing, technicians (no sign-in, no permissions, on surgeries, graphs), invoices (surgery fee, mark paid / not paid, edit, pay-later sale, void after re-payment, cancel rules), the counter sale with and without the tick.
+
+### Changed
+- The **patient is optional** on a surgery; a patient file is only made when a name was typed (database check relaxed to hospital + surgery type).
+- Voiding a sale reverses only receipts still standing (one marked paid, then not paid, is already reversed) and resets a surgery's billing.
+- Sales report counts and the *Sales by currency* graph read sale invoices only.
+- `Pg::check` runs unprepared so PDO does not read the jsonb `?` operator as a placeholder (fresh migrations failed on PHP 8.3 + PostgreSQL).
+
 ## [Phase 6 — Quick answers] — 2026-11-11
 
 A chat-style screen with **ready-made questions** and a box to **type or scan any code** ([plan](docs/phases/PHASE-6-PLAN.md) §3). No AI: answers come straight from the facts and the existing lookups, so they are exact and cost nothing to run.

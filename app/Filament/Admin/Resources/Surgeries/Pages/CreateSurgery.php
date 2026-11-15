@@ -57,7 +57,12 @@ class CreateSurgery extends CreateRecord
                 Select::make('kit_checkout_id')->label(__('Kit used (optional)'))->native(false)
                     ->options(fn (Get $get) => KitCheckout::query()->with('kit')->where('status', KitCheckoutStatus::Out)->where('branch_id', (int) $get('branch_id'))
                         ->get()->mapWithKeys(fn (KitCheckout $c) => [$c->id => $c->label()])),
-                Select::make('patient_id')->label(__('Patient'))->required()->searchable()->native(false)->columnSpan(2)
+                TextInput::make('fee_amount')->label(__('Surgery fee (optional)'))->numeric()->minValue(0)->extraInputAttributes(['dir' => 'ltr'])
+                    ->helperText(__('An invoice for this amount is made when the surgery is completed.')),
+                Select::make('fee_currency')->label(__('Currency'))->native(false)->requiredWith('fee_amount')
+                    ->options(array_combine(config('orthotrack.currencies'), config('orthotrack.currencies')))
+                    ->default(fn () => ServiceAction::user()->primaryBranch->default_currency ?? 'USD'),
+                Select::make('patient_id')->label(__('Patient (optional)'))->searchable()->native(false)->columnSpan(2)
                     ->getSearchResultsUsing(fn (string $search) => app(PatientService::class)->search(ServiceAction::user(), $search)->limit(30)->get()->mapWithKeys(fn (Patient $p) => [$p->id => $p->label()]))
                     ->getOptionLabelUsing(fn ($value) => Patient::query()->find($value)?->label())
                     ->createOptionForm([
@@ -72,7 +77,8 @@ class CreateSurgery extends CreateRecord
                         return app(PatientService::class)->create($branch, $data, ServiceAction::user())->id;
                     }),
                 Select::make('lead_doctor_id')->label(__('Lead surgeon'))->options(fn () => User::doctorOptions())->default(fn () => ServiceAction::user()->id)->required()->native(false),
-                Select::make('assistant_ids')->label(__('Assistants'))->options(fn () => User::doctorOptions())->multiple()->native(false)->columnSpan(2),
+                Select::make('technician_ids')->label(__('Technicians'))->options(fn () => User::technicianOptions())->multiple()->native(false)->columnSpan(2)
+                    ->helperText(fn () => User::technicianOptions() === [] ? __('Add technicians under Clinical → Technicians.') : null),
                 Textarea::make('notes')->label(__('Notes'))->rows(2)->columnSpanFull(),
             ]),
             Section::make(__('Implants and products used'))->schema([

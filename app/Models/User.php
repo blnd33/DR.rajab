@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Panel as AppPanel;
 use App\Enums\Role;
+use App\Enums\SurgeryDoctorRole;
 use App\Services\Permissions\BranchScopeResolver;
 use Database\Factories\UserFactory;
 use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
@@ -43,7 +44,9 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     use HasFactory;
 
     use HasPushSubscriptions;
-    use HasRoles;
+    use HasRoles {
+        hasPermissionTo as private roleHasPermissionTo;
+    }
     use InteractsWithAppAuthentication;
     use InteractsWithAppAuthenticationRecovery;
     use LogsActivity;
@@ -110,6 +113,16 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     |--------------------------------------------------------------------------
     */
 
+    /**
+     * Surgeries this user worked on as a technician.
+     *
+     * @return BelongsToMany<Surgery, $this>
+     */
+    public function technicianSurgeries(): BelongsToMany
+    {
+        return $this->belongsToMany(Surgery::class, 'surgery_doctors')->wherePivot('role', SurgeryDoctorRole::Technician->value)->withPivot('role');
+    }
+
     /** @return BelongsToMany<Branch, $this> */
     public function branches(): BelongsToMany
     {
@@ -164,6 +177,42 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     }
 
     /**
+     * Technicians are names picked on surgeries: no login, no permissions.
+     */
+    public function isTechnician(): bool
+    {
+        return $this->hasRole(Role::Technician->value);
+    }
+
+    /**
+     * Spatie's permission check, except that a technician never has a permission, whatever is
+     * attached to the account.
+     */
+    public function hasPermissionTo($permission, $guardName = null): bool
+    {
+        if ($this->isTechnician()) {
+            return false;
+        }
+
+        return $this->roleHasPermissionTo($permission, $guardName);
+    }
+
+    /**
+     * Active technicians (for the surgery technician picker).
+     *
+     * @return array<int, string>
+     */
+    public static function technicianOptions(): array
+    {
+        return static::query()
+            ->where('is_active', true)
+            ->role(Role::Technician->value)
+            ->orderBy('name')
+            ->pluck('name', 'id')
+            ->all();
+    }
+
+    /**
      * Active users who may log surgeries (for doctor pickers).
      *
      * @return array<int, string>
@@ -191,7 +240,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
 
     public function canAccessAppPanel(AppPanel $panel): bool
     {
-        if (! $this->is_active) {
+        if (! $this->is_active || $this->isTechnician()) {
             return false;
         }
 

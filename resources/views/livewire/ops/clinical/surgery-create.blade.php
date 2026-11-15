@@ -56,6 +56,19 @@
                     @endforeach
                 </select>
             </label>
+            <div class="space-y-1 sm:col-span-2">
+                <span id="fee-label" class="text-sm font-medium">{{ __('Surgery fee (optional)') }}</span>
+                <div class="flex gap-2" role="group" aria-labelledby="fee-label">
+                    <input type="text" inputmode="decimal" x-model="form.fee_amount" class="ot-input min-w-0 flex-1 text-lg font-bold" dir="ltr" data-western-digits autocomplete="off"
+                           aria-label="{{ __('Amount') }}">
+                    <select x-model="form.fee_currency" class="ot-input w-28 shrink-0 font-semibold" dir="ltr" aria-label="{{ __('Currency') }}">
+                        @foreach ($currencies as $code)
+                            <option value="{{ $code }}">{{ $code }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <span class="block text-xs text-muted-fg">{{ __('An invoice for this amount is made when the surgery is completed.') }}</span>
+            </div>
             <fieldset class="space-y-1">
                 <legend class="text-sm font-medium">{{ __('Side') }}</legend>
                 <div class="flex flex-wrap gap-2">
@@ -71,7 +84,7 @@
 
     {{-- The patient: typed here; the patient file is made when the surgery is completed. --}}
     <section class="ot-card space-y-4 p-4" aria-labelledby="patient-title">
-        <h2 id="patient-title" class="font-semibold">{{ __('Patient') }}</h2>
+        <h2 id="patient-title" class="font-semibold">{{ __('Patient (optional)') }}</h2>
 
         <p x-show="form.patient_id" x-cloak class="flex items-center justify-between gap-2 rounded-lg bg-subtle p-3">
             <span class="font-semibold" x-text="patientLabel"></span>
@@ -130,7 +143,7 @@
 
     {{-- Optional: kit, doctors, notes. Opens by itself when something needs fixing or is filled in. --}}
     <section class="ot-card p-4" x-data="{ more: false }"
-             x-init="more = problems.length > 0 || !! form.notes || !! form.override_reason || !! form.kit_checkout_id || form.assistant_ids.length > 0"
+             x-init="more = problems.length > 0 || !! form.notes || !! form.override_reason || !! form.kit_checkout_id || (form.technician_ids ?? []).length > 0"
              x-effect="if (problems.length > 0) more = true">
         <button type="button" class="flex min-h-11 w-full items-center justify-between gap-2 font-semibold" @click="more = ! more" :aria-expanded="more">
             <span class="flex items-center gap-2">
@@ -160,13 +173,15 @@
                 </select>
             </label>
             <fieldset class="space-y-2">
-                <legend class="text-sm font-medium">{{ __('Assistants') }}</legend>
-                @foreach ($doctors as $id => $name)
-                    <label class="flex min-h-11 items-center gap-3" x-show="form.lead_doctor_id !== {{ $id }}">
-                        <input type="checkbox" value="{{ $id }}" x-model.number="form.assistant_ids" class="size-5 rounded">
+                <legend class="text-sm font-medium">{{ __('Technicians') }}</legend>
+                @forelse ($technicians as $id => $name)
+                    <label class="flex min-h-11 items-center gap-3">
+                        <input type="checkbox" value="{{ $id }}" x-model.number="form.technician_ids" class="size-5 rounded">
                         <span>{{ $name }}</span>
                     </label>
-                @endforeach
+                @empty
+                    <p class="text-sm text-muted-fg">{{ __('No technicians yet — the admin adds them under Clinical → Technicians.') }}</p>
+                @endforelse
             </fieldset>
             <label class="block space-y-1">
                 <span class="text-sm font-medium">{{ __('Notes') }}</span>

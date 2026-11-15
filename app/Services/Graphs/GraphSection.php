@@ -9,6 +9,7 @@ enum GraphSection: string
 {
     case Sales = 'sales';
     case Surgeries = 'surgeries';
+    case Technicians = 'technicians';
     case Stock = 'stock';
     case Money = 'money';
     case Transfers = 'transfers';
@@ -19,6 +20,7 @@ enum GraphSection: string
         return match ($this) {
             self::Sales => __('Sales'),
             self::Surgeries => __('Surgeries'),
+            self::Technicians => __('Technicians'),
             self::Stock => __('Items and stock'),
             self::Money => __('Money'),
             self::Transfers => __('Transfers'),
@@ -31,6 +33,7 @@ enum GraphSection: string
         return match ($this) {
             self::Sales => 'heroicon-o-banknotes',
             self::Surgeries => 'heroicon-o-heart',
+            self::Technicians => 'heroicon-o-wrench-screwdriver',
             self::Stock => 'heroicon-o-archive-box',
             self::Money => 'heroicon-o-wallet',
             self::Transfers => 'heroicon-o-truck',

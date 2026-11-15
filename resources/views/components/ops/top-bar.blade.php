@@ -18,6 +18,8 @@
         </a>
 
         <div class="ms-auto flex items-center gap-1">
+            <x-language-switcher variant="compact" />
+
             @if ($branches->count() > 1)
                 <form method="POST" action="{{ route('ops.branch.switch') }}" x-data>
                     @csrf

@@ -21,6 +21,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Schemas\Components\Section;
@@ -39,24 +40,32 @@ class CreateSalesInvoice extends CreateRecord
     public function form(Schema $schema): Schema
     {
         $credit = app(SettingsRepository::class)->bool('features.credit_sales');
-        $isCredit = fn (Get $get) => $get('payment_terms') === PaymentTerms::Credit->value;
+        $paidNow = fn (Get $get) => (bool) $get('paid_now');
+        $isCredit = fn (Get $get) => ! $paidNow($get) && $get('payment_terms') === PaymentTerms::Credit->value;
         $isSplit = fn (Get $get) => $get('pricing') === SalesService::SPLIT;
 
         return $schema->components([
             Section::make(__('Sale'))->columnSpanFull()->columns(['default' => 1, 'md' => 3])->schema([
                 Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('sales.create'))->required()->native(false)->live(),
                 Select::make('currency')->label(__('Currency'))->options(fn () => Currency::options())->default('USD')->required()->native(false)->live(),
-                Select::make('payment_terms')->label(__('Payment'))->native(false)->live()->required()
-                    ->options(fn () => $credit ? PaymentTerms::options() : [PaymentTerms::Cash->value => PaymentTerms::Cash->getLabel()])
-                    ->default(PaymentTerms::Cash->value),
+                Toggle::make('paid_now')->label(__('Already paid'))->live()->default(false)->inline(false)
+                    ->helperText(fn (Get $get) => $paidNow($get)
+                        ? __('The money goes into the box below now.')
+                        : __('The invoice starts unpaid. Mark it paid in Invoices when the money comes.')),
+                Select::make('payment_terms')->label(__('Payment'))->native(false)->live()
+                    ->options([PaymentTerms::Later->value => PaymentTerms::Later->getLabel(), PaymentTerms::Credit->value => PaymentTerms::Credit->getLabel()])
+                    ->default(PaymentTerms::Later->value)
+                    ->visible(fn (Get $get) => $credit && ! $paidNow($get)),
                 Select::make('customer_id')->label(__('Hospital / customer'))->options(fn () => Customer::options())->searchable()->native(false)
                     ->required($isCredit),
                 TextInput::make('walk_in_name')->label(__('or walk-in buyer'))->maxLength(150)->hidden($isCredit),
-                Select::make('cash_box_id')->label(__('Money into'))->native(false)->required(fn (Get $get) => ! $isCredit($get))->hidden($isCredit)
+                Select::make('cash_box_id')->label(__('Money into'))->native(false)->required($paidNow)->visible($paidNow)
                     ->options(fn (Get $get) => filled($get('branch_id'))
                         ? app(CashBoxService::class)->options(ServiceAction::user(), 'sales.create', (string) $get('currency'), (int) $get('branch_id'))
                         : []),
-                DatePicker::make('due_date')->label(__('Due date'))->native(false)->displayFormat('Y-m-d')->visible($isCredit)->default(fn () => now(config('orthotrack.timezone'))->addDays(30)->toDateString()),
+                DatePicker::make('due_date')->label(fn (Get $get) => $isCredit($get) ? __('Due date') : __('Due date (optional)'))->native(false)->displayFormat('Y-m-d')
+                    ->hidden($paidNow)->required($isCredit)
+                    ->default(fn () => $credit ? now(config('orthotrack.timezone'))->addDays(30)->toDateString() : null),
             ]),
             Section::make(__('Items'))->columnSpanFull()->schema([
                 ToggleButtons::make('pricing')->label(__('Price'))->inline()->live()->required()
@@ -99,7 +108,7 @@ class CreateSalesInvoice extends CreateRecord
         try {
             return app(SalesService::class)->sell(Branch::query()->findOrFail($data['branch_id']), [
                 'currency' => $data['currency'],
-                'payment_terms' => $data['payment_terms'],
+                'payment_terms' => ($data['paid_now'] ?? false) ? PaymentTerms::Cash->value : ($data['payment_terms'] ?? PaymentTerms::Later->value),
                 'customer_id' => $data['customer_id'] ?? null,
                 'walk_in_name' => $data['walk_in_name'] ?? null,
                 'cash_box_id' => $data['cash_box_id'] ?? null,

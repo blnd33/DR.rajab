@@ -2,6 +2,7 @@
 
 namespace App\Services\Reports;
 
+use App\Enums\InvoiceKind;
 use App\Enums\SalesInvoiceStatus;
 use App\Models\Branch;
 use App\Models\Customer;
@@ -199,6 +200,7 @@ class SalesProfitReport extends Report
 
         // An invoice can sit in more than one row (per product); count each once.
         $totals['invoices'] = (string) SalesInvoice::query()
+            ->where('kind', InvoiceKind::Sale->value)
             ->whereNotIn('status', [SalesInvoiceStatus::Draft->value, SalesInvoiceStatus::Voided->value])
             ->whereBetween('issued_at', $context->bounds())
             ->when($context->branchIds !== null, fn ($q) => $q->whereIn('branch_id', $context->branchIds))

@@ -6,6 +6,7 @@ use App\Enums\AttachmentKind;
 use App\Enums\KitCheckoutStatus;
 use App\Enums\Laterality;
 use App\Enums\LocationType;
+use App\Enums\Role;
 use App\Enums\ScanContext;
 use App\Enums\StockStatus;
 use App\Enums\SurgeryDoctorRole;
@@ -28,8 +29,12 @@ use App\Services\Expenses\CommissionService;
 use App\Services\Movement\Notifier;
 use App\Services\Numbering\DocumentNumberGenerator;
 use App\Services\Permissions\BranchScopeResolver;
+use App\Services\Sales\InvoiceService;
 use App\Services\Stock\StockMovementService;
+use App\Support\Locale\DigitConverter;
 use App\Support\Msg;
+use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
@@ -53,15 +58,16 @@ class SurgeryService
         private readonly PatientService $patients,
         private readonly ScanResolver $scanner,
         private readonly Notifier $notifier,
+        private readonly InvoiceService $invoices,
     ) {}
 
     /**
      * Create or update a draft from a payload, and complete it when asked and nothing blocks.
      * A replay of a surgery that is no longer a draft returns it unchanged.
      *
-     * Payload: client_uuid, branch_id, surgery_date, surgery_type_id, customer_id, patient_id |
+     * Payload: client_uuid, branch_id, surgery_date, surgery_type_id, customer_id, fee_amount, fee_currency, patient_id |
      * new_patient{full_name, phone, age, date_of_birth, gender}, laterality, kit_checkout_id,
-     * lead_doctor_id, assistant_ids[], notes, override_reason, complete,
+     * lead_doctor_id, technician_ids[] (assistant_ids[] from older drafts), notes, override_reason, complete,
      * items[{raw | stock_unit_id | stock_batch_id | product_id + lot, quantity}].
      *
      * @param  array<string, mixed>  $payload
@@ -83,7 +89,10 @@ class SurgeryService
         $branch = Branch::query()->findOrFail($payload['branch_id'] ?? $existing?->branch_id);
         $this->authorize($by, 'surgeries.create', $branch->id);
 
-        $surgery = DB::transaction(function () use ($payload, $by, $existing, $branch, $uuid) {
+        // A fee that does not read stays off the draft and is listed as something to fix.
+        [$fee, $feeProblem] = $this->fee($payload);
+
+        $surgery = DB::transaction(function () use ($payload, $by, $existing, $branch, $uuid, $fee, $feeProblem) {
             $surgery = $existing ?? new Surgery([
                 'client_uuid' => $uuid,
                 'number' => $this->numbers->next('SRG', $branch),
@@ -101,6 +110,7 @@ class SurgeryService
                 'laterality' => Laterality::tryFrom((string) ($payload['laterality'] ?? '')) ?? Laterality::NotApplicable,
                 'kit_checkout_id' => $payload['kit_checkout_id'] ?? null,
                 'notes' => $payload['notes'] ?? null,
+                ...$fee,
             ]);
             $surgery->kit_id = $surgery->kit_checkout_id !== null ? KitCheckout::query()->whereKey($surgery->kit_checkout_id)->value('kit_id') : null;
             $surgery->save();
@@ -109,7 +119,7 @@ class SurgeryService
 
             // Draft lines have no stock effect yet: replace them with what the phone sends.
             $surgery->items()->delete();
-            $problems = $this->headerProblems($surgery);
+            $problems = [...$this->headerProblems($surgery), ...($feeProblem !== null ? [$feeProblem] : [])];
             $seen = [];
 
             foreach ($payload['items'] ?? [] as $line) {
@@ -178,8 +188,10 @@ class SurgeryService
                 throw new StockRuleViolation(__('Add at least one implant or product.'));
             }
 
-            if ($surgery->patient_id === null) {
-                $details = (array) $surgery->patient_details;
+            // The patient name is optional: a patient file is only made when one was typed.
+            $details = (array) $surgery->patient_details;
+
+            if ($surgery->patient_id === null && filled($details['full_name'] ?? null)) {
                 $patient = $this->patients->findByPhone($details['phone'] ?? null, $details['full_name'] ?? null)
                     ?? $this->patients->create($surgery->branch, $details, $by);
                 $surgery->forceFill(['patient_id' => $patient->id, 'patient_details' => null])->save();
@@ -210,6 +222,9 @@ class SurgeryService
                 'completed_at' => now(),
                 'problems' => null,
             ])->save();
+
+            // The fee becomes an unpaid invoice (Invoices → Mark as paid when the money comes).
+            $this->invoices->forSurgery($surgery, $by);
 
             return $surgery;
         });
@@ -253,6 +268,7 @@ class SurgeryService
             }
 
             if ($surgery->status === SurgeryStatus::Completed) {
+                $this->invoices->voidForSurgery($surgery, $reason, $by);
                 $group = (string) Str::uuid();
 
                 foreach ($surgery->liveItems as $item) {
@@ -503,7 +519,6 @@ class SurgeryService
         return array_values(array_filter([
             $surgery->surgery_type_id === null ? __('Choose the surgery type.') : null,
             $surgery->customer_id === null ? __('Choose the hospital.') : null,
-            $surgery->patient_id === null && blank($surgery->patient_details['full_name'] ?? null) ? __('Enter the patient name.') : null,
         ]));
     }
 
@@ -549,6 +564,34 @@ class SurgeryService
     }
 
     /**
+     * The surgery fee typed on the form (optional): amount above zero and a currency.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{0: array{fee_amount: ?string, fee_currency: ?string}, 1: ?string} the fee, and what is wrong with it
+     */
+    private function fee(array $payload): array
+    {
+        $none = ['fee_amount' => null, 'fee_currency' => null];
+        $raw = str_replace([',', ' '], '', trim((string) DigitConverter::toWestern((string) ($payload['fee_amount'] ?? ''))));
+
+        if ($raw === '') {
+            return [$none, null];
+        }
+
+        if (! is_numeric($raw) || (float) $raw <= 0) {
+            return [$none, __('The surgery fee must be a number above zero.')];
+        }
+
+        $currency = (string) ($payload['fee_currency'] ?? '');
+
+        if (! in_array($currency, config('orthotrack.currencies'), true)) {
+            return [$none, __('Choose the currency of the surgery fee.')];
+        }
+
+        return [['fee_amount' => (string) BigDecimal::of($raw)->toScale(4, RoundingMode::HalfUp), 'fee_currency' => $currency], null];
+    }
+
+    /**
      * @param  array<string, mixed>  $payload
      */
     private function syncDoctors(Surgery $surgery, array $payload, User $by): void
@@ -556,9 +599,24 @@ class SurgeryService
         $lead = (int) ($payload['lead_doctor_id'] ?? 0) ?: $by->id;
         $doctors = [$lead => ['role' => SurgeryDoctorRole::Lead->value]];
 
+        // Drafts saved on a phone before technicians existed may still send assistants.
         foreach ((array) ($payload['assistant_ids'] ?? []) as $id) {
             if ((int) $id > 0 && (int) $id !== $lead) {
                 $doctors[(int) $id] = ['role' => SurgeryDoctorRole::Assistant->value];
+            }
+        }
+
+        $technicians = array_values(array_filter(array_map('intval', (array) ($payload['technician_ids'] ?? [])), fn (int $id) => $id > 0 && $id !== $lead));
+
+        if ($technicians !== []) {
+            $valid = User::query()->whereIn('id', $technicians)->role(Role::Technician->value)->pluck('id')->all();
+
+            if (count($valid) !== count(array_unique($technicians))) {
+                throw new StockRuleViolation(__('Choose technicians from the technician list.'), 'technician_ids');
+            }
+
+            foreach ($valid as $id) {
+                $doctors[(int) $id] = ['role' => SurgeryDoctorRole::Technician->value];
             }
         }
 

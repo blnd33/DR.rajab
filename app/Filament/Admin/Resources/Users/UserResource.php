@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Users;
 
+use App\Enums\Role as RoleEnum;
 use App\Filament\Admin\Resources\Users\Pages\CreateUser;
 use App\Filament\Admin\Resources\Users\Pages\EditUser;
 use App\Filament\Admin\Resources\Users\Pages\EditUserPermissions;
@@ -15,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
 {
@@ -39,6 +41,14 @@ class UserResource extends Resource
     public static function getPluralModelLabel(): string
     {
         return __('Users');
+    }
+
+    /**
+     * Technicians have their own screen (Clinical → Technicians).
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->whereDoesntHave('roles', fn (Builder $r) => $r->where('name', RoleEnum::Technician->value));
     }
 
     public static function getGloballySearchableAttributes(): array

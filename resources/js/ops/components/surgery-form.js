@@ -15,6 +15,9 @@ export default (options = {}) => ({
         client_uuid: null,
         items: [],
         assistant_ids: [],
+        technician_ids: [],
+        fee_amount: '',
+        fee_currency: 'USD',
         new_patient: emptyPatient(),
         ...(options.initial ?? {}),
     },
@@ -42,6 +45,7 @@ export default (options = {}) => ({
 
         this.form.client_uuid ??= newClientUuid()
         this.form.new_patient ??= emptyPatient()
+        this.form.technician_ids ??= []
 
         this.$watch('form', () => this.keep())
         window.addEventListener('online', () => (this.online = true))

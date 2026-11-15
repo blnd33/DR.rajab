@@ -5,6 +5,7 @@ namespace App\Livewire\Ops\Clinical;
 use App\Enums\Gender;
 use App\Enums\KitCheckoutStatus;
 use App\Enums\Laterality;
+use App\Enums\SurgeryDoctorRole;
 use App\Enums\SurgeryStatus;
 use App\Livewire\Ops\Concerns\RunsStockActions;
 use App\Models\Customer;
@@ -47,6 +48,8 @@ class SurgeryCreate extends Component
             'types' => SurgeryType::options(),
             'hospitals' => Customer::options(),
             'doctors' => User::doctorOptions(),
+            'technicians' => User::technicianOptions(),
+            'currencies' => config('orthotrack.currencies'),
             'checkouts' => KitCheckout::query()->with(['kit', 'customer'])->where('branch_id', $branchId)->where('status', KitCheckoutStatus::Out)->get()
                 ->mapWithKeys(fn (KitCheckout $c) => [$c->id => $c->kit->code.' · '.$c->customer->code])->all(),
             'lateralities' => Laterality::options(),
@@ -67,6 +70,9 @@ class SurgeryCreate extends Component
                 'surgery_date' => now(config('orthotrack.timezone'))->toDateString(),
                 'laterality' => Laterality::NotApplicable->value,
                 'lead_doctor_id' => $this->user()->id,
+                'technician_ids' => [],
+                'fee_amount' => '',
+                'fee_currency' => CurrentBranch::get()->default_currency ?? 'USD',
                 'items' => [],
             ];
         }
@@ -83,7 +89,10 @@ class SurgeryCreate extends Component
             'laterality' => $draft->laterality->value,
             'kit_checkout_id' => $draft->kit_checkout_id,
             'lead_doctor_id' => $draft->leadDoctor()->id ?? $this->user()->id,
-            'assistant_ids' => $draft->doctors->filter(fn (User $d) => $d->getRelationValue('pivot')?->getAttribute('role') === 'assistant')->pluck('id')->values()->all(),
+            'assistant_ids' => $draft->doctors->filter(fn (User $d) => $d->getRelationValue('pivot')?->getAttribute('role') === SurgeryDoctorRole::Assistant->value)->pluck('id')->values()->all(),
+            'technician_ids' => $draft->doctors->filter(fn (User $d) => $d->getRelationValue('pivot')?->getAttribute('role') === SurgeryDoctorRole::Technician->value)->pluck('id')->values()->all(),
+            'fee_amount' => $draft->fee_amount !== null ? (string) (float) $draft->fee_amount : '',
+            'fee_currency' => $draft->fee_currency ?? ($draft->branch->default_currency ?? 'USD'),
             'notes' => $draft->notes,
             'items' => $draft->items->map(fn ($i) => [
                 'raw' => $i->scanned_raw ?: ($i->stockUnit->serial ?? ''),

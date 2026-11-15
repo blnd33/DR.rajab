@@ -123,6 +123,16 @@ class Surgery extends Model
         return $this->belongsToMany(User::class, 'surgery_doctors')->withPivot('role');
     }
 
+    /**
+     * Technicians who worked on this surgery.
+     *
+     * @return BelongsToMany<User, $this>
+     */
+    public function technicians(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'surgery_doctors')->wherePivot('role', SurgeryDoctorRole::Technician->value)->withPivot('role');
+    }
+
     /** @return HasMany<SurgeryItem, $this> */
     public function items(): HasMany
     {

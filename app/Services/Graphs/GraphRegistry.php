@@ -2,7 +2,9 @@
 
 namespace App\Services\Graphs;
 
+use App\Enums\InvoiceKind;
 use App\Enums\SalesInvoiceStatus;
+use App\Enums\SurgeryDoctorRole;
 use App\Enums\SurgeryStatus;
 use App\Enums\TransferStatus;
 use App\Enums\UsageLevel;
@@ -12,7 +14,9 @@ use App\Models\Branch;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\SalesInvoice;
+use App\Models\Surgery;
 use App\Models\SurgeryItem;
+use App\Models\SurgeryType;
 use App\Models\Transfer;
 use App\Models\User;
 use App\Models\WriteOff;
@@ -31,6 +35,7 @@ use App\Support\Locale\Display;
 use Brick\Math\BigDecimal;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 
 /**
@@ -179,6 +184,20 @@ final class GraphRegistry
                 fn (GraphContext $c) => $this->fromReport($c, SurgeriesReport::class, 'month', 'label', ['implant_cost' => __('Implant cost')], true, months: true),
                 ['money', 'items'], needsProfit: true, usesCurrency: true),
 
+            // Technicians
+            new Graph('surgeries-by-technician', GraphSection::Technicians, __('Surgeries by technician'), __('Completed surgeries each technician worked on.'), Graph::RANKING,
+                fn (GraphContext $c) => $this->technicianTotals($c, 'surgeries'),
+                ['technician', 'staff', 'work', 'operations']),
+            new Graph('technician-surgeries-per-month', GraphSection::Technicians, __('Technician work per month'), __('Surgeries each technician worked on, month by month (one line per technician).'), Graph::LINE,
+                fn (GraphContext $c) => $this->technicianMonths($c),
+                ['technician', 'staff', 'work', 'month', 'trend']),
+            new Graph('technician-surgery-money', GraphSection::Technicians, __('Surgery money by technician'), __('The fees of the surgeries each technician worked on, shown in one currency.'), Graph::RANKING,
+                fn (GraphContext $c) => $this->technicianTotals($c, 'fees'),
+                ['technician', 'money', 'fee', 'revenue', 'income'], usesCurrency: true),
+            new Graph('technician-surgery-types', GraphSection::Technicians, __('Technician work by surgery type'), __('Which surgeries the technicians worked on (hip, knee, shoulder…).'), Graph::DOUGHNUT,
+                fn (GraphContext $c) => $this->technicianTotals($c, 'types'),
+                ['technician', 'type', 'hip', 'knee', 'shoulder']),
+
             // Items and stock
             new Graph('stock-value-by-branch', GraphSection::Stock, __('Stock value by branch'), __('What the stock on hand is worth in each branch today (true cost).'), Graph::DOUGHNUT,
                 fn (GraphContext $c) => $this->fromReport($c, StockValueReport::class, 'branch', 'branch', ['value' => __('Stock value')], true),
@@ -297,6 +316,7 @@ final class GraphRegistry
         $totals = [];
 
         SalesInvoice::query()
+            ->where('kind', InvoiceKind::Sale->value)
             ->whereNotIn('status', [SalesInvoiceStatus::Draft->value, SalesInvoiceStatus::Voided->value])
             ->whereBetween('issued_at', $c->bounds())
             ->when($c->branchIds !== null, fn ($q) => $q->whereIn('branch_id', $c->branchIds))
@@ -307,6 +327,97 @@ final class GraphRegistry
             });
 
         return $this->simple($totals, __('Revenue'), $c->currency);
+    }
+
+    /**
+     * Completed surgeries in the period with their technicians (one row per surgery + technician).
+     *
+     * @return Collection<int, \stdClass>
+     */
+    private function technicianRows(GraphContext $c): Collection
+    {
+        return Surgery::query()
+            ->join('surgery_doctors', 'surgery_doctors.surgery_id', '=', 'surgeries.id')
+            ->join('users', 'users.id', '=', 'surgery_doctors.user_id')
+            ->where('surgery_doctors.role', SurgeryDoctorRole::Technician->value)
+            ->where('surgeries.status', SurgeryStatus::Completed->value)
+            ->whereBetween('surgeries.surgery_date', [$c->from->toDateString(), $c->until->toDateString()])
+            ->when($c->branchIds !== null, fn ($q) => $q->whereIn('surgeries.branch_id', $c->branchIds))
+            ->select(['surgeries.id', 'surgeries.surgery_date', 'surgeries.surgery_type_id', 'surgeries.fee_amount', 'surgeries.fee_currency', 'surgeries.fee_fx_snapshot_id', 'users.name AS technician'])
+            ->toBase()->get();
+    }
+
+    /**
+     * Per technician: surgeries, or fees in the chosen currency; or surgeries per type.
+     * A surgery with two technicians counts for each of them.
+     */
+    private function technicianTotals(GraphContext $c, string $measure): GraphData
+    {
+        $rows = $this->technicianRows($c);
+        $totals = [];
+
+        if ($measure === 'types') {
+            $types = SurgeryType::query()->whereIn('id', $rows->pluck('surgery_type_id')->filter()->unique())->get()->keyBy('id');
+
+            // Each surgery once, whatever the number of technicians on it.
+            foreach ($rows->unique('id') as $row) {
+                $label = (string) ($types->get($row->surgery_type_id)->name ?? '—');
+                $totals[$label] = ($totals[$label] ?? 0.0) + 1;
+            }
+
+            return $this->simple($totals, __('Surgeries'));
+        }
+
+        $report = $measure === 'fees' ? $c->report(app(SurgeriesReport::class)) : null;
+
+        foreach ($rows as $row) {
+            $name = (string) $row->technician;
+
+            if ($measure !== 'fees') {
+                $totals[$name] = ($totals[$name] ?? 0.0) + 1;
+
+                continue;
+            }
+
+            if ($row->fee_amount === null) {
+                continue;
+            }
+
+            $fee = $this->fx->convert((string) $row->fee_amount, $row->fee_currency, $c->currency, $row->fee_fx_snapshot_id !== null ? (int) $row->fee_fx_snapshot_id : null, $report) ?? BigDecimal::zero();
+            $totals[$name] = ($totals[$name] ?? 0.0) + $fee->toFloat();
+        }
+
+        return $measure === 'fees' ? $this->simple($totals, __('Surgery money'), $c->currency) : $this->simple($totals, __('Surgeries'));
+    }
+
+    /**
+     * One line per technician (the busiest ten), surgeries per month.
+     */
+    private function technicianMonths(GraphContext $c): GraphData
+    {
+        $months = $c->months();
+        $counts = [];
+
+        foreach ($this->technicianRows($c) as $row) {
+            $month = substr((string) $row->surgery_date, 0, 7);
+
+            if (in_array($month, $months, true)) {
+                $counts[(string) $row->technician][$month] = ($counts[(string) $row->technician][$month] ?? 0) + 1;
+            }
+        }
+
+        uasort($counts, fn (array $a, array $b) => array_sum($b) <=> array_sum($a));
+        $counts = array_slice($counts, 0, self::MAX_BARS, true);
+        $series = [];
+
+        foreach ($counts as $name => $byMonth) {
+            $series[] = ['label' => (string) $name, 'values' => array_map(fn (string $m) => (float) ($byMonth[$m] ?? 0), $months)];
+        }
+
+        return new GraphData(
+            array_map(fn ($m) => Display::digits($m), $months),
+            $series !== [] ? $series : [['label' => __('Surgeries'), 'values' => array_fill(0, count($months), 0.0)]],
+        );
     }
 
     private function mostUsedImplants(GraphContext $c): GraphData

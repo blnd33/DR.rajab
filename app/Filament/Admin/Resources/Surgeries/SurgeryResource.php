@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Surgeries;
 
+use App\Enums\SurgeryDoctorRole;
 use App\Enums\SurgeryStatus;
 use App\Filament\Admin\Infolists\LocalDateTimeEntry;
 use App\Filament\Admin\Resources\Patients\PatientResource;
@@ -119,7 +120,13 @@ class SurgeryResource extends Resource
                 TextEntry::make('laterality')->label(__('Side'))->badge(),
                 TextEntry::make('branch.code')->label(__('Branch')),
                 TextEntry::make('doctors_list')->label(__('Doctors'))
-                    ->state(fn (Surgery $r) => $r->doctors->map(fn ($d) => $d->name.($d->getRelationValue('pivot')?->getAttribute('role') === 'assistant' ? ' ('.__('Assistant').')' : ''))->implode(', ')),
+                    ->state(fn (Surgery $r) => $r->doctors->reject(fn ($d) => $d->getRelationValue('pivot')?->getAttribute('role') === SurgeryDoctorRole::Technician->value)
+                        ->map(fn ($d) => $d->name.($d->getRelationValue('pivot')?->getAttribute('role') === SurgeryDoctorRole::Assistant->value ? ' ('.__('Assistant').')' : ''))->implode(', ')),
+                TextEntry::make('technicians_list')->label(__('Technicians'))->placeholder('—')
+                    ->state(fn (Surgery $r) => $r->technicians()->pluck('name')->implode(', ') ?: null),
+                TextEntry::make('fee_amount')->label(__('Surgery fee'))->placeholder('—')
+                    ->formatStateUsing(fn ($state, Surgery $r) => $state !== null ? Display::money($state, (string) $r->fee_currency) : null),
+                TextEntry::make('billing_status')->label(__('Invoice'))->badge(),
                 TextEntry::make('kitCheckout.number')->label(__('Kit checkout'))->fontFamily(FontFamily::Mono)->placeholder('—'),
                 TextEntry::make('creator.name')->label(__('Logged by')),
                 LocalDateTimeEntry::make('completed_at')->label(__('Completed'))->placeholder('—'),

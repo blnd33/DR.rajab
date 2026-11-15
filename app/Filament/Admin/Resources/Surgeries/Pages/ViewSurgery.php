@@ -3,14 +3,18 @@
 namespace App\Filament\Admin\Resources\Surgeries\Pages;
 
 use App\Enums\SurgeryStatus;
+use App\Filament\Admin\Resources\SalesInvoices\SalesInvoiceResource;
 use App\Filament\Admin\Resources\Surgeries\SurgeryResource;
 use App\Filament\Admin\Support\PrintAction;
 use App\Filament\Admin\Support\RefreshesInfolist;
 use App\Filament\Admin\Support\ServiceAction;
+use App\Models\SalesInvoice;
 use App\Models\Surgery;
 use App\Services\Clinical\SurgeryService;
+use App\Services\Sales\InvoiceService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ViewRecord;
@@ -44,6 +48,29 @@ class ViewSurgery extends ViewRecord
                 ->schema([TextInput::make('override_reason')->label(__('Reason to use expired items (only if there are any)'))->maxLength(500)])
                 ->action(function (array $data, Action $action) {
                     ServiceAction::run($action, fn ($u) => app(SurgeryService::class)->complete($this->surgery(), $u, $data['override_reason'] ?? null), __('Surgery completed.'));
+                    $this->refreshSurgery();
+                }),
+            Action::make('invoice')
+                ->label(__('Invoice'))
+                ->icon(Heroicon::OutlinedDocumentCurrencyDollar)
+                ->color('gray')
+                ->visible(fn () => $this->invoice() !== null && $user->canInBranch('invoices.view_any', $this->surgery()->branch_id))
+                ->url(fn () => SalesInvoiceResource::getUrl('view', ['record' => $this->invoice()])),
+            Action::make('bill')
+                ->label(__('Make an invoice'))
+                ->icon(Heroicon::OutlinedDocumentPlus)
+                ->color('gray')
+                ->visible(fn () => $this->surgery()->status === SurgeryStatus::Completed && $this->invoice() === null
+                    && $user->canInBranch('invoices.update', $this->surgery()->branch_id))
+                ->modalDescription(__('The invoice starts unpaid. Mark it paid in Invoices when the money comes.'))
+                ->schema([
+                    TextInput::make('amount')->label(__('Surgery fee'))->numeric()->minValue(0)->required()->extraInputAttributes(['dir' => 'ltr']),
+                    Select::make('currency')->label(__('Currency'))->native(false)->required()
+                        ->options(array_combine(config('orthotrack.currencies'), config('orthotrack.currencies')))
+                        ->default(fn () => $this->surgery()->branch->default_currency ?? 'USD'),
+                ])
+                ->action(function (array $data, Action $action) {
+                    ServiceAction::run($action, fn ($u) => app(InvoiceService::class)->billSurgery($this->surgery(), (string) $data['amount'], (string) $data['currency'], $u), __('Invoice made.'));
                     $this->refreshSurgery();
                 }),
             Action::make('photos')
@@ -80,6 +107,11 @@ class ViewSurgery extends ViewRecord
     {
         $this->record = $this->surgery()->fresh();
         $this->dispatch('surgery-updated');
+    }
+
+    private function invoice(): ?SalesInvoice
+    {
+        return app(InvoiceService::class)->liveSurgeryInvoice($this->surgery());
     }
 
     private function surgery(): Surgery

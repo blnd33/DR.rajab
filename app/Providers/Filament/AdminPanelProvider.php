@@ -96,6 +96,11 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn () => Blade::render('<x-auth-notice /><x-language-switcher class="mb-2" />'),
             )
+            // Language can be changed from every page, not only before logging in.
+            ->renderHook(
+                PanelsRenderHook::USER_MENU_BEFORE,
+                fn () => Blade::render('<x-language-switcher variant="compact" class="me-2" />'),
+            )
             ->userMenuItems([
                 // Panel switcher for users who can use both front-ends.
                 Action::make('ops-app')
