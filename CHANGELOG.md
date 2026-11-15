@@ -2,6 +2,17 @@
 
 All notable changes per build phase.
 
+## [Client updates — branch switcher, who owes us, product categories] — 2026-11-15
+
+### Added
+- **Branch switcher in the admin top bar** (*All branches* or one branch, among the person's own). Everything branch-based follows it: lists, dashboard cards, reports, graphs, pickers and actions (`BranchScopeResolver::focus`, only for the person who chose it; permissions that are not about a branch are untouched). Users and Technicians list only the chosen branch's accounts; doctor and technician pickers show only the people who work in the branch (admin: the branch on the form; phone: the current branch).
+- **Manager** role (built in, every permission). Give the manager's account *All branches* and it sees every branch, report and graph.
+- **Technicians have branches** (form, list, demo data).
+- **Dashboard → Invoices: paid and not paid**: received this month, still owed to us (USD at today's rate, each currency underneath), how many invoices wait and the oldest; **Who owes us** — each unpaid invoice with who owes it, what it is for (items or surgery), the doctor (lead surgeon, or the seller of a sale), the amount, days waiting and *Mark as paid*.
+- **Invoices report** (Reports): each invoice, or added up by who owes, by doctor or paid / not paid — total, paid, still owed; print and Excel like the other reports.
+- **Choose surgery products by category** (admin and phone): Category → Product (only products with stock in the branch; a parent category includes its children) → Serial for a serial item or Quantity for a lot item. Scanning still works. The phone list is part of the page, so it works offline.
+- **Tests**: branch narrowing and the switch, pickers by branch, Users by branch, the Manager role, the report groups, the dashboard widgets, the category picker.
+
 ## [Client updates — language, expenses, technicians, invoices] — 2026-11-15
 
 Changes asked by the client: language from every page, currency and editing on expenses, technicians instead of assistants, and invoices for everything with a paid / not paid switch.

@@ -13,6 +13,7 @@ use App\Models\KitCheckout;
 use App\Models\Surgery;
 use App\Models\SurgeryType;
 use App\Models\User;
+use App\Services\Clinical\SurgeryProductPicker;
 use App\Support\CurrentBranch;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
@@ -49,6 +50,7 @@ class SurgeryCreate extends Component
             'hospitals' => Customer::options(),
             'doctors' => User::doctorOptions($branchId ?: null),
             'technicians' => User::technicianOptions($branchId ?: null),
+            'catalog' => $branchId !== 0 ? app(SurgeryProductPicker::class)->catalog($branchId) : ['categories' => [], 'products' => []],
             'currencies' => config('orthotrack.currencies'),
             'checkouts' => KitCheckout::query()->with(['kit', 'customer'])->where('branch_id', $branchId)->where('status', KitCheckoutStatus::Out)->get()
                 ->mapWithKeys(fn (KitCheckout $c) => [$c->id => $c->kit->code.' · '.$c->customer->code])->all(),

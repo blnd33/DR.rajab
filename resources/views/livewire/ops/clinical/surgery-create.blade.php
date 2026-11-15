@@ -121,6 +121,63 @@
         <x-ops.scan-box id="surgery-code" :hint="__('Scan each implant')" />
     </div>
 
+    {{-- Or pick from the list: category → product → serial / quantity (works offline). --}}
+    <section class="ot-card space-y-3 p-4" aria-labelledby="pick-title"
+             x-data="{
+                catalog: @js($catalog),
+                category: '', productId: '', serial: '', quantity: 1,
+                get products() {
+                    const ids = this.category === '' ? null : (this.catalog.categories.find((c) => c.id === Number(this.category))?.ids ?? [])
+                    return this.catalog.products.filter((p) => ids === null || ids.includes(p.category_id))
+                },
+                get product() { return this.catalog.products.find((p) => p.id === Number(this.productId)) ?? null },
+                get serials() { return (this.product?.units ?? []).filter((u) => ! form.items.some((i) => i.raw === u.serial)) },
+                add() { addPicked(this.product, this.serial, this.quantity); this.serial = ''; this.quantity = 1 },
+             }">
+        <h2 id="pick-title" class="font-semibold">{{ __('Or choose from the list') }}</h2>
+        <template x-if="catalog.products.length === 0">
+            <p class="text-sm text-muted-fg">{{ __('No products in stock in this branch.') }}</p>
+        </template>
+        <div x-show="catalog.products.length > 0" class="grid grid-cols-1 gap-3">
+            <label class="space-y-1">
+                <span class="text-sm font-medium">{{ __('Category') }}</span>
+                <select x-model="category" @change="productId = ''; serial = ''" class="ot-input">
+                    <option value="">{{ __('All categories') }}</option>
+                    <template x-for="c in catalog.categories" :key="c.id">
+                        <option :value="c.id" x-text="c.label"></option>
+                    </template>
+                </select>
+            </label>
+            <label class="space-y-1">
+                <span class="text-sm font-medium">{{ __('Product') }}</span>
+                <select x-model="productId" @change="serial = ''" class="ot-input">
+                    <option value="">{{ __('Choose…') }}</option>
+                    <template x-for="p in products" :key="p.id">
+                        <option :value="p.id" x-text="p.label"></option>
+                    </template>
+                </select>
+                <span x-show="products.length === 0" class="block text-xs text-muted-fg">{{ __('No products of this category in stock here.') }}</span>
+            </label>
+            <label class="space-y-1" x-show="product && product.serial">
+                <span class="text-sm font-medium">{{ __('Serial') }}</span>
+                <select x-model="serial" class="ot-input ot-code" dir="ltr">
+                    <option value="">{{ __('Choose…') }}</option>
+                    <template x-for="u in serials" :key="u.serial">
+                        <option :value="u.serial" x-text="u.label"></option>
+                    </template>
+                </select>
+            </label>
+            <label class="space-y-1" x-show="product && ! product.serial">
+                <span class="text-sm font-medium">{{ __('Quantity') }}</span>
+                <input type="number" inputmode="numeric" min="1" x-model.number="quantity" class="ot-input" dir="ltr" data-western-digits>
+            </label>
+            <button type="button" class="ot-btn ot-btn-secondary" :disabled="! product || (product.serial && ! serial)" @click="add()">
+                @svg('heroicon-o-plus', 'size-5')
+                <span>{{ __('Add to the surgery') }}</span>
+            </button>
+        </div>
+    </section>
+
     <section class="space-y-3" aria-labelledby="items-title">
         <h2 id="items-title" class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('Implants and products used') }}</h2>
         <template x-for="(item, index) in form.items" :key="index">

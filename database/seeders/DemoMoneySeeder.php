@@ -190,8 +190,9 @@ class DemoMoneySeeder extends Seeder
     private function technicianWork(User $admin, CashBox $box): void
     {
         $technicians = app(TechnicianService::class);
-        $karwan = $technicians->create(['name' => 'Karwan Hasan', 'phone' => '+964 750 000 0201'], $admin);
-        $rebin = $technicians->create(['name' => 'Rebin Saeed', 'phone' => '+964 750 000 0202'], $admin);
+        $dhk = (int) $box->branch_id;
+        $karwan = $technicians->create(['name' => 'Karwan Hasan', 'phone' => '+964 750 000 0201', 'branches' => [$dhk]], $admin);
+        $rebin = $technicians->create(['name' => 'Rebin Saeed', 'phone' => '+964 750 000 0202', 'branches' => [$dhk]], $admin);
         $invoices = app(InvoiceService::class);
         $completed = Surgery::query()->where('status', SurgeryStatus::Completed)->orderBy('surgery_date')->get();
 

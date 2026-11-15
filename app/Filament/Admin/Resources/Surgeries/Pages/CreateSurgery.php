@@ -17,6 +17,7 @@ use App\Models\Surgery;
 use App\Models\SurgeryType;
 use App\Models\User;
 use App\Services\Clinical\PatientService;
+use App\Services\Clinical\SurgeryProductPicker;
 use App\Services\Clinical\SurgeryService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
@@ -29,6 +30,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
@@ -47,7 +49,7 @@ class CreateSurgery extends CreateRecord
     public function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make(__('Surgery'))->columns(3)->schema([
+            Section::make(__('Surgery'))->columnSpanFull()->columns(['default' => 1, 'md' => 3])->schema([
                 Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('surgeries.create'))->required()->live()->native(false)
                     ->default(fn () => User::focusedBranchId() ?? ServiceAction::user()->primary_branch_id),
                 DatePicker::make('surgery_date')->label(__('Date'))->default(fn () => now(config('orthotrack.timezone'))->toDateString())->required()->native(false)->displayFormat('Y-m-d')->maxDate(now()->addDay()),
@@ -81,17 +83,34 @@ class CreateSurgery extends CreateRecord
                     ->helperText(fn (Get $get) => User::technicianOptions((int) $get('branch_id') ?: null) === [] ? __('No technicians in this branch yet — add them under Clinical → Technicians.') : null),
                 Textarea::make('notes')->label(__('Notes'))->rows(2)->columnSpanFull(),
             ]),
-            Section::make(__('Implants and products used'))->schema([
-                Repeater::make('items')->hiddenLabel()->defaultItems(1)->minItems(1)->columns(4)
+            Section::make(__('Implants and products used'))->columnSpanFull()->schema([
+                Repeater::make('items')->hiddenLabel()->defaultItems(1)->minItems(1)->columns(['default' => 1, 'md' => 4])
                     ->addActionLabel(__('Add an item'))
                     ->schema([
-                        TextInput::make('raw')->label(__('Serial or barcode'))->columnSpan(2)
+                        Select::make('category_id')->label(__('Category'))->native(false)->searchable()->live()
+                            ->options(fn () => app(SurgeryProductPicker::class)->categories())
+                            ->afterStateUpdated(fn (Set $set) => $set('product_id', null)),
+                        Select::make('product_id')->label(__('Product'))->searchable()->native(false)->live()->columnSpan(['default' => 1, 'md' => 2])
+                            ->helperText(__('Only products with stock in this branch.'))
+                            ->options(fn (Get $get) => filled($get('../../branch_id'))
+                                ? app(SurgeryProductPicker::class)->productOptions((int) $get('../../branch_id'), filled($get('category_id')) ? (int) $get('category_id') : null)
+                                : [])
+                            ->getSearchResultsUsing(fn (string $search, Get $get) => filled($get('../../branch_id'))
+                                ? app(SurgeryProductPicker::class)->productOptions((int) $get('../../branch_id'), filled($get('category_id')) ? (int) $get('category_id') : null, $search)
+                                : [])
+                            ->getOptionLabelUsing(fn ($value) => Product::query()->find($value)?->label())
+                            ->afterStateUpdated(fn (Set $set) => $set('stock_unit_id', null)),
+                        Select::make('stock_unit_id')->label(__('Serial'))->native(false)->searchable()
+                            ->visible(fn (Get $get) => self::isSerialProduct($get('product_id')))
+                            ->required(fn (Get $get) => self::isSerialProduct($get('product_id')))
+                            ->options(fn (Get $get) => filled($get('product_id')) && filled($get('../../branch_id'))
+                                ? app(SurgeryProductPicker::class)->unitOptions((int) $get('../../branch_id'), (int) $get('product_id'))
+                                : []),
+                        TextInput::make('quantity')->label(__('Quantity'))->numeric()->integer()->minValue(1)->default(1)
+                            ->hidden(fn (Get $get) => self::isSerialProduct($get('product_id'))),
+                        TextInput::make('raw')->label(__('or scan serial / barcode'))->columnSpan(['default' => 1, 'md' => 4])
                             ->extraInputAttributes(['dir' => 'ltr', 'class' => 'ot-code', 'data-scan-field' => true])
                             ->requiredWithout('product_id'),
-                        Select::make('product_id')->label(__('or lot product'))->searchable()->native(false)
-                            ->getSearchResultsUsing(fn (string $search) => Product::query()->active()->where('tracking_type', 'lot')->search($search)->limit(30)->get()->mapWithKeys(fn (Product $p) => [$p->id => $p->label()]))
-                            ->getOptionLabelUsing(fn ($value) => Product::query()->find($value)?->label()),
-                        TextInput::make('quantity')->label(__('Quantity (lots)'))->numeric()->integer()->minValue(1)->default(1),
                     ]),
                 TextInput::make('override_reason')->label(__('Reason to use expired items (only if there are any)'))->maxLength(500),
                 Toggle::make('complete')->label(__('Complete now (takes the items out of stock)'))->default(true),
@@ -103,11 +122,12 @@ class CreateSurgery extends CreateRecord
     {
         $data['client_uuid'] = (string) Str::uuid();
         $data['surgery_date'] = substr((string) $data['surgery_date'], 0, 10);
-        $data['items'] = array_values(array_map(fn (array $line) => [
-            'raw' => trim((string) ($line['raw'] ?? '')),
-            'product_id' => $line['product_id'] ?? null,
-            'quantity' => (int) ($line['quantity'] ?? 1),
-        ], (array) ($data['items'] ?? [])));
+        // A line is a picked serial, a picked lot product with a quantity, or a scanned code.
+        $data['items'] = array_values(array_map(fn (array $line) => match (true) {
+            filled($line['stock_unit_id'] ?? null) => ['stock_unit_id' => (int) $line['stock_unit_id'], 'quantity' => 1],
+            filled($line['product_id'] ?? null) && ! self::isSerialProduct($line['product_id']) => ['product_id' => (int) $line['product_id'], 'quantity' => (int) ($line['quantity'] ?? 1)],
+            default => ['raw' => trim((string) ($line['raw'] ?? '')), 'quantity' => (int) ($line['quantity'] ?? 1)],
+        }, (array) ($data['items'] ?? [])));
 
         try {
             $surgery = app(SurgeryService::class)->sync($data, ServiceAction::user());
@@ -118,6 +138,11 @@ class CreateSurgery extends CreateRecord
         $this->notifyResult($surgery);
 
         return $surgery;
+    }
+
+    private static function isSerialProduct(mixed $productId): bool
+    {
+        return filled($productId) && (bool) Product::query()->find((int) $productId)?->isSerialTracked();
     }
 
     protected function getCreatedNotification(): ?Notification

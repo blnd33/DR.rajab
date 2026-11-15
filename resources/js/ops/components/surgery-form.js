@@ -103,6 +103,27 @@ export default (options = {}) => ({
         feedback('success')
     },
 
+    /** Picked from the list: a serial (like a scan) or a lot product with a quantity. */
+    addPicked(product, serial, quantity) {
+        if (!product) return
+
+        if (product.serial) {
+            if (!serial || this.form.items.some((i) => i.raw === serial)) return
+            this.form.items.push({ raw: serial, quantity: 1 })
+        } else {
+            const qty = Math.max(1, Number(quantity) || 1)
+            const same = this.form.items.find((i) => i.product_id === product.id)
+
+            if (same) {
+                same.quantity = (Number(same.quantity) || 0) + qty
+            } else {
+                this.form.items.push({ product_id: product.id, label: product.label, quantity: qty })
+            }
+        }
+
+        feedback('success')
+    },
+
     removeItem(index) {
         this.form.items.splice(index, 1)
     },
