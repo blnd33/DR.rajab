@@ -8,12 +8,14 @@ use App\Filament\Admin\Resources\Technicians\Pages\ListTechnicians;
 use App\Filament\Admin\Resources\Technicians\Pages\ViewTechnician;
 use App\Filament\Admin\Resources\Technicians\RelationManagers\TechnicianSurgeriesRelationManager;
 use App\Filament\Admin\Support\ServiceAction;
+use App\Models\Branch;
 use App\Models\User;
 use App\Services\Users\TechnicianService;
 use App\Support\Locale\Display;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\TextEntry;
@@ -88,7 +90,11 @@ class TechnicianResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->whereHas('roles', fn (Builder $r) => $r->where('name', Role::Technician->value));
+        $branchId = User::focusedBranchId();
+
+        return parent::getEloquentQuery()->whereHas('roles', fn (Builder $r) => $r->where('name', Role::Technician->value))
+            ->when($branchId !== null, fn (Builder $q) => $q->where(fn (Builder $w) => $w->where('primary_branch_id', $branchId)
+                ->orWhereHas('branches', fn (Builder $b) => $b->where('branches.id', $branchId))));
     }
 
     /**
@@ -99,6 +105,10 @@ class TechnicianResource extends Resource
         return array_values(array_filter([
             TextInput::make('name')->label(__('Full name'))->required()->maxLength(150),
             TextInput::make('phone')->label(__('Phone'))->tel()->maxLength(32)->extraInputAttributes(['dir' => 'ltr']),
+            Select::make('branches')->label(__('Branches'))->multiple()->required()->native(false)
+                ->options(fn () => Branch::query()->active()->orderBy('code')->get()->mapWithKeys(fn (Branch $b) => [$b->id => $b->label()]))
+                ->default(fn () => array_values(array_filter([User::focusedBranchId() ?? ServiceAction::user()->primary_branch_id])))
+                ->helperText(__('The technician is offered on surgeries of these branches.')),
             $editing ? Toggle::make('is_active')->label(__('Active'))->helperText(__('Inactive technicians are no longer offered on new surgeries. Their work is kept.')) : null,
         ]));
     }
@@ -112,6 +122,7 @@ class TechnicianResource extends Resource
             ->columns([
                 TextColumn::make('name')->label(__('Name'))->searchable()->sortable()->weight('semibold'),
                 TextColumn::make('phone')->label(__('Phone'))->placeholder('—')->extraAttributes(['dir' => 'ltr']),
+                TextColumn::make('branches.code')->label(__('Branches'))->badge()->color('gray')->placeholder('—'),
                 TextColumn::make('surgeries_count')->label(__('Surgeries'))->alignEnd()->sortable()->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('last_surgery')->label(__('Last surgery'))->placeholder('—')->sortable()->formatStateUsing(fn ($state) => Display::date($state)),
                 IconColumn::make('is_active')->label(__('Active'))->boolean(),
@@ -121,7 +132,7 @@ class TechnicianResource extends Resource
                 ViewAction::make()->label(__('Work')),
                 Action::make('edit')->label(__('Edit'))->icon(Heroicon::OutlinedPencilSquare)
                     ->visible(fn () => ServiceAction::user()->can('technicians.manage'))
-                    ->fillForm(fn (User $record) => ['name' => $record->name, 'phone' => $record->phone, 'is_active' => $record->is_active])
+                    ->fillForm(fn (User $record) => ['name' => $record->name, 'phone' => $record->phone, 'is_active' => $record->is_active, 'branches' => $record->branches()->pluck('branches.id')->all()])
                     ->schema(static::formFields(editing: true))
                     ->action(fn (User $record, array $data, Action $action) => ServiceAction::run($action, fn ($u) => app(TechnicianService::class)->update($record, $data, $u), __('Technician saved.'))),
             ])

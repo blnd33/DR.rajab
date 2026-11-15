@@ -241,6 +241,9 @@ final class PermissionRegistry
         return [
             Role::SuperAdmin->value => [],
 
+            // Sees and does everything the system offers (an editable role, unlike Super Admin).
+            Role::Manager->value => self::names(),
+
             Role::Accountant->value => [
                 'admin.access', 'dashboard.view',
                 'branches.view_any', 'activity.view_any',

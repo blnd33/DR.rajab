@@ -47,8 +47,8 @@ class SurgeryCreate extends Component
             'initial' => $this->initial($branchId),
             'types' => SurgeryType::options(),
             'hospitals' => Customer::options(),
-            'doctors' => User::doctorOptions(),
-            'technicians' => User::technicianOptions(),
+            'doctors' => User::doctorOptions($branchId ?: null),
+            'technicians' => User::technicianOptions($branchId ?: null),
             'currencies' => config('orthotrack.currencies'),
             'checkouts' => KitCheckout::query()->with(['kit', 'customer'])->where('branch_id', $branchId)->where('status', KitCheckoutStatus::Out)->get()
                 ->mapWithKeys(fn (KitCheckout $c) => [$c->id => $c->kit->code.' · '.$c->customer->code])->all(),

@@ -15,6 +15,8 @@ enum Role: string implements HasColor, HasLabel
     use EnumHelpers;
 
     case SuperAdmin = 'super_admin';
+    // The company's manager: every permission; give the account "All branches" to see everything.
+    case Manager = 'manager';
     case Doctor = 'doctor';
     case Cashier = 'cashier';
     case Accountant = 'accountant';
@@ -26,6 +28,7 @@ enum Role: string implements HasColor, HasLabel
     {
         return match ($this) {
             self::SuperAdmin => __('Super Admin'),
+            self::Manager => __('Manager'),
             self::Doctor => __('Doctor'),
             self::Cashier => __('Cashier'),
             self::Accountant => __('Accountant'),
@@ -38,6 +41,7 @@ enum Role: string implements HasColor, HasLabel
     {
         return match ($this) {
             self::SuperAdmin => 'danger',
+            self::Manager => 'primary',
             self::Doctor => 'info',
             self::Cashier => 'warning',
             self::Accountant => 'success',
@@ -52,7 +56,7 @@ enum Role: string implements HasColor, HasLabel
     public function defaultPanel(): Panel
     {
         return match ($this) {
-            self::SuperAdmin, self::Accountant => Panel::Admin,
+            self::SuperAdmin, self::Manager, self::Accountant => Panel::Admin,
             self::Doctor, self::Cashier, self::BranchStaff, self::Technician => Panel::Ops,
         };
     }

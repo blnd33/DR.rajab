@@ -49,7 +49,7 @@ class CreateSurgery extends CreateRecord
         return $schema->components([
             Section::make(__('Surgery'))->columns(3)->schema([
                 Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('surgeries.create'))->required()->live()->native(false)
-                    ->default(fn () => ServiceAction::user()->primary_branch_id),
+                    ->default(fn () => User::focusedBranchId() ?? ServiceAction::user()->primary_branch_id),
                 DatePicker::make('surgery_date')->label(__('Date'))->default(fn () => now(config('orthotrack.timezone'))->toDateString())->required()->native(false)->displayFormat('Y-m-d')->maxDate(now()->addDay()),
                 Select::make('surgery_type_id')->label(__('Surgery'))->options(fn () => SurgeryType::options())->required()->native(false),
                 Select::make('customer_id')->label(__('Hospital'))->options(fn () => Customer::options())->searchable()->required()->native(false),
@@ -76,9 +76,9 @@ class CreateSurgery extends CreateRecord
 
                         return app(PatientService::class)->create($branch, $data, ServiceAction::user())->id;
                     }),
-                Select::make('lead_doctor_id')->label(__('Lead surgeon'))->options(fn () => User::doctorOptions())->default(fn () => ServiceAction::user()->id)->required()->native(false),
-                Select::make('technician_ids')->label(__('Technicians'))->options(fn () => User::technicianOptions())->multiple()->native(false)->columnSpan(2)
-                    ->helperText(fn () => User::technicianOptions() === [] ? __('Add technicians under Clinical → Technicians.') : null),
+                Select::make('lead_doctor_id')->label(__('Lead surgeon'))->options(fn (Get $get) => User::doctorOptions((int) $get('branch_id') ?: null))->default(fn () => ServiceAction::user()->id)->required()->native(false),
+                Select::make('technician_ids')->label(__('Technicians'))->options(fn (Get $get) => User::technicianOptions((int) $get('branch_id') ?: null))->multiple()->native(false)->columnSpan(2)
+                    ->helperText(fn (Get $get) => User::technicianOptions((int) $get('branch_id') ?: null) === [] ? __('No technicians in this branch yet — add them under Clinical → Technicians.') : null),
                 Textarea::make('notes')->label(__('Notes'))->rows(2)->columnSpanFull(),
             ]),
             Section::make(__('Implants and products used'))->schema([

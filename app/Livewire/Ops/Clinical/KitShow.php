@@ -14,6 +14,7 @@ use App\Models\KitCheckout;
 use App\Models\StockBatch;
 use App\Models\StockUnit;
 use App\Models\User;
+use App\Support\CurrentBranch;
 use App\Services\Assets\AssetLookup;
 use App\Services\Assets\KitService;
 use App\Support\Locale\DigitConverter;
@@ -179,7 +180,7 @@ class KitShow extends Component
             'canCheckout' => $available && $user->canInBranch('kits.checkout', $this->kit->branch_id),
             'canReturn' => $checkout !== null && $user->canInBranch('kits.return', $this->kit->branch_id),
             'hospitals' => Customer::options(),
-            'doctors' => User::doctorOptions(),
+            'doctors' => User::doctorOptions(CurrentBranch::id()),
         ])->title($this->kit->code);
     }
 

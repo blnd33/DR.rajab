@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Notifications\Notifiable;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Activitylog\LogOptions;
@@ -198,30 +199,61 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     }
 
     /**
-     * Active technicians (for the surgery technician picker).
+     * Active technicians (for the surgery technician picker), of one branch when given.
      *
      * @return array<int, string>
      */
-    public static function technicianOptions(): array
+    public static function technicianOptions(?int $branchId = null): array
     {
+        $branchId ??= self::focusedBranchId();
+
         return static::query()
             ->where('is_active', true)
             ->role(Role::Technician->value)
+            ->when($branchId !== null, fn (Builder $q) => $q->worksInBranch($branchId))
             ->orderBy('name')
             ->pluck('name', 'id')
             ->all();
     }
 
     /**
-     * Active users who may log surgeries (for doctor pickers).
+     * People who work in a branch: members of it, those whose main branch it is, and
+     * "all branches" accounts.
+     *
+     * @param  Builder<User>  $query
+     */
+    public function scopeWorksInBranch(Builder $query, int $branchId): void
+    {
+        $query->where(fn (Builder $q) => $q->where('all_branches', true)
+            ->orWhere('primary_branch_id', $branchId)
+            ->orWhereHas('branches', fn (Builder $b) => $b->where('branches.id', $branchId)));
+    }
+
+    /**
+     * The branch chosen in the admin top bar, for the signed-in user (null on the phone or when
+     * all branches are shown).
+     */
+    public static function focusedBranchId(): ?int
+    {
+        $user = Auth::user();
+
+        return $user instanceof self ? app(BranchScopeResolver::class)->focusedBranch($user) : null;
+    }
+
+    /**
+     * Active users who may log surgeries (for doctor pickers), of one branch when given
+     * (default: the branch chosen in the admin top bar).
      *
      * @return array<int, string>
      */
-    public static function doctorOptions(): array
+    public static function doctorOptions(?int $branchId = null): array
     {
+        $branchId ??= self::focusedBranchId();
+
         return static::query()
             ->where('is_active', true)
             ->where(fn ($q) => $q->permission('surgeries.create')->orWhereHas('roles', fn ($r) => $r->where('name', Role::SuperAdmin->value)))
+            ->when($branchId !== null, fn (Builder $q) => $q->worksInBranch($branchId))
             ->orderBy('name')
             ->pluck('name', 'id')
             ->all();

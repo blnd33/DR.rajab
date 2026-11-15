@@ -5,6 +5,7 @@ namespace App\Services\Users;
 use App\Enums\Role;
 use App\Enums\SurgeryDoctorRole;
 use App\Enums\SurgeryStatus;
+use App\Models\Branch;
 use App\Models\Surgery;
 use App\Models\User;
 use App\Support\Locale\Display;
@@ -22,7 +23,7 @@ class TechnicianService
     public function __construct(private readonly UserService $users) {}
 
     /**
-     * @param  array{name: string, phone?: ?string}  $data
+     * @param  array{name: string, phone?: ?string, branches?: list<int|string>}  $data
      */
     public function create(array $data, User $by): User
     {
@@ -35,15 +36,16 @@ class TechnicianService
             'password' => Str::password(48),
             'locale' => config('locales.default', 'en'),
             'all_branches' => false,
+            'primary_branch_id' => $this->branches($data)[0] ?? null,
             'is_active' => true,
             'roles' => [Role::Technician->value],
             'permissions' => [],
-            'branches' => [],
+            'branches' => $this->branches($data),
         ], $by);
     }
 
     /**
-     * @param  array{name: string, phone?: ?string, is_active?: bool}  $data
+     * @param  array{name: string, phone?: ?string, is_active?: bool, branches?: list<int|string>}  $data
      */
     public function update(User $technician, array $data, User $by): User
     {
@@ -56,6 +58,7 @@ class TechnicianService
             'is_active' => (bool) ($data['is_active'] ?? $technician->is_active),
             'roles' => [Role::Technician->value],
             'permissions' => [],
+            ...(array_key_exists('branches', $data) ? ['branches' => $this->branches($data), 'primary_branch_id' => $this->branches($data)[0] ?? null] : []),
         ], $by);
     }
 
@@ -91,6 +94,17 @@ class TechnicianService
             ->toBase()->get()
             ->map(fn ($row) => Display::money((string) $row->total, (string) $row->fee_currency))
             ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return list<int>
+     */
+    private function branches(array $data): array
+    {
+        $ids = array_values(array_unique(array_map('intval', (array) ($data['branches'] ?? []))));
+
+        return Branch::query()->whereIn('id', $ids)->pluck('id')->map(fn ($id) => (int) $id)->values()->all();
     }
 
     private function username(string $name): string

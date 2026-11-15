@@ -44,11 +44,19 @@ class UserResource extends Resource
     }
 
     /**
-     * Technicians have their own screen (Clinical → Technicians).
+     * Technicians have their own screen (Clinical → Technicians). With a branch chosen in the
+     * top bar, only that branch's accounts.
      */
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->whereDoesntHave('roles', fn (Builder $r) => $r->where('name', RoleEnum::Technician->value));
+        $branchId = User::focusedBranchId();
+
+        return parent::getEloquentQuery()
+            ->whereDoesntHave('roles', fn (Builder $r) => $r->where('name', RoleEnum::Technician->value))
+            // Branch chosen in the top bar: only the people who work there.
+            ->when($branchId !== null, fn (Builder $q) => $q->where(fn (Builder $w) => $w->where('all_branches', true)
+                ->orWhere('primary_branch_id', $branchId)
+                ->orWhereHas('branches', fn (Builder $b) => $b->where('branches.id', $branchId))));
     }
 
     public static function getGloballySearchableAttributes(): array

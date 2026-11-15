@@ -26,16 +26,61 @@ class BranchScopeResolver
     /** @var array<int, array<string, list<int|null>>> */
     private array $overrides = [];
 
+    /** The branch the signed-in admin chose in the top bar (only for that user, this request). */
+    private ?int $focusBranch = null;
+
+    private ?int $focusUser = null;
+
     /**
      * @return list<int>|null null = all branches
      */
     public function branchIdsFor(User $user, string $permission): ?array
+    {
+        return $this->narrow($user, $permission, $this->unfocusedBranchIdsFor($user, $permission));
+    }
+
+    /**
+     * The user's full scope, ignoring the branch chosen in the top bar.
+     *
+     * @return list<int>|null null = all branches
+     */
+    public function unfocusedBranchIdsFor(User $user, string $permission): ?array
     {
         if (array_key_exists($permission, $this->memo[$user->id] ?? [])) {
             return $this->memo[$user->id][$permission];
         }
 
         return $this->memo[$user->id][$permission] = $this->resolve($user, $permission);
+    }
+
+    /**
+     * Work in one branch: every branch-based permission of this user is narrowed to it (lists,
+     * pickers, dashboard, reports, graphs and actions). Null = all the user's branches.
+     */
+    public function focus(User $user, ?int $branchId): void
+    {
+        $this->focusBranch = $branchId;
+        $this->focusUser = $branchId === null ? null : $user->id;
+    }
+
+    public function focusedBranch(User $user): ?int
+    {
+        return $this->focusUser === $user->id ? $this->focusBranch : null;
+    }
+
+    /**
+     * @param  list<int>|null  $ids
+     * @return list<int>|null
+     */
+    private function narrow(User $user, string $permission, ?array $ids): ?array
+    {
+        $focus = $this->focusedBranch($user);
+
+        if ($focus === null || ! PermissionRegistry::isScoped($permission)) {
+            return $ids;
+        }
+
+        return $ids === null || in_array($focus, $ids, true) ? [$focus] : [];
     }
 
     public function allows(User $user, string $permission, Branch|int|null $branch): bool

@@ -180,7 +180,7 @@
                         <span>{{ $name }}</span>
                     </label>
                 @empty
-                    <p class="text-sm text-muted-fg">{{ __('No technicians yet — the admin adds them under Clinical → Technicians.') }}</p>
+                    <p class="text-sm text-muted-fg">{{ __('No technicians in this branch yet — the admin adds them under Clinical → Technicians.') }}</p>
                 @endforelse
             </fieldset>
             <label class="block space-y-1">

@@ -19,6 +19,7 @@ final class ReportRegistry
         ExpiryReport::class,
         StockMovementsReport::class,
         SalesProfitReport::class,
+        InvoicesReport::class,
         SurgeriesReport::class,
         SupplierAgingReport::class,
         CashReport::class,

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminBranchController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\DocumentPrintController;
 use App\Http\Controllers\HomeController;
@@ -19,6 +20,9 @@ Route::get('/', HomeController::class)->name('home');
 
 // Language switch (guests: session; logged in: saved on the account).
 Route::post('/locale/{locale}', LocaleController::class)->name('locale.switch');
+
+// Admin top-bar branch: everything branch-based follows it.
+Route::post('/admin-branch', AdminBranchController::class)->middleware('auth')->name('admin.branch.switch');
 
 // PWA
 Route::get('/manifest.webmanifest', [PwaController::class, 'manifest'])->name('pwa.manifest');

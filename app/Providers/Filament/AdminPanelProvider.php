@@ -7,6 +7,7 @@ use App\Filament\Admin\Auth\EditProfile;
 use App\Filament\Admin\Auth\Login;
 use App\Filament\Admin\Pages\Dashboard;
 use App\Http\Middleware\FilamentAuthenticate;
+use App\Http\Middleware\FocusAdminBranch;
 use App\Http\Middleware\NormalizeDigits;
 use App\Http\Middleware\RequireAdminMfa;
 use App\Http\Middleware\SetLocale;
@@ -99,7 +100,7 @@ class AdminPanelProvider extends PanelProvider
             // Language can be changed from every page, not only before logging in.
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,
-                fn () => Blade::render('<x-language-switcher variant="compact" class="me-2" />'),
+                fn () => Blade::render('<div class="flex items-center gap-2 me-2"><x-branch-switcher /><x-language-switcher variant="compact" /></div>'),
             )
             ->userMenuItems([
                 // Panel switcher for users who can use both front-ends.
@@ -134,6 +135,8 @@ class AdminPanelProvider extends PanelProvider
                 FilamentAuthenticate::class,
                 TrackUserSession::class,
                 RequireAdminMfa::class,
-            ]);
+            ])
+            // Also on Livewire updates of admin pages, so tables and forms follow the branch.
+            ->authMiddleware([FocusAdminBranch::class], isPersistent: true);
     }
 }
