@@ -2,6 +2,11 @@
 
 All notable changes per build phase.
 
+## [Client updates — Arthroplasty icon] — 2026-11-19
+
+### Changed
+- **Arthroplasty icon**: now the hip implant alone — ball in its cup, neck with collar, tapered stem (`resources/svg/hip-prosthesis.svg`).
+
 ## [Client updates — round flags, one search, Daily Business Report, specialty icons] — 2026-11-19
 
 ### Changed
