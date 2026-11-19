@@ -106,11 +106,11 @@ The reset asks you to type the site name (`test.example.com`) and then erases al
 
 ## Sample data from the supplier workbook (optional)
 
-To see the screens filled in without typing everything, load sample data from the supplier's own workbook (for example the Mikron trauma list). Copy the file to the server first, then:
+To see the screens filled in without typing everything, load sample data from the supplier's own workbook (for example the Mikron trauma list). Copy the file to the server first (into `/tmp`, so the web user can read it), then:
 
 ```bash
 cd /var/www/orthotrack-test
-sudo -u www-data php artisan orthotrack:sample-data /root/IT_MIKRON_Trauma_items.xlsx
+sudo -u www-data php artisan orthotrack:sample-data /tmp/mikron.xlsx
 ```
 
 It adds, in this order:
