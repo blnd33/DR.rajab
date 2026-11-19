@@ -4,6 +4,7 @@ use App\Enums\Role;
 use App\Models\IdempotencyKey;
 use App\Models\User;
 use App\Services\Assets\OverdueKitNotifier;
+use App\Services\Catalog\TestPricingService;
 use App\Services\Expenses\RecurringExpenseService;
 use App\Services\Expiry\ExpiryTransitionNotifier;
 use App\Services\Health\Heartbeat;
@@ -230,3 +231,66 @@ Artisan::command('orthotrack:reset-test-site {--force : Do not ask to type the s
 
     return 0;
 })->purpose('Empty the client\'s test site (refused on any other site)');
+
+/*
+| Test prices (test site): every product that has stock, in SKU order, costs 1, 2, 3… USD; its
+| selling price is the cost + 20 %; the pieces in stock get the same cost (a stock correction
+| with a reason, on the ledger). Shows a preview and asks first.
+|   php artisan prices:test-fill --dry-run
+|   php artisan prices:test-fill
+*/
+Artisan::command('prices:test-fill {--user= : Username who makes the change (default: the first super admin)} {--start=1 : Cost of the first product (USD)} {--step=1 : Added for each next product (USD)} {--markup=20 : Selling price = cost + this %} {--dry-run : Only show what would change} {--force : Do not ask}', function (TestPricingService $pricing) {
+    $start = (int) $this->option('start');
+    $step = (int) $this->option('step');
+    $markup = (string) $this->option('markup');
+    $plan = $pricing->plan($start, $step, $markup);
+
+    if ($plan->isEmpty()) {
+        $this->warn('No product has stock: nothing to price.');
+
+        return 0;
+    }
+
+    $this->table(['#', 'SKU', 'Product', 'Cost USD', 'Selling USD'], $plan->take(15)->values()->map(fn (array $r, int $i) => [
+        $i + 1, $r['product']->sku, mb_substr((string) $r['product']->name, 0, 40), number_format((float) $r['cost'], 2), number_format((float) $r['selling'], 2),
+    ])->all());
+
+    $last = $plan->last();
+    $this->line(sprintf('%d products with stock; the last (%s) costs %s USD and sells for %s USD.', $plan->count(), $last['product']->sku, number_format((float) $last['cost'], 2), number_format((float) $last['selling'], 2)));
+
+    if ($this->option('dry-run')) {
+        $this->info('Dry run: nothing was changed.');
+
+        return 0;
+    }
+
+    $username = $this->option('user');
+    $user = $username
+        ? User::query()->where('username', $username)->first()
+        : User::query()->where('is_active', true)->whereHas('roles', fn ($q) => $q->where('name', Role::SuperAdmin->value))->orderBy('id')->first();
+
+    if ($user === null) {
+        $this->error('No such user (use --user=<username> of a super admin).');
+
+        return 1;
+    }
+
+    if (! $this->option('force') && ! $this->confirm("Change these prices and the cost of the pieces in stock, as {$user->username}?")) {
+        $this->line('Nothing was changed.');
+
+        return 0;
+    }
+
+    $bar = $this->output->createProgressBar($plan->count());
+    $summary = $pricing->apply($user, $start, $step, $markup, fn () => $bar->advance());
+    $bar->finish();
+    $this->newLine(2);
+
+    $this->info(sprintf('Done: %d products priced, %d serial pieces and %d lots re-costed.', $summary['products'], $summary['units'], $summary['lots']));
+
+    if ($summary['skipped'] > 0) {
+        $this->warn(sprintf('%d pieces kept their cost (landed costs in another currency).', $summary['skipped']));
+    }
+
+    return 0;
+})->purpose('Test prices: cost 1, 2, 3… USD by SKU for products in stock, selling price = cost + 20 %');

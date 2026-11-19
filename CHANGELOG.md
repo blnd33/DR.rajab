@@ -2,6 +2,14 @@
 
 All notable changes per build phase.
 
+## [Test site — test prices] — 2026-11-19
+
+### Added
+- **`php artisan prices:test-fill`** (`TestPricingService`), asked for the test site: every product that has stock, in **SKU order**, gets a cost of **1, 2, 3… USD**, and a **selling price of cost + 20 %** (1.20, 2.40, 3.60…). The **pieces already in stock** get the same cost through the normal stock correction (reason *"Test prices…"*, one ledger row each), so Stock value, Sales and profit and the Main page show these numbers. Products without stock keep their price.
+  - `--dry-run` shows the list first; it asks before changing anything (`--force` to skip). Options `--start`, `--step`, `--markup`, `--user`.
+  - A piece with landed costs keeps them (its base cost is lowered so the total is the test cost); one whose landed costs are in another currency is left as it is and counted.
+- **Tests**: order and prices, products and pieces (serial and lot) with the ledger, start / step / markup, permissions, the command with its preview.
+
 ## [Client updates — company documents] — 2026-11-19
 
 ### Added
