@@ -5,6 +5,7 @@ use App\Enums\Governorate;
 use App\Enums\Role;
 use App\Models\Branch;
 use App\Models\Product;
+use App\Models\User;
 use App\Services\Companies\CompanySetupService;
 use App\Services\Settings\SettingsRepository;
 use App\Support\CompanyContext;
@@ -12,7 +13,8 @@ use Database\Seeders\InventoryBaseSeeder;
 
 /*
  * Two companies in one system (same owner): KurdishMedicus in the main database, Al-Fadhaa' Bureau
- * in its own. Their staff, stations, stock and settings never mix; the top bar switches company.
+ * in its own. Their stations, stock and settings never mix. Al-Fadhaa' Bureau has no login of its own:
+ * KurdishMedicus' super admin opens it with the button next to the company name.
  * Here Al-Fadhaa' Bureau's database is a SQLite file.
  */
 
@@ -124,20 +126,60 @@ it('reads the company of a command from ORTHOTRACK_COMPANY', function () {
     putenv(CompanyContext::ENV);
 });
 
-it('switches company with the top-bar buttons', function () {
+it('opens Al-Fadhaa\' Bureau from KurdishMedicus with the button: signed in, no login of its own', function () {
     withAlFadhaa($this->file);
+    CompanyContext::run(Company::AlFadhaa, fn () => app(CompanySetupService::class)->setup());
 
-    $this->post(route('admin.company.switch'), ['company' => 'al_fadhaa'])
-        ->assertRedirect('/admin')
+    // In KurdishMedicus: the button gives a one-minute signed link and the company cookie.
+    $response = $this->actingAs($this->admin)->post(route('admin.company.switch'), ['company' => 'al_fadhaa'])
         ->assertPlainCookie(CompanyContext::COOKIE, 'al_fadhaa');
+    $enter = $response->headers->get('Location');
+    expect($enter)->toContain('/company/enter')->toContain('signature=');
 
-    $this->post(route('admin.company.switch'), ['company' => 'kurdmedicus'])
+    // Arriving in Al-Fadhaa' Bureau: the same person, signed in, Super Admin there.
+    auth()->logout();
+    CompanyContext::activate(Company::AlFadhaa);
+
+    $this->get($enter)->assertRedirect('/admin');
+    $there = User::query()->where('username', 'rajab')->first();
+    expect($there)->not->toBeNull()
+        ->and($there->isSuperAdmin())->toBeTrue()
+        ->and($there->all_branches)->toBeTrue();
+    $this->assertAuthenticatedAs($there);
+
+    // The link works once, and only when signed.
+    auth()->logout();
+    $this->get($enter)->assertForbidden();
+    $this->get(route('company.enter', ['company' => 'al_fadhaa', 'username' => 'intruder', 'once' => 'x']))->assertForbidden();
+    expect(User::query()->where('username', 'intruder')->exists())->toBeFalse();
+
+    // Back to KurdishMedicus: the cookie goes.
+    $this->actingAs($there)->post(route('admin.company.switch'), ['company' => 'kurdmedicus'])
         ->assertRedirect('/admin')
         ->assertCookieExpired(CompanyContext::COOKIE);
-
-    $this->post(route('admin.company.switch'), ['company' => 'other'])->assertNotFound();
 });
 
-it('does not switch to a company without a database', function () {
-    $this->post(route('admin.company.switch'), ['company' => 'al_fadhaa'])->assertNotFound();
+it('sends anyone not signed in to Al-Fadhaa\' Bureau back to KurdishMedicus\' sign-in', function () {
+    withAlFadhaa($this->file);
+    CompanyContext::run(Company::AlFadhaa, fn () => app(CompanySetupService::class)->setup());
+    CompanyContext::activate(Company::AlFadhaa);
+
+    $this->get('/admin')->assertRedirect('/admin/login')->assertCookieExpired(CompanyContext::COOKIE);
+    $this->get('/app')->assertRedirect('/admin/login');
+});
+
+it('offers the button only to people who may open the other company, never on the sign-in page', function () {
+    withAlFadhaa($this->file);
+    $staff = userWithRole(Role::Accountant, [branch('DHK')], ['username' => 'accountant']);
+
+    $this->get('/admin/login')->assertOk()->assertDontSee('data-company-switch', false);
+
+    $this->actingAs($staff)->get('/admin')->assertOk()->assertDontSee('data-company-switch', false);
+    $this->post(route('admin.company.switch'), ['company' => 'al_fadhaa'])->assertForbidden();
+
+    $this->actingAs($this->admin)->post(route('admin.company.switch'), ['company' => 'other'])->assertNotFound();
+});
+
+it('does not open a company without a database', function () {
+    $this->actingAs($this->admin)->post(route('admin.company.switch'), ['company' => 'al_fadhaa'])->assertNotFound();
 });

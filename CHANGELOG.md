@@ -2,6 +2,14 @@
 
 All notable changes per build phase.
 
+## [Client updates — one sign-in for both companies] — 2026-11-19
+
+### Changed
+- **Al-Fadhaa' Bureau has no login of its own.** Everyone signs in to KurdishMedicus (the main company). KurdishMedicus' super admin opens Al-Fadhaa' Bureau with the button next to the company name: a one-minute, one-time signed link signs the same person in there; their account is copied into Al-Fadhaa' Bureau (Super Admin, all stations, a random password nobody knows) so what they do is recorded under their name (`CompanyAccountService`, `CompanyEnterController`). Anyone not signed in to Al-Fadhaa' Bureau (e.g. the session ran out) goes back to KurdishMedicus' sign-in (`SendGuestsToMainCompany`).
+- **No company button on the sign-in page.**
+- New permission **`companies.switch`** (open the other company): Super Admin; not part of the Manager role unless given on purpose.
+- `orthotrack:setup-company` refuses to run when `ORTHOTRACK_COMPANY` names a company that has no database (instead of preparing KurdishMedicus).
+
 ## [Client updates — two companies, separate data] — 2026-11-19
 
 ### Changed

@@ -160,6 +160,9 @@ final class PermissionRegistry
             'agents' => [
                 'agents.manage' => ['Manage company agents and drivers', false],
             ],
+            'companies' => [
+                'companies.switch' => ["Open Al-Fadhaa' Bureau from KurdishMedicus (no login of its own)", false],
+            ],
             'documents' => [
                 'documents.view' => ['View company documents', false],
                 'documents.upload' => ['Upload and archive company documents', false],
@@ -236,6 +239,7 @@ final class PermissionRegistry
             'reports' => __('Reports'),
             'agents' => __('Company agents'),
             'documents' => __('Company documents'),
+            'companies' => __('Companies'),
             'insight' => __('Daily Business Report & Quick answers'),
             default => $group,
         };
@@ -252,7 +256,8 @@ final class PermissionRegistry
             Role::SuperAdmin->value => [],
 
             // Sees and does everything the system offers (an editable role, unlike Super Admin).
-            Role::Manager->value => self::names(),
+            // Opening Al-Fadhaa' Bureau stays with Super Admin unless given to the role on purpose.
+            Role::Manager->value => array_values(array_diff(self::names(), ['companies.switch'])),
 
             Role::Accountant->value => [
                 'admin.access', 'dashboard.view',

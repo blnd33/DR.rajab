@@ -75,8 +75,8 @@ it('lists only the chosen branch\'s accounts on the Users screen', function () {
     $this->get('/admin/users')->assertOk()->assertSee('Dr. Erbil')->assertDontSee('Dr. Duhok');
 });
 
-it('gives the Manager every permission and the admin panel', function () {
-    expect($this->manager->getAllPermissions()->pluck('name')->sort()->values()->all())->toBe(collect(PermissionRegistry::names())->sort()->values()->all())
+it('gives the Manager every permission and the admin panel (opening Al-Fadhaa\' Bureau stays with Super Admin)', function () {
+    expect($this->manager->getAllPermissions()->pluck('name')->sort()->values()->all())->toBe(collect(PermissionRegistry::names())->reject(fn (string $p) => $p === 'companies.switch')->sort()->values()->all())
         ->and($this->manager->canAccessAppPanel(Panel::Admin))->toBeTrue()
         ->and(app(BranchScopeResolver::class)->branchIdsFor($this->manager, 'reports.view'))->toBeNull();
 });

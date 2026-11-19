@@ -3,6 +3,7 @@
 use App\Http\Middleware\AutoLoginOnTestSite;
 use App\Http\Middleware\EnsureOpsAccess;
 use App\Http\Middleware\NormalizeDigits;
+use App\Http\Middleware\SendGuestsToMainCompany;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackUserSession;
 use App\Support\CompanyContext;
@@ -32,12 +33,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             // Test site only (ORTHOTRACK_AUTO_LOGIN): sign visitors in automatically.
             AutoLoginOnTestSite::class,
+            // Al-Fadhaa' Bureau has no login of its own: guests go back to KurdishMedicus.
+            SendGuestsToMainCompany::class,
             SetLocale::class,
             NormalizeDigits::class,
         ]);
 
         // Laravel moves its "who are you" check early; the automatic sign-in must come first.
         $middleware->prependToPriorityList(before: AuthenticatesRequests::class, prepend: AutoLoginOnTestSite::class);
+        $middleware->prependToPriorityList(before: AuthenticatesRequests::class, prepend: SendGuestsToMainCompany::class);
 
         $middleware->alias([
             'ops' => EnsureOpsAccess::class,

@@ -127,10 +127,13 @@ Running it again adds nothing twice (stations and products are matched by code; 
 
 One system, two companies of the same owner, **separate data**: each company has its own database —
 its own staff and logins, stations, stock, money, documents and settings — and its own session,
-cache, uploaded files and backups. The top bar (and the sign-in page) shows
-**KurdishMedicus | Al-Fadhaa' Bureau**; clicking the other company opens its own system (sign in
-there; on the test site it signs in by itself). KurdishMedicus uses `DB_DATABASE`; Al-Fadhaa' Bureau is
-switched on by giving it a database.
+cache, uploaded files and backups. KurdishMedicus is the main company: everyone signs in there.
+**Al-Fadhaa' Bureau has no login of its own** — KurdishMedicus' super admin opens it with the button
+next to the company name and is signed in there automatically (their account is copied into it);
+the button there goes back. Someone whose Al-Fadhaa' Bureau session ran out is sent back to
+KurdishMedicus' sign-in. The button is for Super Admin (permission `companies.switch`, which can be
+given to another role on purpose). KurdishMedicus uses `DB_DATABASE`; Al-Fadhaa' Bureau is switched
+on by giving it a database.
 
 Once, on the server:
 
@@ -139,8 +142,9 @@ sudo -u postgres psql -p 5434 -c "CREATE DATABASE orthotrack_alfadhaa OWNER orth
 echo "ORTHOTRACK_AL_FADHAA_DATABASE=orthotrack_alfadhaa" >> .env
 sudo -u www-data php artisan optimize
 sudo -u www-data env ORTHOTRACK_COMPANY=al_fadhaa php artisan orthotrack:setup-company
-sudo -u www-data env ORTHOTRACK_COMPANY=al_fadhaa php artisan orthotrack:create-admin rajab --name="Dr. Rajab"
 ```
+
+(`.env` must end with a line break before the `echo`, or the new line sticks to the last one.)
 
 `orthotrack:setup-company` creates the tables, the base data, the company name and its stations
 (**Baghdad, Karbala, Babil** — `config/orthotrack.php`, `companies.al_fadhaa.stations`).

@@ -349,11 +349,21 @@ Artisan::command('orthotrack:sample-data {file : The supplier workbook (.xlsx)} 
 */
 Artisan::command('orthotrack:setup-company', function (CompanySetupService $setup) {
     $company = CompanyContext::current();
+    $asked = (string) getenv(CompanyContext::ENV);
+
+    // Asked for another company that has no database: never fall back to KurdishMedicus silently.
+    if ($asked !== '' && $asked !== $company->value) {
+        $this->error("ORTHOTRACK_COMPANY={$asked} is set, but that company has no database: add ORTHOTRACK_AL_FADHAA_DATABASE to .env (on its own line), then php artisan optimize.");
+
+        return 1;
+    }
     $this->info('Company: '.$company->getLabel().' (database '.config('database.connections.'.config('database.default').'.database').')');
 
     $setup->setup(fn (string $line) => $this->line($line));
 
-    $this->info("Ready. Create its first login: ORTHOTRACK_COMPANY={$company->value} php artisan orthotrack:create-admin <username>");
+    $this->info($company->isMain()
+        ? 'Ready.'
+        : 'Ready. It has no login of its own: open it from KurdishMedicus with the button next to the company name.');
 
     return 0;
 })->purpose('Prepare the current company\'s database: tables, base data, its name and stations');

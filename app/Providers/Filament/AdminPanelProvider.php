@@ -12,6 +12,7 @@ use App\Http\Middleware\FilamentAuthenticate;
 use App\Http\Middleware\FocusAdminBranch;
 use App\Http\Middleware\NormalizeDigits;
 use App\Http\Middleware\RequireAdminMfa;
+use App\Http\Middleware\SendGuestsToMainCompany;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackUserSession;
 use App\Models\User;
@@ -105,12 +106,12 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
-                fn () => Blade::render('<x-auth-notice /><x-company-switcher variant="login" /><x-language-switcher class="mb-2" />'),
+                fn () => Blade::render('<x-auth-notice /><x-language-switcher class="mb-2" />'),
             )
             // The other company (KurdishMedicus ↔ Al-Fadhaa' Bureau), right after the company name.
             ->renderHook(
                 PanelsRenderHook::TOPBAR_LOGO_AFTER,
-                fn () => Blade::render('<x-company-switcher variant="topbar" />'),
+                fn () => Blade::render('<x-company-switcher />'),
             )
             // Language can be changed from every page, not only before logging in.
             ->renderHook(
@@ -139,6 +140,8 @@ class AdminPanelProvider extends PanelProvider
                 StartSession::class,
                 // Test site only (ORTHOTRACK_AUTO_LOGIN): sign visitors in automatically.
                 AutoLoginOnTestSite::class,
+                // Al-Fadhaa' Bureau has no login of its own: guests go back to KurdishMedicus.
+                SendGuestsToMainCompany::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 PreventRequestForgery::class,

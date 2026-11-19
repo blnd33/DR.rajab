@@ -2942,5 +2942,7 @@
     "Open without signing in.": "مفتوح دون تسجيل الدخول.",
     "KurdishMedicus": "KurdishMedicus",
     "Al-Fadhaa' Bureau": "مكتب الفضاء",
-    "Open :company": "فتح :company"
+    "Open :company": "فتح :company",
+    "Companies": "الشركات",
+    "Open Al-Fadhaa' Bureau from KurdishMedicus (no login of its own)": "فتح مكتب الفضاء من KurdishMedicus (بدون تسجيل دخول خاص به)"
 }

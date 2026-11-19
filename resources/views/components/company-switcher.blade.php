@@ -1,19 +1,17 @@
 {{--
-    Company switch, next to the company name (top bar) and on the sign-in page: one button with the
-    other company's name — "Al-Fadhaa' Bureau" in KurdishMedicus, KurdishMedicus' name in
-    Al-Fadhaa' Bureau. Each company is its own system (data, staff, sign-in). Shown only when the
-    other company has a database.
+    The button next to the company name: the other company — "Al-Fadhaa' Bureau" in KurdishMedicus,
+    KurdishMedicus' own name in Al-Fadhaa' Bureau. Only for people who may open the other company
+    (companies.switch: KurdishMedicus' super admin); Al-Fadhaa' Bureau has no login of its own.
 --}}
-@props(['variant' => 'topbar'])
-
 @php
     $current = \App\Support\CompanyContext::current();
     $others = array_values(array_filter(\App\Support\CompanyContext::available(), fn ($c) => $c !== $current));
+    $user = auth()->user();
 @endphp
 
-@if ($others !== [])
+@if ($others !== [] && $user?->can('companies.switch'))
     <form method="POST" action="{{ route('admin.company.switch') }}" data-company-switch
-          {{ $attributes->class(['flex items-center gap-2', 'ms-4' => $variant === 'topbar', 'mx-auto mb-2 w-fit' => $variant === 'login']) }}>
+          {{ $attributes->class(['ms-4 flex items-center gap-2']) }}>
         @csrf
         @foreach ($others as $company)
             <button type="submit" name="company" value="{{ $company->value }}"

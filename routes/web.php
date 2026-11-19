@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminBranchController;
 use App\Http\Controllers\AdminCompanyController;
 use App\Http\Controllers\AttachmentController;
+use App\Http\Controllers\CompanyEnterController;
 use App\Http\Controllers\DocumentPrintController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ImportFileController;
@@ -25,9 +26,10 @@ Route::post('/locale/{locale}', LocaleController::class)->name('locale.switch');
 // Admin top-bar branch: everything branch-based follows it.
 Route::post('/admin-branch', AdminBranchController::class)->middleware('auth')->name('admin.branch.switch');
 
-// Company switch (KurdishMedicus | Al-Fadhaa' Bureau): each company has its own data and sign-in,
-// so it is offered on the sign-in page too.
-Route::post('/company', AdminCompanyController::class)->name('admin.company.switch');
+// The button next to the company name: KurdishMedicus ↔ Al-Fadhaa' Bureau (separate data; Al-Fadhaa'
+// Bureau has no login of its own — the same person is signed in there with a one-minute link).
+Route::post('/company', AdminCompanyController::class)->middleware('auth')->name('admin.company.switch');
+Route::get('/company/enter', CompanyEnterController::class)->middleware('signed')->name('company.enter');
 
 // PWA
 Route::get('/manifest.webmanifest', [PwaController::class, 'manifest'])->name('pwa.manifest');
