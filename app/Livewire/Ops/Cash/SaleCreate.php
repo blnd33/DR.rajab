@@ -90,7 +90,7 @@ class SaleCreate extends Component
             $unit = $result->unit;
 
             if ($unit->branch_id !== $branchId || ! $unit->status->isOnHand() || $unit->location_type !== LocationType::Shelf) {
-                $this->scanFailed(__('Unit :serial is not on a shelf in this branch.', ['serial' => $unit->serial]));
+                $this->scanFailed(__('Unit :serial is not on a shelf in this station.', ['serial' => $unit->serial]));
 
                 return;
             }
@@ -106,7 +106,7 @@ class SaleCreate extends Component
             $batch = $result->batches->where('branch_id', $branchId)->filter(fn (StockBatch $b) => $b->location_type === LocationType::Shelf && $b->quantity > 0)->sortBy('expiry_date')->first();
 
             if ($batch === null) {
-                $this->scanFailed(__('No :sku on the shelf in this branch.', ['sku' => $result->product->sku]));
+                $this->scanFailed(__('No :sku on the shelf in this station.', ['sku' => $result->product->sku]));
 
                 return;
             }
@@ -212,7 +212,7 @@ class SaleCreate extends Component
         $box = $this->paidNow ? $this->boxes()->get($this->currency) : null;
 
         if ($branch === null || ($this->paidNow && $box === null)) {
-            $this->dispatch('toast', type: 'error', message: __('There is no :currency cash box in this branch.', ['currency' => $this->currency]));
+            $this->dispatch('toast', type: 'error', message: __('There is no :currency cash box in this station.', ['currency' => $this->currency]));
 
             return;
         }

@@ -30,7 +30,7 @@ class BranchSettingsRelationManager extends RelationManager
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return __('Minimum stock per branch');
+        return __('Minimum stock per station');
     }
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
@@ -51,18 +51,18 @@ class BranchSettingsRelationManager extends RelationManager
 
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $scope->apply($query->with('branch'), $user, 'stock.view'))
-            ->description(fn () => __('Default for every branch: :min. Set a different minimum where a branch needs more or less.', [
+            ->description(fn () => __('Default for every station: :min. Set a different minimum where a station needs more or less.', [
                 'min' => Display::number($this->product()->min_stock_default),
             ]))
             ->columns([
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('min_stock')->label(__('Minimum'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('max_stock')->label(__('Maximum'))->alignEnd()->placeholder('—')->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('reorder_qty')->label(__('Reorder quantity'))->alignEnd()->placeholder('—')->formatStateUsing(fn ($state) => Display::number($state)),
             ])
             ->headerActions([
                 $this->setAction()
-                    ->label(__('Set branch minimum'))
+                    ->label(__('Set station minimum'))
                     ->icon(Heroicon::OutlinedPlus)
                     ->visible(fn () => $scope->hasAny($user, 'stock.min_levels')),
             ])
@@ -80,7 +80,7 @@ class BranchSettingsRelationManager extends RelationManager
                     ->visible(fn (BranchProductSetting $record) => $user->canInBranch('stock.min_levels', $record->branch_id))
                     ->action(fn (BranchProductSetting $record) => app(ProductService::class)->setBranchMinimum($this->product(), $record->branch_id, null)),
             ])
-            ->emptyStateHeading(__('Every branch uses the default minimum'));
+            ->emptyStateHeading(__('Every station uses the default minimum'));
     }
 
     private function setAction(string $name = 'set'): Action
@@ -91,7 +91,7 @@ class BranchSettingsRelationManager extends RelationManager
         return Action::make($name)
             ->schema([
                 Select::make('branch_id')
-                    ->label(__('Branch'))
+                    ->label(__('Station'))
                     ->options(fn () => app(BranchScopeResolver::class)->selectableBranches($user, 'stock.min_levels')->get()->mapWithKeys(fn (Branch $b) => [$b->id => $b->label()]))
                     ->required()
                     ->native(false),

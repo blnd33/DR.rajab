@@ -94,7 +94,7 @@ class WriteOffResource extends Resource
             ->defaultSort('reported_at', 'desc')
             ->columns([
                 CodeColumn::make('number')->label(__('Number'))->searchable()->sortable(),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('reason')->label(__('Reason'))->badge(),
                 TextColumn::make('status')->label(__('Status'))->badge(),
                 TextColumn::make('items_sum_quantity')->label(__('Items'))->alignEnd()->formatStateUsing(fn ($state) => Display::number((int) $state)),
@@ -117,7 +117,7 @@ class WriteOffResource extends Resource
                 TextEntry::make('number')->label(__('Number'))->fontFamily(FontFamily::Mono)->extraAttributes(['dir' => 'ltr']),
                 TextEntry::make('status')->label(__('Status'))->badge(),
                 TextEntry::make('reason')->label(__('Reason'))->badge(),
-                TextEntry::make('branch.code')->label(__('Branch')),
+                TextEntry::make('branch.code')->label(__('Station')),
                 TextEntry::make('reporter.name')->label(__('Reported by')),
                 LocalDateTimeEntry::make('reported_at')->label(__('Reported')),
                 TextEntry::make('approver.name')->label(__('Approved by'))->placeholder('—'),

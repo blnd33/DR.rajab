@@ -24,12 +24,12 @@ class KitsReport extends Report
 
     public function title(): string
     {
-        return __('Kits report');
+        return __('Instrument sets report');
     }
 
     public function description(): ?string
     {
-        return __('Checkouts and surgeries per kit in the period; out and overdue as of now.');
+        return __('Checkouts and surgeries per instrument set in the period; out and overdue as of now.');
     }
 
     public function filters(): array
@@ -40,9 +40,9 @@ class KitsReport extends Report
     public function columns(ReportContext $context): array
     {
         return [
-            ReportColumn::code('code', __('Kit')),
-            ReportColumn::text('type', __('Kit type')),
-            ReportColumn::text('branch', __('Branch')),
+            ReportColumn::code('code', __('Instrument set')),
+            ReportColumn::text('type', __('Instrument set type')),
+            ReportColumn::text('branch', __('Station')),
             ReportColumn::number('checkouts', __('Checkouts')),
             ReportColumn::number('surgeries', __('Surgeries')),
             ReportColumn::number('used', __('Implants used')),

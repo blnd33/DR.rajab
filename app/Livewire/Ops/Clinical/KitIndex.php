@@ -30,7 +30,7 @@ class KitIndex extends Component
 
         if ($kit === null || ! $this->user()->can('view', $kit)) {
             $this->dispatch('scan-feedback', type: 'error');
-            $this->dispatch('toast', type: 'error', message: __('No kit with this code.'));
+            $this->dispatch('toast', type: 'error', message: __('No instrument set with this code.'));
 
             return;
         }
@@ -52,6 +52,6 @@ class KitIndex extends Component
         return view('livewire.ops.clinical.kit-index', [
             'branch' => CurrentBranch::get(),
             'kits' => $kits,
-        ])->title(__('Kits'));
+        ])->title(__('Instrument sets'));
     }
 }

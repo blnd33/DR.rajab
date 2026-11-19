@@ -20,7 +20,7 @@ class KitsMoved extends Fact
 
     public function title(): string
     {
-        return __('Kits sent and returned');
+        return __('Instrument sets sent and returned');
     }
 
     public function section(): FactSection

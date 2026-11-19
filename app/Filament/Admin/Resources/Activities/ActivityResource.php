@@ -95,7 +95,7 @@ class ActivityResource extends Resource
                     ->formatStateUsing(fn (?string $state, Activity $record) => $state === null ? '' : class_basename($state).' #'.$record->subject_id)
                     ->toggleable(),
                 CodeColumn::make('reference_code')->label(__('Reference'))->searchable()->placeholder('—'),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray')->placeholder('—'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray')->placeholder('—'),
                 CodeColumn::make('ip_address')->label(__('IP address'))->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -107,7 +107,7 @@ class ActivityResource extends Resource
                         ? $query->where('causer_type', (new User)->getMorphClass())->where('causer_id', $data['value'])
                         : $query),
                 SelectFilter::make('branch_id')
-                    ->label(__('Branch'))
+                    ->label(__('Station'))
                     ->options(fn () => Branch::query()->orderBy('code')->pluck('code', 'id')),
                 SelectFilter::make('log_name')
                     ->label(__('Area'))
@@ -146,7 +146,7 @@ class ActivityResource extends Resource
                         TextEntry::make('subject_type')->label(__('Record'))
                             ->formatStateUsing(fn (?string $state, Activity $record) => $state === null ? '—' : class_basename($state).' #'.$record->subject_id),
                         TextEntry::make('reference_code')->label(__('Reference'))->fontFamily(FontFamily::Mono)->placeholder('—'),
-                        TextEntry::make('branch.code')->label(__('Branch'))->placeholder('—'),
+                        TextEntry::make('branch.code')->label(__('Station'))->placeholder('—'),
                         TextEntry::make('ip_address')->label(__('IP address'))->fontFamily(FontFamily::Mono)->placeholder('—'),
                         TextEntry::make('user_agent')->label(__('Device'))->columnSpan(2)->placeholder('—'),
                     ]),

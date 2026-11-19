@@ -102,7 +102,7 @@ class PurchaseResource extends Resource
                 CodeColumn::make('number')->label(__('Number'))->searchable()->sortable(),
                 TextColumn::make('supplier.name')->label(__('Supplier'))->searchable()
                     ->description(fn (Purchase $r) => $r->supplier_invoice_number)->extraAttributes(['dir' => 'auto']),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('invoice_date')->label(__('Invoice date'))->sortable()->formatStateUsing(fn ($state) => Display::date($state)),
                 TextColumn::make('due_date')->label(__('Due'))->sortable()->placeholder('—')
                     ->formatStateUsing(fn ($state) => Display::date($state))
@@ -135,7 +135,7 @@ class PurchaseResource extends Resource
                 TextEntry::make('number')->label(__('Number'))->fontFamily(FontFamily::Mono)->extraAttributes(['dir' => 'ltr']),
                 TextEntry::make('supplier.name')->label(__('Supplier')),
                 TextEntry::make('supplier_invoice_number')->label(__('Supplier invoice no.'))->fontFamily(FontFamily::Mono)->extraAttributes(['dir' => 'ltr']),
-                TextEntry::make('branch.name')->label(__('Branch')),
+                TextEntry::make('branch.name')->label(__('Station')),
                 TextEntry::make('invoice_date')->label(__('Invoice date'))->formatStateUsing(fn ($state) => Display::date($state)),
                 TextEntry::make('due_date')->label(__('Due'))->placeholder('—')->formatStateUsing(fn ($state) => Display::date($state))
                     ->color(fn (Purchase $r) => static::isOverdue($r) ? 'danger' : null),

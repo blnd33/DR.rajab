@@ -206,7 +206,7 @@ class SalesInvoiceResource extends Resource
                 CodeColumn::make('number')->label(__('Number'))->searchable()->sortable(),
                 TextColumn::make('kind')->label(__('For'))->badge()->description(fn (SalesInvoice $r) => static::about($r)),
                 TextColumn::make('buyer')->label(__('Buyer'))->state(fn (SalesInvoice $r) => static::buyer($r)),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray')->toggleable(),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray')->toggleable(),
                 LocalDateTimeColumn::make('issued_at')->label(__('Date'))->sortable(),
                 TextColumn::make('items_count')->label(__('Items'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state))->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('total')->label(__('Total'))->alignEnd()->weight('semibold')->sortable()->formatStateUsing(fn ($state, SalesInvoice $r) => Display::money($state, $r->currency)),
@@ -220,7 +220,7 @@ class SalesInvoiceResource extends Resource
                 SelectFilter::make('kind')->label(__('For'))->options(InvoiceKind::options()),
                 SelectFilter::make('status')->label(__('Status'))->options(SalesInvoiceStatus::options()),
                 SelectFilter::make('payment_terms')->label(__('Terms'))->options(PaymentTerms::options()),
-                SelectFilter::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('invoices.view_any') + ServiceAction::branchOptions('sales.view_any')),
+                SelectFilter::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('invoices.view_any') + ServiceAction::branchOptions('sales.view_any')),
                 Filter::make('overdue')->label(__('Overdue'))->toggle()
                     ->query(fn (Builder $query) => $query->whereIn('status', [SalesInvoiceStatus::Issued, SalesInvoiceStatus::PartiallyPaid])->whereDate('due_date', '<', today())),
             ])
@@ -248,7 +248,7 @@ class SalesInvoiceResource extends Resource
                     ->state(fn (SalesInvoice $r) => static::about($r))
                     ->url(fn (SalesInvoice $r) => $r->surgery_id !== null ? SurgeryResource::getUrl('view', ['record' => $r->surgery_id]) : null)
                     ->visible(fn (SalesInvoice $r) => $r->kind === InvoiceKind::Surgery),
-                TextEntry::make('branch.name')->label(__('Branch')),
+                TextEntry::make('branch.name')->label(__('Station')),
                 TextEntry::make('payment_terms')->label(__('Terms'))->badge()->color('gray'),
                 TextEntry::make('pricing')->label(__('Price'))->badge()->color('gray')
                     ->formatStateUsing(fn ($state) => $state === 'split' ? __('One price, split by %') : __('Per item'))

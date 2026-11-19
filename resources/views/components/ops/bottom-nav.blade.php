@@ -5,7 +5,7 @@
         ['route' => 'ops.stock.index', 'label' => __('Stock'), 'icon' => 'heroicon-o-archive-box', 'match' => 'ops.stock.*'],
         ['route' => 'ops.scan', 'label' => __('Scan'), 'icon' => 'ot-barcode', 'primary' => true],
         ['route' => 'ops.tasks', 'label' => __('Tasks'), 'icon' => 'heroicon-o-clipboard-document-list', 'match' => ['ops.tasks', 'ops.transfers.*', 'ops.requests.*', 'ops.counts.*', 'ops.write-offs.*', 'ops.returns.*', 'ops.surgeries.*', 'ops.kits.*', 'ops.cash', 'ops.cash.*']],
-        ['route' => 'ops.profile', 'label' => __('Me'), 'icon' => 'heroicon-o-user-circle'],
+        ['route' => 'ops.profile', 'label' => __('Me'), 'badge' => 'KM'],
     ];
 @endphp
 
@@ -25,6 +25,13 @@
                         <span class="-mt-6 flex size-14 items-center justify-center rounded-full bg-primary text-white shadow-lg ring-4 ring-bg">
                             @svg($item['icon'], 'size-7')
                         </span>
+                    @elseif (isset($item['badge']))
+                        {{-- Profile: the KM (KurdishMedicus) badge instead of a person icon. --}}
+                        <span @class([
+                            'flex size-7 items-center justify-center rounded-full text-[0.6875rem] font-bold tracking-wide',
+                            'bg-primary text-white' => $active,
+                            'bg-subtle text-fg ring-1 ring-border-strong' => ! $active,
+                        ]) aria-hidden="true">{{ $item['badge'] }}</span>
                     @else
                         @svg($item['icon'], 'size-6')
                     @endif

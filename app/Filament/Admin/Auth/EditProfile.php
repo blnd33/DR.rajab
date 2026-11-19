@@ -64,17 +64,17 @@ class EditProfile extends BaseEditProfile
 
     protected function getSummaryFormComponent(): Component
     {
-        return Section::make(__('Morning summary'))
+        return Section::make(__('Morning report'))
             ->description(__('A short report of yesterday and what needs attention today, in your bell and as a phone notification.'))
             ->visible(fn () => $this->user() !== null && MorningSummaryService::canReceive($this->user()))
             ->columns(['default' => 1, 'md' => 2])
             ->schema([
-                Toggle::make('summary.enabled')->label(__('Send me the morning summary'))->columnSpanFull(),
+                Toggle::make('summary.enabled')->label(__('Send me the morning report'))->columnSpanFull(),
                 TextInput::make('summary.time')->label(__('Time'))->type('time')->required()
                     ->helperText(__('Business time (Baghdad).'))
                     ->extraInputAttributes(['dir' => 'ltr']),
-                Select::make('summary.branch_id')->label(__('Branch'))
-                    ->placeholder(__('All my branches'))
+                Select::make('summary.branch_id')->label(__('Station'))
+                    ->placeholder(__('All my stations'))
                     ->options(fn () => SummarySettings::branchOptions($this->user()))
                     ->native(false),
                 CheckboxList::make('summary.sections')->label(__('Sections'))

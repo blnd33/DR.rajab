@@ -30,7 +30,7 @@ class CreateCashBox extends CreateRecord
     {
         return $schema->columns(2)->components([
             ToggleButtons::make('type')->label(__('Type'))->options(CashBoxType::options())->default(CashBoxType::Cash->value)->inline()->live()->required(),
-            Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('cash_boxes.manage'))->native(false)
+            Select::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('cash_boxes.manage'))->native(false)
                 ->placeholder(__('Head office'))->helperText(__('Empty = head office.')),
             TranslatableInput::make('name', __('Name'))->columnSpanFull(),
             Select::make('currency')->label(__('Currency'))->options(fn () => Currency::options())->required()->native(false),

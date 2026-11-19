@@ -45,12 +45,12 @@ class KitTypeResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('Kit type');
+        return __('Instrument set type');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('Kit types');
+        return __('Instrument set types');
     }
 
     public static function form(Schema $schema): Schema
@@ -78,7 +78,7 @@ class KitTypeResource extends Resource
                     ->searchable(query: fn ($query, string $search) => $query->whereRaw(Pg::jsonContainsSql('name'), ["%{$search}%"])),
                 TextColumn::make('usage_level')->label(__('Usage'))->badge()->placeholder('—'),
                 TextColumn::make('template_items_count')->label(__('Template lines'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
-                TextColumn::make('kits_count')->label(__('Kits'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
+                TextColumn::make('kits_count')->label(__('Instrument sets'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
                 IconColumn::make('is_active')->label(__('Active'))->boolean(),
             ])
             ->filters([
@@ -86,7 +86,7 @@ class KitTypeResource extends Resource
                 TernaryFilter::make('is_active')->label(__('Active'))->default(true),
             ])
             ->recordActions([EditAction::make()])
-            ->emptyStateHeading(__('No kit types yet'));
+            ->emptyStateHeading(__('No instrument set types yet'));
     }
 
     public static function getRelations(): array

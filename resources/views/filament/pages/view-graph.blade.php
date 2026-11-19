@@ -41,7 +41,7 @@
             <div class="flex flex-col items-center gap-2 py-8 text-center">
                 @svg($definition->icon(), 'size-10 text-gray-400')
                 <p class="font-semibold">{{ __('Nothing to draw for these filters') }}</p>
-                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Try a longer period or another branch.') }}</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('Try a longer period or another station.') }}</p>
             </div>
         </x-filament::section>
     @else

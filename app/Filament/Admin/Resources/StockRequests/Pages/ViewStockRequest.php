@@ -42,7 +42,7 @@ class ViewStockRequest extends ViewRecord
                 ->color('success')
                 ->visible($canDecide)
                 ->modalWidth('3xl')
-                ->modalDescription(__('Set the quantity to send and the sending branch per product (0 = not approved). One draft transfer is created per sending branch.'))
+                ->modalDescription(__('Set the quantity to send and the sending station per product (0 = not approved). One draft transfer is created per sending station.'))
                 ->fillForm(fn () => [
                     'lines' => $this->stockRequest()->items->mapWithKeys(fn (StockRequestItem $i) => [$i->id => [
                         'quantity_approved' => $i->quantity_requested,
@@ -55,7 +55,7 @@ class ViewStockRequest extends ViewRecord
                             ->label($i->product->sku.' — '.__('asked :qty', ['qty' => Display::number($i->quantity_requested)]))
                             ->numeric()->integer()->minValue(0)->required(),
                         Select::make("lines.{$i->id}.source_branch_id")
-                            ->label(__('From branch'))
+                            ->label(__('From station'))
                             ->options(fn () => $this->sourceOptions($i))
                             ->native(false)
                             ->columnSpan(2),
@@ -63,7 +63,7 @@ class ViewStockRequest extends ViewRecord
                     Textarea::make('note')->label(__('Note'))->rows(2),
                 ])
                 ->action(function (array $data, Action $action) {
-                    ServiceAction::run($action, fn ($u) => app(StockRequestService::class)->approve($this->stockRequest(), $data['lines'] ?? [], $u, $data['note'] ?? null), __('Approved. The sending branches were told.'));
+                    ServiceAction::run($action, fn ($u) => app(StockRequestService::class)->approve($this->stockRequest(), $data['lines'] ?? [], $u, $data['note'] ?? null), __('Approved. The sending stations were told.'));
                     $this->refreshRecord();
                 }),
 

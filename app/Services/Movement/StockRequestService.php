@@ -50,7 +50,7 @@ class StockRequestService
         }
 
         if ($preferredSource?->id === $branch->id) {
-            throw new StockRuleViolation(__('A branch cannot request from itself.'), 'preferred_source_branch_id');
+            throw new StockRuleViolation(__('A station cannot request from itself.'), 'preferred_source_branch_id');
         }
 
         $request = DB::transaction(function () use ($branch, $lines, $by, $preferredSource, $priority, $neededBy, $notes) {
@@ -146,11 +146,11 @@ class StockRequestService
                 $source = $decision['source_branch_id'] ?? null;
 
                 if ($approved > 0 && blank($source)) {
-                    throw new StockRuleViolation(__('Choose the sending branch for :sku.', ['sku' => $item->product->sku]));
+                    throw new StockRuleViolation(__('Choose the sending station for :sku.', ['sku' => $item->product->sku]));
                 }
 
                 if ($approved > 0 && (int) $source === $request->requesting_branch_id) {
-                    throw new StockRuleViolation(__('A branch cannot request from itself.'));
+                    throw new StockRuleViolation(__('A station cannot request from itself.'));
                 }
 
                 $partial = $partial || $approved < $item->quantity_requested;
@@ -265,7 +265,7 @@ class StockRequestService
         $branchId = $branch instanceof Branch ? $branch->id : $branch;
 
         if (! $this->scope->allows($by, $permission, $branchId)) {
-            throw new AuthorizationException(__('You are not allowed to do this in branch :code.', ['code' => (string) Branch::query()->whereKey($branchId)->value('code')]));
+            throw new AuthorizationException(__('You are not allowed to do this in station :code.', ['code' => (string) Branch::query()->whereKey($branchId)->value('code')]));
         }
     }
 }

@@ -72,7 +72,7 @@ class ExpenseResource extends Resource
                 CodeColumn::make('number')->label(__('Number'))->searchable(),
                 TextColumn::make('expense_date')->label(__('Date'))->sortable()->formatStateUsing(fn ($state) => Display::date($state)),
                 TextColumn::make('category.name')->label(__('Category'))->description(fn (Expense $r) => $r->description)->wrap(),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray')->placeholder(__('Head office'))
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray')->placeholder(__('Head office'))
                     ->description(fn (Expense $r) => $r->is_allocated ? __('split') : null),
                 TextColumn::make('payee')->label(__('Paid to'))->placeholder('—')->toggleable(),
                 TextColumn::make('amount')->label(__('Amount'))->alignEnd()->weight('semibold')
@@ -83,7 +83,7 @@ class ExpenseResource extends Resource
             ->filters([
                 SelectFilter::make('status')->label(__('Status'))->options(ExpenseStatus::options()),
                 SelectFilter::make('expense_category_id')->label(__('Category'))->options(fn () => ExpenseCategory::options()),
-                SelectFilter::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('expenses.view_any')),
+                SelectFilter::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('expenses.view_any')),
             ])
             ->recordActions([
                 ViewAction::make()->schema(fn (Schema $schema) => static::infolist($schema)),
@@ -115,10 +115,10 @@ class ExpenseResource extends Resource
                 ViewEntry::make('receipts')->label(__('Receipts'))->view('filament.attachments.gallery')->columnSpanFull()
                     ->visible(fn (Expense $r) => $r->attachments()->exists()),
             ]),
-            RepeatableEntry::make('allocations')->label(__('Split over branches'))->columnSpanFull()->columns(3)
+            RepeatableEntry::make('allocations')->label(__('Split over stations'))->columnSpanFull()->columns(3)
                 ->visible(fn (Expense $r) => $r->is_allocated)
                 ->schema([
-                    TextEntry::make('branch.name')->label(__('Branch')),
+                    TextEntry::make('branch.name')->label(__('Station')),
                     TextEntry::make('percentage')->label(__('Share'))->formatStateUsing(fn ($state) => Display::number($state, 2).'%'),
                     TextEntry::make('amount')->label(__('Amount'))->state(fn (ExpenseAllocation $a) => Display::money($a->amount, $a->expense->currency)),
                 ]),

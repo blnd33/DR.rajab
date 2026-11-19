@@ -276,7 +276,7 @@ class ReturnService
         $branchId = $branch instanceof Branch ? $branch->id : $branch;
 
         if (! $this->scope->allows($by, $permission, $branchId)) {
-            throw new AuthorizationException(__('You are not allowed to do this in branch :code.', ['code' => (string) Branch::query()->whereKey($branchId)->value('code')]));
+            throw new AuthorizationException(__('You are not allowed to do this in station :code.', ['code' => (string) Branch::query()->whereKey($branchId)->value('code')]));
         }
     }
 }

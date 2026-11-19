@@ -88,7 +88,7 @@ class StockMovementResource extends Resource
                     ->url(fn (StockMovement $record) => $record->stockUnit !== null ? StockUnitResource::getUrl('view', ['record' => $record->stockUnit]) : null),
                 TextColumn::make('quantity')->label(__('Qty'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('branches')
-                    ->label(__('Branch'))
+                    ->label(__('Station'))
                     ->state(fn (StockMovement $record) => $record->fromBranch !== null && $record->toBranch !== null && $record->from_branch_id !== $record->to_branch_id
                         ? $record->fromBranch->code.' → '.$record->toBranch->code
                         : ($record->toBranch ?? $record->fromBranch)?->code),
@@ -98,7 +98,7 @@ class StockMovementResource extends Resource
             ->filters([
                 SelectFilter::make('type')->label(__('Movement'))->multiple()->options(MovementType::options()),
                 SelectFilter::make('branch')
-                    ->label(__('Branch'))
+                    ->label(__('Station'))
                     ->options(fn () => $scope->apply(Branch::query()->orderBy('code'), $user, 'stock.view', 'id')->pluck('code', 'id'))
                     ->query(fn (Builder $query, array $data) => filled($data['value'] ?? null)
                         ? $query->where(fn (Builder $q) => $q->where('from_branch_id', (int) $data['value'])->orWhere('to_branch_id', (int) $data['value']))

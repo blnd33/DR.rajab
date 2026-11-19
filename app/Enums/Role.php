@@ -32,7 +32,7 @@ enum Role: string implements HasColor, HasLabel
             self::Doctor => __('Doctor'),
             self::Cashier => __('Cashier'),
             self::Accountant => __('Accountant'),
-            self::BranchStaff => __('Branch Staff'),
+            self::BranchStaff => __('Station Staff'),
             self::Technician => __('Technician'),
         };
     }

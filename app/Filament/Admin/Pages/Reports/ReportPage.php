@@ -160,7 +160,7 @@ abstract class ReportPage extends Page implements HasTable
             ]))
             ->emptyStateIcon(Heroicon::OutlinedChartBar)
             ->emptyStateHeading(__('Nothing in this period'))
-            ->emptyStateDescription(__('Change the dates or the branch.'));
+            ->emptyStateDescription(__('Change the dates or the station.'));
     }
 
     private function column(ReportColumn $column, ReportContext $context): TextColumn
@@ -206,9 +206,9 @@ abstract class ReportPage extends Page implements HasTable
         }
 
         if (in_array('branch', $wanted, true)) {
-            $filters[] = SelectFilter::make('branch')->label(__('Branch'))
+            $filters[] = SelectFilter::make('branch')->label(__('Station'))
                 ->options(fn () => ServiceAction::branchOptions('reports.view'))
-                ->placeholder(__('All my branches'));
+                ->placeholder(__('All my stations'));
         }
 
         if (in_array('currency', $wanted, true)) {

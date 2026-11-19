@@ -24,7 +24,7 @@ enum GraphSection: string
             self::Stock => __('Items and stock'),
             self::Money => __('Money'),
             self::Transfers => __('Transfers'),
-            self::Kits => __('Kits'),
+            self::Kits => __('Instrument sets'),
         };
     }
 

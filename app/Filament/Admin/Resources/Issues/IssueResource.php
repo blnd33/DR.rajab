@@ -89,7 +89,7 @@ class IssueResource extends Resource
                 TextColumn::make('title')->label(__('Issue'))->wrap()->searchable()
                     ->description(fn (Issue $r) => $r->type->getLabel())
                     ->url(fn (Issue $r) => static::subjectUrl($r)),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray')->placeholder('—'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray')->placeholder('—'),
                 TextColumn::make('status')->label(__('Status'))->badge()
                     ->description(fn (Issue $r) => $r->resolution_note),
                 TextColumn::make('resolver.name')->label(__('Closed by'))->placeholder('—')->toggleable(),

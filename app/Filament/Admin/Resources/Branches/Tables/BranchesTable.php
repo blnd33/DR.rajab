@@ -64,22 +64,22 @@ class BranchesTable
                     self::deleteAction(),
                 ]),
             ])
-            ->emptyStateHeading(__('No branches yet'))
-            ->emptyStateDescription(__('Add your first branch to start.'));
+            ->emptyStateHeading(__('No stations yet'))
+            ->emptyStateDescription(__('Add your first station to start.'));
     }
 
     /** Before closing: send every unit and lot on the shelves to another branch in one transfer. */
     private static function transferAllAction(): Action
     {
         return Action::make('transfer_all')
-            ->label(__('Move all stock to another branch'))
+            ->label(__('Move all stock to another station'))
             ->icon(Heroicon::OutlinedTruck)
             ->color('warning')
             ->visible(fn (Branch $record) => $record->status === BranchStatus::Active && Auth::user()?->can('branches.close') && Auth::user()->canInBranch('transfers.create', $record->id))
             ->modalHeading(fn (Branch $record) => __('Move all stock out of :code?', ['code' => $record->code]))
-            ->modalDescription(__('One transfer is created and sent with everything on the shelves. The receiving branch scans it in as usual.'))
+            ->modalDescription(__('One transfer is created and sent with everything on the shelves. The receiving station scans it in as usual.'))
             ->schema(fn (Branch $record) => [
-                Select::make('to_branch_id')->label(__('To branch'))->required()->native(false)
+                Select::make('to_branch_id')->label(__('To station'))->required()->native(false)
                     ->options(fn () => collect(ServiceAction::branchOptions('transfers.create'))->except([$record->id])->all()),
                 ViewTransfer::photoField(__('Photo of the items before sending'), true),
             ])
@@ -95,11 +95,11 @@ class BranchesTable
     private static function closeAction(): Action
     {
         return Action::make('close')
-            ->label(__('Close branch'))
+            ->label(__('Close station'))
             ->icon(Heroicon::OutlinedArchiveBox)
             ->color('danger')
             ->visible(fn (Branch $record) => Auth::user()?->can('close', $record))
-            ->modalHeading(fn (Branch $record) => __('Close branch :code?', ['code' => $record->code]))
+            ->modalHeading(fn (Branch $record) => __('Close station :code?', ['code' => $record->code]))
             ->modalDescription(fn (Branch $record) => self::closeDescription($record))
             ->schema([
                 Textarea::make('reason')->label(__('Reason'))->required()->rows(2),
@@ -121,7 +121,7 @@ class BranchesTable
                     $action->halt();
                 }
 
-                Notification::make()->title(__('Branch closed. Its history stays in all reports.'))->success()->send();
+                Notification::make()->title(__('Station closed. Its history stays in all reports.'))->success()->send();
             });
     }
 
@@ -130,7 +130,7 @@ class BranchesTable
         $blockers = app(BranchService::class)->closureBlockers($record);
 
         if ($blockers === []) {
-            return __('Closed branches disappear from daily lists but keep all their history. You can reopen it later.');
+            return __('Closed stations disappear from daily lists but keep all their history. You can reopen it later.');
         }
 
         $items = collect($blockers)->map(fn ($b) => '<li>'.e($b).'</li>')->implode('');
@@ -141,7 +141,7 @@ class BranchesTable
     private static function reopenAction(): Action
     {
         return Action::make('reopen')
-            ->label(__('Reopen branch'))
+            ->label(__('Reopen station'))
             ->icon(Heroicon::OutlinedArrowUturnLeft)
             ->color('success')
             ->visible(fn (Branch $record) => Auth::user()?->can('reopen', $record))
@@ -151,7 +151,7 @@ class BranchesTable
                 $user = Auth::user();
                 app(BranchService::class)->reopen($record, $user);
 
-                Notification::make()->title(__('Branch reopened.'))->success()->send();
+                Notification::make()->title(__('Station reopened.'))->success()->send();
             });
     }
 
@@ -163,11 +163,11 @@ class BranchesTable
             ->color('danger')
             ->visible(fn (Branch $record) => Auth::user()?->can('delete', $record) && app(BranchService::class)->canHardDelete($record))
             ->requiresConfirmation()
-            ->modalDescription(__('This branch has no records, so it can be removed completely. This cannot be undone.'))
+            ->modalDescription(__('This station has no records, so it can be removed completely. This cannot be undone.'))
             ->action(function (Branch $record) {
                 app(BranchService::class)->hardDelete($record);
 
-                Notification::make()->title(__('Branch deleted.'))->success()->send();
+                Notification::make()->title(__('Station deleted.'))->success()->send();
             });
     }
 }

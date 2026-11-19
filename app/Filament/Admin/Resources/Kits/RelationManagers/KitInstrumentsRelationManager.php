@@ -61,9 +61,9 @@ class KitInstrumentsRelationManager extends RelationManager
                     ->color('gray')
                     ->visible(fn () => $this->kit()->status === KitStatus::Available && ServiceAction::user()->canInBranch('kits.prepare', $this->kit()->branch_id))
                     ->requiresConfirmation()
-                    ->action(fn (Instrument $record, Action $action) => ServiceAction::run($action, fn ($u) => app(KitService::class)->removeInstrument($record, $u), __('Taken out of the kit.'))),
+                    ->action(fn (Instrument $record, Action $action) => ServiceAction::run($action, fn ($u) => app(KitService::class)->removeInstrument($record, $u), __('Taken out of the instrument set.'))),
             ])
-            ->emptyStateHeading(__('No instruments in this kit'));
+            ->emptyStateHeading(__('No instruments in this instrument set'));
     }
 
     private function kit(): Kit

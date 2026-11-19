@@ -79,7 +79,7 @@
                         <x-ops.status-chip :label="$unit['status_label']" :color="$unit['status_color']" :icon="$unit['status_icon']" class="shrink-0" />
                     </div>
                     <dl class="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
-                        <div><dt class="text-xs text-muted-fg">{{ __('Branch') }}</dt><dd class="font-semibold">{{ $unit['branch'] }}</dd></div>
+                        <div><dt class="text-xs text-muted-fg">{{ __('Station') }}</dt><dd class="font-semibold">{{ $unit['branch'] }}</dd></div>
                         @if ($unit['where'])
                             <div><dt class="text-xs text-muted-fg">{{ __('Where') }}</dt><dd>{{ $unit['where'] }}</dd></div>
                         @endif
@@ -93,7 +93,7 @@
                     @unless ($card['here'])
                         <p class="flex items-start gap-2 rounded-lg bg-warning-soft p-2 text-sm font-medium text-warning">
                             @svg('heroicon-o-exclamation-triangle', 'mt-0.5 size-5 shrink-0')
-                            <span>{{ __('This unit belongs to branch :branch, not the branch you are working in.', ['branch' => $unit['branch']]) }}</span>
+                            <span>{{ __('This unit belongs to station :branch, not the station you are working in.', ['branch' => $unit['branch']]) }}</span>
                         </p>
                     @endunless
                     @if ($unit['blocked'])

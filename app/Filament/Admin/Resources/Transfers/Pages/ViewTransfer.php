@@ -50,7 +50,7 @@ class ViewTransfer extends ViewRecord
                         ->label(__('Reason to send expired items (only if there are any)'))
                         ->visible(fn () => $user->canInBranch('stock.override_expired', $this->transfer()->from_branch_id)),
                 ])
-                ->modalDescription(__('Units become "in transit"; lot quantities leave the shelf of the sending branch.'))
+                ->modalDescription(__('Units become "in transit"; lot quantities leave the shelf of the sending station.'))
                 ->action(function (array $data, Action $action) {
                     ServiceAction::run($action, fn ($u) => app(TransferService::class)->send($this->transfer(), $u, $data['override_reason'] ?? null, self::uploaded($data['photo'] ?? null)), __('Transfer sent.'));
                     $this->refreshRecord();
@@ -95,7 +95,7 @@ class ViewTransfer extends ViewRecord
                 ->icon(Heroicon::OutlinedXMark)
                 ->color('danger')
                 ->visible(fn () => in_array($this->transfer()->status, [TransferStatus::Draft, TransferStatus::InTransit], true) && $user->canInBranch('transfers.cancel', $this->transfer()->from_branch_id))
-                ->modalDescription(__('Items in transit go back to the sending branch.'))
+                ->modalDescription(__('Items in transit go back to the sending station.'))
                 ->schema([Textarea::make('reason')->label(__('Reason'))->required()->rows(2)])
                 ->action(function (array $data, Action $action) {
                     ServiceAction::run($action, fn ($u) => app(TransferService::class)->cancel($this->transfer(), $data['reason'], $u), __('Transfer cancelled.'));

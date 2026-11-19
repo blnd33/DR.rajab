@@ -36,11 +36,11 @@ final class ExpenseForm
         $currencies = array_combine(config('orthotrack.currencies'), config('orthotrack.currencies'));
 
         return array_values(array_filter([
-            Select::make('branch_id')->label(__('Branch'))->native(false)
+            Select::make('branch_id')->label(__('Station'))->native(false)
                 ->options(fn () => ServiceAction::branchOptions($permission))
                 ->required(! $headOffice && $editing === null)
                 ->disabled($editing !== null)->dehydrated($editing === null)
-                ->placeholder($headOffice ? __('Head office (no branch)') : null),
+                ->placeholder($headOffice ? __('Head office (no station)') : null),
             Select::make('expense_category_id')->label(__('Category'))->options(fn () => ExpenseCategory::options())->searchable()->required()->native(false),
             Select::make('currency')->label(__('Currency'))->options($currencies)->required()->native(false)->live()
                 ->default(config('orthotrack.currencies')[0] ?? 'USD')
@@ -59,12 +59,12 @@ final class ExpenseForm
             DatePicker::make('expense_date')->label(__('Date'))->native(false)->displayFormat('Y-m-d')->default(fn () => now(config('orthotrack.timezone'))->toDateString())->required(),
             TextInput::make('payee')->label(__('Paid to'))->maxLength(150),
             Textarea::make('description')->label(__('Description'))->rows(2)->columnSpanFull(),
-            Toggle::make('split')->label(__('Split over several branches'))->live()->columnSpanFull(),
-            Repeater::make('allocations')->label(__('Branch shares (must add up to 100%)'))->columnSpanFull()->columns(2)
+            Toggle::make('split')->label(__('Split over several stations'))->live()->columnSpanFull(),
+            Repeater::make('allocations')->label(__('Station shares (must add up to 100%)'))->columnSpanFull()->columns(2)
                 ->visible(fn (Get $get) => (bool) $get('split'))
-                ->defaultItems(2)->reorderable(false)->addActionLabel(__('Add a branch'))
+                ->defaultItems(2)->reorderable(false)->addActionLabel(__('Add a station'))
                 ->schema([
-                    Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('expenses.view_any'))->required()->native(false),
+                    Select::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('expenses.view_any'))->required()->native(false),
                     TextInput::make('percentage')->label(__('Share (%)'))->numeric()->minValue(0)->maxValue(100)->required(),
                 ]),
             $editing === null

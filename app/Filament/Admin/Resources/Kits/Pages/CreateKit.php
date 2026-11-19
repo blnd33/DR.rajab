@@ -26,8 +26,8 @@ class CreateKit extends CreateRecord
     public function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('kit_type_id')->label(__('Kit type'))->options(fn () => KitType::options())->required()->native(false),
-            Select::make('home_branch_id')->label(__('Home branch'))->options(fn () => ServiceAction::branchOptions('kits.manage'))->required()->native(false)
+            Select::make('kit_type_id')->label(__('Instrument set type'))->options(fn () => KitType::options())->required()->native(false),
+            Select::make('home_branch_id')->label(__('Home station'))->options(fn () => ServiceAction::branchOptions('kits.manage'))->required()->native(false)
                 ->default(fn () => ServiceAction::user()->primary_branch_id),
             TextInput::make('code')->label(__('Code'))->maxLength(32)->unique('kits', 'code')
                 ->helperText(__('Leave empty for the next number.'))

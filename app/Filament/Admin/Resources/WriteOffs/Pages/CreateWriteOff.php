@@ -35,7 +35,7 @@ class CreateWriteOff extends CreateRecord
     public function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('write_offs.report'))->required()->live()->native(false),
+            Select::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('write_offs.report'))->required()->live()->native(false),
             ToggleButtons::make('reason')->label(__('Reason'))->options(WriteOffReason::options())->default(WriteOffReason::Damaged->value)->inline()->required(),
             Repeater::make('lines')
                 ->label(__('Items'))

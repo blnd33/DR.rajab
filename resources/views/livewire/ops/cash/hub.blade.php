@@ -30,7 +30,7 @@
                 @endif
             </div>
         @empty
-            <div class="ot-card"><x-ops.empty-state icon="heroicon-o-wallet" :title="__('No cash box in this branch')" :description="__('An admin opens one in Finance → Cash boxes.')" /></div>
+            <div class="ot-card"><x-ops.empty-state icon="heroicon-o-wallet" :title="__('No cash box in this station')" :description="__('An admin opens one in Finance → Cash boxes.')" /></div>
         @endforelse
     </section>
 

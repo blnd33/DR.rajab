@@ -4,8 +4,8 @@
     $record->loadMissing(['kit.type', 'branch', 'customer', 'doctor', 'items.instrument.type', 'items.product', 'items.stockUnit', 'items.stockBatch']);
     $back = $record->returned_at !== null;
 @endphp
-<x-print.layout :title="__('Kit checklist').' '.$record->number" :pdf-url="$pdfUrl" :meta="array_filter([
-    __('Kit') => $record->kit->code.' · '.($record->kit->type->name ?? ''),
+<x-print.layout :title="__('Instrument set checklist').' '.$record->number" :pdf-url="$pdfUrl" :meta="array_filter([
+    __('Instrument set') => $record->kit->code.' · '.($record->kit->type->name ?? ''),
     __('Hospital') => $record->customer->name,
     __('Doctor') => $record->doctor?->name,
     __('Out since') => Display::dateTime($record->checked_out_at),

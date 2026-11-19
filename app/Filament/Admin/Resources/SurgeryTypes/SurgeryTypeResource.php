@@ -53,7 +53,7 @@ class SurgeryTypeResource extends Resource
         return $schema->columns(2)->components([
             TextInput::make('code')->label(__('Code'))->required()->maxLength(32)->unique(ignoreRecord: true)
                 ->extraInputAttributes(['dir' => 'ltr', 'class' => 'ot-code', 'style' => 'text-transform: uppercase']),
-            Select::make('default_kit_type_id')->label(__('Usual kit type'))->options(fn () => KitType::options())->native(false),
+            Select::make('default_kit_type_id')->label(__('Usual instrument set type'))->options(fn () => KitType::options())->native(false),
             TranslatableInput::make('name', __('Name'))->columnSpanFull(),
             TextInput::make('sort')->label(__('Order'))->numeric()->integer()->default(0),
             Toggle::make('is_active')->label(__('Active'))->default(true),
@@ -68,7 +68,7 @@ class SurgeryTypeResource extends Resource
                 CodeColumn::make('code')->label(__('Code'))->sortable()->searchable(),
                 TextColumn::make('name')->label(__('Name'))
                     ->searchable(query: fn ($query, string $search) => $query->whereRaw(Pg::jsonContainsSql('name'), ["%{$search}%"])),
-                TextColumn::make('defaultKitType.code')->label(__('Usual kit type'))->placeholder('—'),
+                TextColumn::make('defaultKitType.code')->label(__('Usual instrument set type'))->placeholder('—'),
                 IconColumn::make('is_active')->label(__('Active'))->boolean(),
             ])
             ->filters([TernaryFilter::make('is_active')->label(__('Active'))->default(true)])

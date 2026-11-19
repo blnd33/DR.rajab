@@ -143,11 +143,11 @@ class Settings extends Page
                                     ->numeric()->minValue(0)->required(),
                             ]),
 
-                        Tab::make(__('Kits'))
+                        Tab::make(__('Instrument sets'))
                             ->icon(Heroicon::OutlinedBriefcase)
                             ->schema([
                                 TextInput::make('kits.overdue_days')
-                                    ->label(__('A kit is overdue after (days at hospital)'))
+                                    ->label(__('An instrument set is overdue after (days at hospital)'))
                                     ->numeric()->minValue(1)->maxValue(365)->required(),
                             ]),
 
@@ -158,12 +158,12 @@ class Settings extends Page
                                 Toggle::make('fx.eur_usd_auto_confirm')->label(__('Use the fetched EUR/USD rate without manual confirmation')),
                             ]),
 
-                        Tab::make(__('Morning summary'))
+                        Tab::make(__('Morning report'))
                             ->icon(Heroicon::OutlinedSun)
                             ->columns(['default' => 1, 'md' => 2])
                             ->schema([
                                 TextInput::make('summary.time')->label(__('Default time'))->type('time')->required()
-                                    ->helperText(__('For people who have not chosen their own time (Profile → Morning summary).'))
+                                    ->helperText(__('For people who have not chosen their own time (Profile → Morning report).'))
                                     ->extraInputAttributes(['dir' => 'ltr']),
                                 Toggle::make('summary.skip_fridays')->label(__('Not on Fridays by default')),
                                 CheckboxList::make('summary.sections')->label(__('Default sections'))

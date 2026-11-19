@@ -99,7 +99,7 @@ class ApprovalResource extends Resource
                 TextColumn::make('amount')->label(__('Amount'))->alignEnd()->weight('semibold')
                     ->formatStateUsing(fn ($state, Approval $r) => Display::money($state, (string) $r->currency))
                     ->description(fn (Approval $r) => $r->currency !== 'USD' ? Display::money($r->amount_usd, 'USD') : null),
-                TextColumn::make('branch.name')->label(__('Branch'))->placeholder(__('Head office')),
+                TextColumn::make('branch.name')->label(__('Station'))->placeholder(__('Head office')),
                 TextColumn::make('requester.name')->label(__('Asked by'))->description(fn (Approval $r) => Display::dateTime($r->requested_at)),
                 TextColumn::make('status')->label(__('Status'))->badge()->description(fn (Approval $r) => $r->decision_note),
                 TextColumn::make('decider.name')->label(__('Decided by'))->placeholder('—')->toggleable(),

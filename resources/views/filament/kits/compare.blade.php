@@ -2,7 +2,7 @@
 @php($result = app(\App\Services\Assets\KitService::class)->compare($getRecord()))
 <div class="space-y-3">
     @if ($result['lines'] === [])
-        <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('This kit type has no template yet.') }}</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ __('This instrument set type has no template yet.') }}</p>
     @else
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
@@ -10,7 +10,7 @@
                     <tr class="text-start text-gray-500 dark:text-gray-400">
                         <th class="py-1 pe-3 text-start font-medium">{{ __('Expected') }}</th>
                         <th class="py-1 pe-3 text-end font-medium">{{ __('Quantity') }}</th>
-                        <th class="py-1 pe-3 text-end font-medium">{{ __('In the kit') }}</th>
+                        <th class="py-1 pe-3 text-end font-medium">{{ __('In the instrument set') }}</th>
                         <th class="py-1 text-start font-medium">{{ __('Status') }}</th>
                     </tr>
                 </thead>
@@ -44,6 +44,6 @@
     @endif
 
     <p class="text-sm font-semibold {{ $result['complete'] ? 'text-success-600 dark:text-success-400' : 'text-danger-600 dark:text-danger-400' }}">
-        {{ $result['complete'] ? __('The kit is complete.') : __('The kit is not complete — refill it from the branch shelf.') }}
+        {{ $result['complete'] ? __('The instrument set is complete.') : __('The instrument set is not complete — refill it from the station shelf.') }}
     </p>
 </div>

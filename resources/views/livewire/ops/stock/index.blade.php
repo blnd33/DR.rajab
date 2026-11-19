@@ -114,7 +114,7 @@
                 @elseif ($mode === 'level')
                     <x-ops.empty-state icon="heroicon-o-check-circle" :title="__('No items in this level')" />
                 @else
-                    <x-ops.empty-state icon="heroicon-o-archive-box" :title="$search !== '' ? __('No stock matches your search') : __('No stock in this branch yet')"
+                    <x-ops.empty-state icon="heroicon-o-archive-box" :title="$search !== '' ? __('No stock matches your search') : __('No stock in this station yet')"
                                        :description="__('Scan a code or try another search.')" />
                 @endif
             </div>

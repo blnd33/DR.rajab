@@ -31,7 +31,7 @@ class CreateCustomerReturn extends CreateRecord
     public function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('branch_id')->label(__('Back into branch'))->options(fn () => ServiceAction::branchOptions('returns.customer'))->required()->native(false),
+            Select::make('branch_id')->label(__('Back into station'))->options(fn () => ServiceAction::branchOptions('returns.customer'))->required()->native(false),
             Select::make('customer_id')->label(__('Hospital / customer'))->options(fn () => Customer::options())->searchable()->native(false),
             Repeater::make('lines')
                 ->label(__('Items'))

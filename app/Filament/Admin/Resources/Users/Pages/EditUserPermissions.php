@@ -62,13 +62,13 @@ class EditUserPermissions extends EditRecord
                         PermissionChecklist::make('permissions', fn () => $this->rolePermissions()),
                     ]),
 
-                Section::make(__('Branch scope per permission'))
-                    ->description(__('By default every permission applies to the user\'s branches. Add a row to change the branches for one permission.'))
+                Section::make(__('Station scope per permission'))
+                    ->description(__('By default every permission applies to the user\'s stations. Add a row to change the stations for one permission.'))
                     ->schema([
                         Repeater::make('overrides')
                             ->hiddenLabel()
                             ->defaultItems(0)
-                            ->addActionLabel(__('Add branch rule'))
+                            ->addActionLabel(__('Add station rule'))
                             ->columns(['default' => 1, 'md' => 2])
                             ->schema([
                                 Select::make('permission')
@@ -79,9 +79,9 @@ class EditUserPermissions extends EditRecord
                                     ->distinct()
                                     ->native(false),
                                 Select::make('branches')
-                                    ->label(__('Branches'))
+                                    ->label(__('Stations'))
                                     ->multiple()
-                                    ->options(fn () => [self::ALL_BRANCHES => __('All branches')] + Branch::query()->orderBy('code')->get()->mapWithKeys(fn (Branch $b) => [(string) $b->id => $b->label()])->all())
+                                    ->options(fn () => [self::ALL_BRANCHES => __('All stations')] + Branch::query()->orderBy('code')->get()->mapWithKeys(fn (Branch $b) => [(string) $b->id => $b->label()])->all())
                                     ->required()
                                     ->native(false),
                             ]),

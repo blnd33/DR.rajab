@@ -63,7 +63,7 @@ class CashBoxResource extends Resource
             ->modifyQueryUsing(fn (Builder $query) => $query->with('branch'))
             ->defaultSort('currency')
             ->columns([
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray')->placeholder(__('Head office')),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray')->placeholder(__('Head office')),
                 TextColumn::make('name')->label(__('Name'))->weight('semibold')->description(fn (CashBox $r) => $r->bank_name),
                 TextColumn::make('type')->label(__('Type'))->badge(),
                 TextColumn::make('current_balance')->label(__('Balance'))->alignEnd()->weight('bold')
@@ -74,12 +74,12 @@ class CashBoxResource extends Resource
             ->filters([
                 SelectFilter::make('currency')->label(__('Currency'))->options(['USD' => 'USD', 'EUR' => 'EUR', 'IQD' => 'IQD']),
                 SelectFilter::make('type')->label(__('Type'))->options(CashBoxType::options()),
-                SelectFilter::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('cash_boxes.view_any')),
+                SelectFilter::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('cash_boxes.view_any')),
                 TernaryFilter::make('is_active')->label(__('Open'))->default(true),
             ])
             ->recordActions([ViewAction::make()])
             ->emptyStateHeading(__('No cash boxes yet'))
-            ->emptyStateDescription(__('Each branch needs a cash box per currency it handles.'));
+            ->emptyStateDescription(__('Each station needs a cash box per currency it handles.'));
     }
 
     public static function infolist(Schema $schema): Schema
@@ -87,7 +87,7 @@ class CashBoxResource extends Resource
         return $schema->components([
             Section::make()->columnSpanFull()->columns(['default' => 2, 'md' => 4])->schema([
                 TextEntry::make('name')->label(__('Name')),
-                TextEntry::make('branch.code')->label(__('Branch'))->placeholder(__('Head office')),
+                TextEntry::make('branch.code')->label(__('Station'))->placeholder(__('Head office')),
                 TextEntry::make('type')->label(__('Type'))->badge(),
                 TextEntry::make('current_balance')->label(__('Balance'))->weight('bold')->size('lg')
                     ->formatStateUsing(fn ($state, CashBox $r) => Display::money($state, $r->currency)),

@@ -121,8 +121,8 @@ class ProductForm
                                 Select::make('selling_currency')->label(__('Currency'))->options(fn () => Currency::options())->default('USD')->native(false)
                                     ->requiredWith('selling_price'),
                                 TextInput::make('min_stock_default')
-                                    ->label(__('Minimum stock (default per branch)'))
-                                    ->helperText(__('Below this on the shelf → low-stock alert. Each branch can override it.'))
+                                    ->label(__('Minimum stock (default per station)'))
+                                    ->helperText(__('Below this on the shelf → low-stock alert. Each station can override it.'))
                                     ->numeric()->integer()->minValue(0)->default(0)->required()
                                     ->columnSpanFull(),
                             ]),

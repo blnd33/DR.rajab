@@ -94,7 +94,7 @@ class ViewSurgery extends ViewRecord
                 ->color('danger')
                 ->visible(fn () => $this->surgery()->status !== SurgeryStatus::Cancelled
                     && ($user->canInBranch('surgeries.cancel', $this->surgery()->branch_id) || ($this->surgery()->status === SurgeryStatus::Draft && $this->surgery()->created_by === $user->id)))
-                ->modalDescription(fn () => $this->surgery()->status === SurgeryStatus::Completed ? __('Every item goes back on the shelf of the branch.') : null)
+                ->modalDescription(fn () => $this->surgery()->status === SurgeryStatus::Completed ? __('Every item goes back on the shelf of the station.') : null)
                 ->schema([Textarea::make('reason')->label(__('Reason'))->required()->rows(2)])
                 ->action(function (array $data, Action $action) {
                     ServiceAction::run($action, fn ($u) => app(SurgeryService::class)->cancel($this->surgery(), $data['reason'], $u), __('Surgery cancelled.'));

@@ -83,7 +83,7 @@ class TransferResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('status')->label(__('Status'))->options(TransferStatus::options())->multiple(),
-                SelectFilter::make('branch')->label(__('Branch'))
+                SelectFilter::make('branch')->label(__('Station'))
                     ->options(fn () => Branch::query()->orderBy('code')->pluck('code', 'id'))
                     ->query(fn (Builder $query, array $data) => filled($data['value'] ?? null)
                         ? $query->where(fn ($w) => $w->where('from_branch_id', $data['value'])->orWhere('to_branch_id', $data['value']))

@@ -23,7 +23,7 @@ enum ImportType: string implements HasIcon, HasLabel
         return match ($this) {
             self::Products => __('Product catalog'),
             self::Stock => __('Stock (serials and lots)'),
-            self::MinStock => __('Minimum stock per branch'),
+            self::MinStock => __('Minimum stock per station'),
             self::SupplierCatalog => __('Supplier catalog (Lima / Enovis or Mikron workbook)'),
         };
     }

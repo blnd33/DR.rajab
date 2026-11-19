@@ -30,7 +30,7 @@ class StockValueReport extends Report
 
     public function description(): ?string
     {
-        return __('Units and lots on hand (shelves, kits, at hospitals, in transit) at their true cost.');
+        return __('Units and lots on hand (shelves, instrument sets, at hospitals, in transit) at their true cost.');
     }
 
     public function filters(): array
@@ -41,9 +41,9 @@ class StockValueReport extends Report
     public function groups(): array
     {
         return [
-            'branch_category' => __('Branch and category'),
+            'branch_category' => __('Station and category'),
             'category' => __('Category'),
-            'branch' => __('Branch'),
+            'branch' => __('Station'),
             'history' => __('History per day (nightly)'),
         ];
     }
@@ -51,10 +51,10 @@ class StockValueReport extends Report
     public function columns(ReportContext $context): array
     {
         $columns = match ($context->group) {
-            'history' => [ReportColumn::date('day', __('Day')), ReportColumn::text('branch', __('Branch'))],
+            'history' => [ReportColumn::date('day', __('Day')), ReportColumn::text('branch', __('Station'))],
             'category' => [ReportColumn::text('category', __('Category'))],
-            'branch' => [ReportColumn::text('branch', __('Branch'))],
-            default => [ReportColumn::text('branch', __('Branch')), ReportColumn::text('category', __('Category'))],
+            'branch' => [ReportColumn::text('branch', __('Station'))],
+            default => [ReportColumn::text('branch', __('Station')), ReportColumn::text('category', __('Category'))],
         };
 
         return [

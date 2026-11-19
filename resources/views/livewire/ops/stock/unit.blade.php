@@ -12,7 +12,7 @@
     </header>
 
     <dl class="ot-card grid grid-cols-2 gap-x-4 gap-y-3 p-4 text-sm">
-        <div><dt class="text-xs text-muted-fg">{{ __('Branch') }}</dt><dd class="font-semibold">{{ $unit->branch->code }}</dd></div>
+        <div><dt class="text-xs text-muted-fg">{{ __('Station') }}</dt><dd class="font-semibold">{{ $unit->branch->code }}</dd></div>
         <div><dt class="text-xs text-muted-fg">{{ __('Where') }}</dt><dd>{{ $unit->locationLabel() }}</dd></div>
         <div><dt class="text-xs text-muted-fg">{{ __('Lot') }}</dt><dd><x-code :value="$unit->lot ?? '—'" /></dd></div>
         <div><dt class="text-xs text-muted-fg">{{ __('Received') }}</dt><dd><x-date :value="$unit->received_at" /></dd></div>

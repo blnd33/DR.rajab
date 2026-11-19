@@ -1,5 +1,5 @@
 <x-filament-widgets::widget>
-    <x-filament::section :heading="__('Expiry by branch')" icon="heroicon-o-clock"
+    <x-filament::section :heading="__('Expiry by station')" icon="heroicon-o-clock"
                          :description="__('Items on hand per expiry level (serial units + lot quantities).')">
         <div class="overflow-x-auto">
             <table class="w-full text-sm">

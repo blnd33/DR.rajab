@@ -140,5 +140,5 @@ it('fills from the phone kit screen', function () {
     expect(Instrument::query()->where('kit_id', $this->kit->id)->count())->toBe(4)
         ->and($screen->get('labelsUrl'))->toContain('kind=instrument');
 
-    $screen->assertSee('Print labels for the new instruments')->assertDontSee('Fill the kit');
+    $screen->assertSee('Print labels for the new instruments')->assertDontSee('Fill the instrument set');
 });

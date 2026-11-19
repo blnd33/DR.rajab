@@ -46,7 +46,7 @@ class LinesRelationManager extends RelationManager
                 TextColumn::make('on_hand')->label(__('On shelf there now'))->alignEnd()
                     ->state(fn (StockRequestItem $r) => StockOnHand::query()->where('branch_id', $request->requesting_branch_id)->where('product_id', $r->product_id)->value('qty_available') ?? 0)
                     ->formatStateUsing(fn ($state) => Display::number((int) $state)),
-                TextColumn::make('sourceBranch.code')->label(__('From branch'))->placeholder('—'),
+                TextColumn::make('sourceBranch.code')->label(__('From station'))->placeholder('—'),
                 TextColumn::make('transfer.number')->label(__('Transfer'))->fontFamily(FontFamily::Mono)->placeholder('—')
                     ->url(fn (StockRequestItem $r) => $r->transfer !== null ? TransferResource::getUrl('view', ['record' => $r->transfer]) : null),
                 TextColumn::make('transfer.status')->label(__('Transfer status'))->badge()->placeholder('—'),

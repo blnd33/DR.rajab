@@ -293,7 +293,7 @@ class StockCountService
 
             if ($resolution === CountLineResolution::Adjusted) {
                 if ($extra) {
-                    throw new StockRuleViolation(__('Items from another branch or not in the system cannot be adjusted here — move them with a transfer or receive them.'));
+                    throw new StockRuleViolation(__('Items from another station or not in the system cannot be adjusted here — move them with a transfer or receive them.'));
                 }
 
                 if ($line->stock_unit_id !== null) {
@@ -367,7 +367,7 @@ class StockCountService
         $branchId = $branch instanceof Branch ? $branch->id : $branch;
 
         if (! $this->scope->allows($by, $permission, $branchId)) {
-            throw new AuthorizationException(__('You are not allowed to do this in branch :code.', ['code' => (string) Branch::query()->whereKey($branchId)->value('code')]));
+            throw new AuthorizationException(__('You are not allowed to do this in station :code.', ['code' => (string) Branch::query()->whereKey($branchId)->value('code')]));
         }
     }
 }

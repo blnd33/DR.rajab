@@ -38,7 +38,7 @@ class PurchaseReceiveService
     public function receive(Purchase $purchase, array $lines, User $by, ReceiptMethod $method = ReceiptMethod::Manual, ?string $notes = null): PurchaseReceipt
     {
         if (! $this->scope->allows($by, 'purchases.receive', $purchase->branch_id)) {
-            throw new AuthorizationException(__('You are not allowed to receive purchases in this branch.'));
+            throw new AuthorizationException(__('You are not allowed to receive purchases in this station.'));
         }
 
         if ($lines === []) {

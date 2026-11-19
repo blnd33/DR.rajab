@@ -54,12 +54,12 @@ class KitResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('Kit');
+        return __('Instrument set');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('Kits');
+        return __('Instrument sets');
     }
 
     public static function getEloquentQuery(): Builder
@@ -81,7 +81,7 @@ class KitResource extends Resource
 
     public static function getNavigationBadgeTooltip(): ?string
     {
-        return __('Overdue kits');
+        return __('Overdue instrument sets');
     }
 
     /**
@@ -103,8 +103,8 @@ class KitResource extends Resource
             ->defaultSort('code')
             ->columns([
                 CodeColumn::make('code')->label(__('Code'))->searchable()->sortable(),
-                TextColumn::make('type.name')->label(__('Kit type')),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('type.name')->label(__('Instrument set type')),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('status')->label(__('Status'))->badge()
                     ->description(fn (Kit $r) => $r->isOverdue() ? __('Overdue') : ($r->customer?->code)),
                 TextColumn::make('units_count')->label(__('Implants'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
@@ -113,13 +113,13 @@ class KitResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('status')->label(__('Status'))->options(KitStatus::options()),
-                SelectFilter::make('kit_type_id')->label(__('Kit type'))->options(fn () => KitType::options()),
-                SelectFilter::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('kits.view_any')),
+                SelectFilter::make('kit_type_id')->label(__('Instrument set type'))->options(fn () => KitType::options()),
+                SelectFilter::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('kits.view_any')),
                 Filter::make('overdue')->label(__('Overdue only'))->query(fn (Builder $query) => static::overdue($query)),
             ])
             ->recordActions([ViewAction::make()])
-            ->emptyStateHeading(__('No kits yet'))
-            ->emptyStateDescription(__('Create kit types with their template first, then the physical kits.'));
+            ->emptyStateHeading(__('No instrument sets yet'))
+            ->emptyStateDescription(__('Create instrument set types with their template first, then the physical instrument sets.'));
     }
 
     public static function infolist(Schema $schema): Schema
@@ -128,10 +128,10 @@ class KitResource extends Resource
             Section::make()->columnSpanFull()->columns(['default' => 2, 'md' => 4])->schema([
                 TextEntry::make('code')->label(__('Code'))->fontFamily(FontFamily::Mono)->extraAttributes(['dir' => 'ltr']),
                 TextEntry::make('barcode')->label(__('Barcode'))->fontFamily(FontFamily::Mono)->extraAttributes(['dir' => 'ltr']),
-                TextEntry::make('type.name')->label(__('Kit type')),
+                TextEntry::make('type.name')->label(__('Instrument set type')),
                 TextEntry::make('status')->label(__('Status'))->badge(),
                 TextEntry::make('branch.code')->label(__('Where now')),
-                TextEntry::make('homeBranch.code')->label(__('Home branch')),
+                TextEntry::make('homeBranch.code')->label(__('Home station')),
                 TextEntry::make('customer.name')->label(__('At hospital'))->placeholder('—'),
                 TextEntry::make('currentCheckout.number')->label(__('Checkout'))->fontFamily(FontFamily::Mono)->placeholder('—')
                     ->url(fn (Kit $r) => $r->currentCheckout !== null ? KitCheckoutResource::getUrl('view', ['record' => $r->currentCheckout]) : null)

@@ -141,11 +141,11 @@ class KitService
         $this->assertAvailable($kit);
 
         if ($instrument->kit_id === $kit->id) {
-            throw new StockRuleViolation(__(':code is already in this kit.', ['code' => $instrument->code]));
+            throw new StockRuleViolation(__(':code is already in this instrument set.', ['code' => $instrument->code]));
         }
 
         if ($instrument->branch_id !== $kit->branch_id || $instrument->status !== InstrumentStatus::Available) {
-            throw new StockRuleViolation(__('Instrument :code is :status in :branch and cannot go into this kit.', [
+            throw new StockRuleViolation(__('Instrument :code is :status in :branch and cannot go into this instrument set.', [
                 'code' => $instrument->code, 'status' => $instrument->status->getLabel(), 'branch' => $instrument->branch->code,
             ]));
         }
@@ -155,7 +155,7 @@ class KitService
 
     public function removeInstrument(Instrument $instrument, User $by): void
     {
-        $kit = $instrument->kit ?? throw new StockRuleViolation(__(':code is not in a kit.', ['code' => $instrument->code]));
+        $kit = $instrument->kit ?? throw new StockRuleViolation(__(':code is not in an instrument set.', ['code' => $instrument->code]));
         $this->authorize($by, 'kits.prepare', $kit->branch_id);
         $this->assertAvailable($kit);
 
@@ -167,7 +167,7 @@ class KitService
         $this->assertAvailable($kit);
 
         if ($unit->kit_id === $kit->id) {
-            throw new StockRuleViolation(__(':code is already in this kit.', ['code' => $unit->serial]));
+            throw new StockRuleViolation(__(':code is already in this instrument set.', ['code' => $unit->serial]));
         }
 
         DB::transaction(fn () => $this->stock->loadUnitIntoKit($unit, $kit, $by, $kit, (string) Str::uuid()));
@@ -175,7 +175,7 @@ class KitService
 
     public function removeUnit(StockUnit $unit, User $by): void
     {
-        $kit = $unit->kit ?? throw new StockRuleViolation(__('Unit :serial is not in a kit.', ['serial' => $unit->serial]));
+        $kit = $unit->kit ?? throw new StockRuleViolation(__('Unit :serial is not in an instrument set.', ['serial' => $unit->serial]));
         $this->assertAvailable($kit);
 
         DB::transaction(fn () => $this->stock->unloadUnitFromKit($unit, $by, $kit, (string) Str::uuid()));
@@ -190,7 +190,7 @@ class KitService
 
     public function removeBatch(StockBatch $kitBatch, int $quantity, User $by): void
     {
-        $kit = $kitBatch->kit ?? throw new StockRuleViolation(__('This lot is not in a kit.'));
+        $kit = $kitBatch->kit ?? throw new StockRuleViolation(__('This lot is not in an instrument set.'));
         $this->assertAvailable($kit);
 
         DB::transaction(fn () => $this->stock->unloadBatchFromKit($kitBatch, $quantity, $by, $kit, (string) Str::uuid()));
@@ -286,7 +286,7 @@ class KitService
             $plan = $this->fillPlan($locked);
 
             if ($plan['reuse'] + $plan['register'] === 0) {
-                throw new StockRuleViolation(__('Nothing to add — every instrument on the list is already in the kit.'));
+                throw new StockRuleViolation(__('Nothing to add — every instrument on the list is already in the instrument set.'));
             }
 
             if ($plan['register'] > 0 && ! $this->scope->allows($by, 'instruments.manage', $locked->branch_id)) {
@@ -475,7 +475,7 @@ class KitService
             $checkout = KitCheckout::query()->with(['items.instrument', 'items.stockUnit', 'items.stockBatch', 'kit'])->lockForUpdate()->findOrFail($checkout->id);
 
             if ($checkout->status !== KitCheckoutStatus::Out) {
-                throw new StockRuleViolation(__('Kit checkout :number was already returned.', ['number' => $checkout->number]));
+                throw new StockRuleViolation(__('Instrument set checkout :number was already returned.', ['number' => $checkout->number]));
             }
 
             $kit = $checkout->kit;
@@ -512,7 +512,7 @@ class KitService
                     IssueSeverity::Critical,
                     $checkout->branch_id,
                     $checkout,
-                    trans_choice('Kit checkout :number: :count item unaccounted|Kit checkout :number: :count items unaccounted', $unaccounted, ['number' => $checkout->number]),
+                    trans_choice('Instrument set checkout :number: :count item unaccounted|Instrument set checkout :number: :count items unaccounted', $unaccounted, ['number' => $checkout->number]),
                     ['checkout' => $checkout->number, 'kit' => $kit->code, 'unaccounted' => $unaccounted],
                 );
                 $checkout->items()->where('outcome', CheckoutItemOutcome::Unaccounted)->update(['issue_id' => $issue->id]);
@@ -524,9 +524,9 @@ class KitService
         if ($checkout->status === KitCheckoutStatus::ReconciledWithIssues && $checkout->items()->where('outcome', CheckoutItemOutcome::Unaccounted)->exists()) {
             $this->notifier->toBranch('kits.resolve_unaccounted', $checkout->branch_id, new DocumentEvent(
                 'kits.unaccounted',
-                Msg::key('Unaccounted implants after kit :kit came back'),
+                Msg::key('Unaccounted implants after instrument set :kit came back'),
                 ['kit' => $checkout->kit->code],
-                Msg::key('Kit checkout :number at :hospital.'),
+                Msg::key('Instrument set checkout :number at :hospital.'),
                 ['number' => $checkout->number, 'hospital' => $checkout->customer->code],
                 route('filament.admin.resources.kit-checkouts.view', $checkout),
                 'heroicon-o-exclamation-triangle',
@@ -560,7 +560,7 @@ class KitService
             switch ($resolution) {
                 case 'found':
                     if ($kit->status !== KitStatus::Available) {
-                        throw new StockRuleViolation(__('Kit :kit is out again. Put the item on the shelf after the kit is back.', ['kit' => $kit->code]));
+                        throw new StockRuleViolation(__('Instrument set :kit is out again. Put the item on the shelf after the instrument set is back.', ['kit' => $kit->code]));
                     }
 
                     $item->item_kind === CheckoutItemKind::Unit
@@ -583,7 +583,7 @@ class KitService
                     break;
 
                 case 'lost':
-                    $reason = $note ?? __('Not returned with kit :kit (:number)', ['kit' => $kit->code, 'number' => $checkout->number]);
+                    $reason = $note ?? __('Not returned with instrument set :kit (:number)', ['kit' => $kit->code, 'number' => $checkout->number]);
                     $item->item_kind === CheckoutItemKind::Unit
                         ? $this->stock->moveUnitOut($item->stockUnit, StockStatus::Lost, MovementType::WriteOff, $by, $checkout, $group, 'kits.resolve_unaccounted', $reason)
                         : $this->stock->removeFromBatch($item->stockBatch, $quantity, MovementType::WriteOff, $by, $checkout, $group, 'kits.resolve_unaccounted', $reason);
@@ -699,14 +699,14 @@ class KitService
     private function assertAvailable(Kit $kit): void
     {
         if ($kit->status !== KitStatus::Available) {
-            throw new StockRuleViolation(__('Kit :kit is :status.', ['kit' => $kit->code, 'status' => $kit->status->getLabel()]));
+            throw new StockRuleViolation(__('Instrument set :kit is :status.', ['kit' => $kit->code, 'status' => $kit->status->getLabel()]));
         }
     }
 
     private function authorize(User $by, string $permission, int $branchId): void
     {
         if (! $this->scope->allows($by, $permission, $branchId)) {
-            throw new AuthorizationException(__('You are not allowed to do this in this branch.'));
+            throw new AuthorizationException(__('You are not allowed to do this in this station.'));
         }
     }
 }

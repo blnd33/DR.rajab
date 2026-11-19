@@ -138,7 +138,7 @@ final class CodeLookup
         foreach (['branch', 'fromBranch', 'toBranch', 'customer', 'supplier'] as $relation) {
             if (method_exists($record, $relation) && ($related = $record->getRelationValue($relation)) instanceof Model) {
                 $lines[] = $this->line(match ($relation) {
-                    'branch' => __('Branch'),
+                    'branch' => __('Station'),
                     'fromBranch' => __('From'),
                     'toBranch' => __('To'),
                     'customer' => __('Hospital'),
@@ -199,7 +199,7 @@ final class CodeLookup
 
         $lines = [
             $this->line(__('Status'), $kit->status->getLabel().($kit->customer !== null ? ' · '.$kit->customer->name : '')),
-            $this->line(__('Branch'), $kit->branch->code ?? '—'),
+            $this->line(__('Station'), $kit->branch->code ?? '—'),
         ];
 
         foreach (array_slice($missing, 0, 6) as $line) {
@@ -213,7 +213,7 @@ final class CodeLookup
         $url = $phone ? route('ops.kits.show', $kit) : ($user->canAccessAppPanel(AppPanel::Admin)
             ? Resources\Kits\KitResource::getUrl('view', ['record' => $kit], panel: 'admin') : null);
 
-        return new FactResult('kit', __('Kit').' '.$kit->code.' · '.($kit->type->name ?? ''), $headline, $lines,
+        return new FactResult('kit', __('Instrument set').' '.$kit->code.' · '.($kit->type->name ?? ''), $headline, $lines,
             ['missing' => array_sum(array_column($missing, 'missing'))], $url,
             $compare['complete'] ? FactResult::GOOD : FactResult::WARNING);
     }
@@ -222,10 +222,10 @@ final class CodeLookup
     {
         $instrument->loadMissing(['type', 'branch', 'kit', 'customer']);
 
-        $lines = [$this->line(__('Branch'), $instrument->branch->code ?? '—')];
+        $lines = [$this->line(__('Station'), $instrument->branch->code ?? '—')];
 
         if ($instrument->kit !== null) {
-            $lines[] = $this->line(__('Kit'), $instrument->kit->code, code: true);
+            $lines[] = $this->line(__('Instrument set'), $instrument->kit->code, code: true);
         }
 
         if ($instrument->customer !== null) {
@@ -285,7 +285,7 @@ final class CodeLookup
         $title = __('Serial').' '.$unit->serial;
 
         if (! $canSee) {
-            return new FactResult('unit', $title, $unit->status->getLabel(), [$this->line(__('Branch'), $unit->branch->code ?? '—')]);
+            return new FactResult('unit', $title, $unit->status->getLabel(), [$this->line(__('Station'), $unit->branch->code ?? '—')]);
         }
 
         $lines = [

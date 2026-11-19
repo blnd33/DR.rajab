@@ -40,7 +40,7 @@ class StockMovementsReport extends Report
     {
         return [
             'type' => __('Movement type'),
-            'type_branch' => __('Movement type and branch'),
+            'type_branch' => __('Movement type and station'),
             'product' => __('Product'),
         ];
     }
@@ -49,7 +49,7 @@ class StockMovementsReport extends Report
     {
         $head = match ($context->group) {
             'product' => [ReportColumn::code('sku', __('SKU')), ReportColumn::text('product', __('Product'))],
-            'type_branch' => [ReportColumn::text('type', __('Movement')), ReportColumn::text('branch', __('Branch'))],
+            'type_branch' => [ReportColumn::text('type', __('Movement')), ReportColumn::text('branch', __('Station'))],
             default => [ReportColumn::text('type', __('Movement'))],
         };
 

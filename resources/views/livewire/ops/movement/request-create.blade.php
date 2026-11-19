@@ -56,7 +56,7 @@
 
     <section class="space-y-4">
         <div>
-            <label for="source" class="mb-1 block text-sm font-semibold">{{ __('Ask which branch? (optional)') }}</label>
+            <label for="source" class="mb-1 block text-sm font-semibold">{{ __('Ask which station? (optional)') }}</label>
             <select id="source" wire:model="sourceBranchId" class="ot-input">
                 <option value="">{{ __('Any — the admin decides') }}</option>
                 @foreach ($branches as $b)

@@ -78,7 +78,7 @@ class StockCountResource extends Resource
             ->defaultSort('started_at', 'desc')
             ->columns([
                 CodeColumn::make('number')->label(__('Number'))->searchable()->sortable(),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('scope')->label(__('What'))->state(fn (StockCount $r) => $r->scopeLabel()),
                 TextColumn::make('status')->label(__('Status'))->badge(),
                 TextColumn::make('lines_count')->label(__('Lines'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
@@ -96,7 +96,7 @@ class StockCountResource extends Resource
             Section::make()->columnSpanFull()->columns(['default' => 2, 'md' => 4])->schema([
                 TextEntry::make('number')->label(__('Number'))->fontFamily(FontFamily::Mono)->extraAttributes(['dir' => 'ltr']),
                 TextEntry::make('status')->label(__('Status'))->badge(),
-                TextEntry::make('branch.code')->label(__('Branch')),
+                TextEntry::make('branch.code')->label(__('Station')),
                 TextEntry::make('scope')->label(__('What'))->state(fn (StockCount $r) => $r->scopeLabel()),
                 LocalDateTimeEntry::make('snapshot_at')->label(__('Snapshot taken')),
                 TextEntry::make('starter.name')->label(__('Started by')),

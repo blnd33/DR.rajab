@@ -62,8 +62,8 @@ class RecurringExpenseResource extends Resource
     {
         return $schema->columns(2)->components([
             Select::make('expense_category_id')->label(__('Category'))->options(fn () => ExpenseCategory::options())->searchable()->required()->native(false),
-            Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('expenses.recurring'))->native(false)
-                ->placeholder(__('Head office (no branch)')),
+            Select::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('expenses.recurring'))->native(false)
+                ->placeholder(__('Head office (no station)')),
             Select::make('cash_box_id')->label(__('Paid from'))->required()->native(false)->live()
                 ->options(fn () => app(CashBoxService::class)->options(ServiceAction::user(), 'expenses.recurring')),
             TextInput::make('amount')->label(fn (Get $get) => __('Amount (:currency)', ['currency' => CashBox::query()->find($get('cash_box_id'))->currency ?? '…']))
@@ -97,7 +97,7 @@ class RecurringExpenseResource extends Resource
             ->defaultSort('day_of_month')
             ->columns([
                 TextColumn::make('category.name')->label(__('Category'))->description(fn (RecurringExpense $r) => $r->description)->wrap(),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray')->placeholder(__('Head office')),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray')->placeholder(__('Head office')),
                 TextColumn::make('amount')->label(__('Amount'))->alignEnd()->weight('semibold')
                     ->formatStateUsing(fn ($state, RecurringExpense $r) => Display::money($state, $r->currency))
                     ->description(fn (RecurringExpense $r) => $r->cashBox?->label()),

@@ -67,7 +67,7 @@ class SupplierReturnResource extends Resource
             ->columns([
                 CodeColumn::make('number')->label(__('Number'))->searchable()->sortable(),
                 TextColumn::make('supplier.name')->label(__('Supplier')),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('status')->label(__('Status'))->badge(),
                 TextColumn::make('items_sum_quantity')->label(__('Items'))->alignEnd()->formatStateUsing(fn ($state) => Display::number((int) $state)),
                 TextColumn::make('total_credit')->label(__('Credit expected'))->alignEnd()
@@ -86,7 +86,7 @@ class SupplierReturnResource extends Resource
                 TextEntry::make('number')->label(__('Number'))->fontFamily(FontFamily::Mono)->extraAttributes(['dir' => 'ltr']),
                 TextEntry::make('status')->label(__('Status'))->badge(),
                 TextEntry::make('supplier.name')->label(__('Supplier')),
-                TextEntry::make('branch.code')->label(__('Branch')),
+                TextEntry::make('branch.code')->label(__('Station')),
                 TextEntry::make('total_credit')->label(__('Credit expected'))->state(fn (SupplierReturn $r) => $r->currency ? $r->currency.' '.Display::number($r->total_credit, 2) : '—'),
                 LocalDateTimeEntry::make('sent_at')->label(__('Sent'))->placeholder('—'),
                 TextEntry::make('notes')->label(__('Notes'))->placeholder('—')->columnSpan(2),

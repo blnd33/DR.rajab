@@ -41,7 +41,7 @@
 
     <section class="space-y-3" aria-labelledby="items-title">
         <h2 id="items-title" class="text-sm font-semibold uppercase tracking-wide text-muted-fg">
-            {{ $product->isSerialTracked() ? __('Units in this branch') : __('Lots in this branch') }}
+            {{ $product->isSerialTracked() ? __('Units in this station') : __('Lots in this station') }}
         </h2>
 
         @if ($product->isSerialTracked())
@@ -58,7 +58,7 @@
                     <x-ops.status-chip :label="$unit->status->getLabel()" :color="$unit->status->getColor()" :icon="$unit->status->getIcon()" class="shrink-0" />
                 </a>
             @empty
-                <div class="ot-card"><x-ops.empty-state icon="heroicon-o-archive-box" :title="__('None in this branch')" /></div>
+                <div class="ot-card"><x-ops.empty-state icon="heroicon-o-archive-box" :title="__('None in this station')" /></div>
             @endforelse
         @else
             @forelse ($batches as $batch)
@@ -71,14 +71,14 @@
                     <p class="shrink-0 text-2xl font-bold"><x-num :value="$batch->quantity" /></p>
                 </div>
             @empty
-                <div class="ot-card"><x-ops.empty-state icon="heroicon-o-archive-box" :title="__('None in this branch')" /></div>
+                <div class="ot-card"><x-ops.empty-state icon="heroicon-o-archive-box" :title="__('None in this station')" /></div>
             @endforelse
         @endif
     </section>
 
     @if ($elsewhere->isNotEmpty())
         <section class="space-y-3" aria-labelledby="elsewhere-title">
-            <h2 id="elsewhere-title" class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('Other branches') }}</h2>
+            <h2 id="elsewhere-title" class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('Other stations') }}</h2>
             <ul class="ot-card divide-y divide-border">
                 @foreach ($elsewhere as $row)
                     <li class="flex items-center justify-between gap-3 p-4">

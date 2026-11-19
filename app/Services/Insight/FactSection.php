@@ -18,7 +18,7 @@ enum FactSection: string
         return match ($this) {
             self::Day => __('At a glance'),
             self::Money => __('Money'),
-            self::Kits => __('Kits'),
+            self::Kits => __('Instrument sets'),
             self::Stock => __('Expiry and stock'),
             self::Attention => __('Needs attention'),
         };

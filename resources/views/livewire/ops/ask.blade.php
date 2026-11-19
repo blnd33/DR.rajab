@@ -59,9 +59,9 @@
                 @endif
                 @if (count($branches) > 1)
                     <label class="col-span-2 space-y-1">
-                        <span class="font-medium">{{ __('Branch') }}</span>
+                        <span class="font-medium">{{ __('Station') }}</span>
                         <select wire:model.live="branch" class="ot-input">
-                            <option value="">{{ __('All my branches') }}</option>
+                            <option value="">{{ __('All my stations') }}</option>
                             @foreach ($branches as $id => $label)
                                 <option value="{{ $id }}">{{ $label }}</option>
                             @endforeach

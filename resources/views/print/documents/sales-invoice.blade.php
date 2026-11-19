@@ -8,7 +8,7 @@
 <x-print.layout :title="($isSurgery ? __('Invoice') : __('Sales invoice')).' '.$record->number" :pdf-url="$pdfUrl" :meta="array_filter([
     __('Number') => $record->number,
     __('Date') => Display::date($record->issued_at),
-    __('Branch') => $record->branch->name,
+    __('Station') => $record->branch->name,
     __('Buyer') => $record->customer->name ?? ($record->walk_in_name ?: __('Walk-in')),
     __('Terms') => $record->payment_terms->getLabel(),
     __('Due') => $record->due_date ? Display::date($record->due_date) : null,

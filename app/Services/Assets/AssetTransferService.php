@@ -38,7 +38,7 @@ class AssetTransferService
         $this->assertDraft($transfer, $by);
 
         if ($kit->branch_id !== $transfer->from_branch_id || $kit->status !== KitStatus::Available) {
-            throw new StockRuleViolation(__('Kit :kit is :status in :branch and cannot be sent.', ['kit' => $kit->code, 'status' => $kit->status->getLabel(), 'branch' => $kit->branch->code]));
+            throw new StockRuleViolation(__('Instrument set :kit is :status in :branch and cannot be sent.', ['kit' => $kit->code, 'status' => $kit->status->getLabel(), 'branch' => $kit->branch->code]));
         }
 
         $this->assertNotOnAnotherTransfer('kit_id', $kit->id, $kit->code);
@@ -51,11 +51,11 @@ class AssetTransferService
         $this->assertDraft($transfer, $by);
 
         if ($instrument->kit_id !== null) {
-            throw new StockRuleViolation(__(':code is in kit :kit — send the kit instead.', ['code' => $instrument->code, 'kit' => $instrument->kit->code]));
+            throw new StockRuleViolation(__(':code is in instrument set :kit — send the instrument set instead.', ['code' => $instrument->code, 'kit' => $instrument->kit->code]));
         }
 
         if ($instrument->branch_id !== $transfer->from_branch_id || $instrument->status !== InstrumentStatus::Available) {
-            throw new StockRuleViolation(__('Instrument :code is :status in :branch and cannot go into this kit.', ['code' => $instrument->code, 'status' => $instrument->status->getLabel(), 'branch' => $instrument->branch->code]));
+            throw new StockRuleViolation(__('Instrument :code is :status in :branch and cannot go into this instrument set.', ['code' => $instrument->code, 'status' => $instrument->status->getLabel(), 'branch' => $instrument->branch->code]));
         }
 
         $this->assertNotOnAnotherTransfer('instrument_id', $instrument->id, $instrument->code);
@@ -76,7 +76,7 @@ class AssetTransferService
                 $kit = $asset->kit;
 
                 if ($kit->status !== KitStatus::Available) {
-                    throw new StockRuleViolation(__('Kit :kit is :status.', ['kit' => $kit->code, 'status' => $kit->status->getLabel()]));
+                    throw new StockRuleViolation(__('Instrument set :kit is :status.', ['kit' => $kit->code, 'status' => $kit->status->getLabel()]));
                 }
 
                 $this->assets->move($kit, AssetMovementType::TransferSend, $by, ['status' => KitStatus::InTransit], $transfer, $group);
@@ -144,7 +144,7 @@ class AssetTransferService
     private function assertDraft(Transfer $transfer, User $by): void
     {
         if (! $this->scope->allows($by, 'transfers.create', $transfer->from_branch_id)) {
-            throw new AuthorizationException(__('You are not allowed to do this in this branch.'));
+            throw new AuthorizationException(__('You are not allowed to do this in this station.'));
         }
 
         if ($transfer->status !== TransferStatus::Draft) {

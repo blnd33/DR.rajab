@@ -2,6 +2,18 @@
 
 All notable changes per build phase.
 
+## [Client updates — new names, language flags, KM badge] — 2026-11-19
+
+Names changed everywhere on screen, in English, Arabic and Kurdish (menus, pages, forms, messages, reports, notifications, Excel help, permission names). Only the words people see changed — database tables, URLs and codes stay the same.
+
+### Changed
+- **Dashboard → Main page** (AR: الصفحة الرئيسية, KU: پەڕەی سەرەکی).
+- **Branches → Stations** (AR: المحطات — feminine, so the sentences around it were adjusted; KU: وێستگەکان). The Excel import column is now *Station*; files with the old *Branch* column still import.
+- **Kits → Instrument sets** (AR: أطقم الأدوات, KU: سێتی ئامێر), so they are not confused with the single **instruments** inside them, which keep their name. Kit types → Instrument set types, Kits report → Instrument sets report.
+- **Morning summary → Morning report** (AR: التقرير الصباحي, KU: ڕاپۆرتی بەیانیان).
+- **Language switcher with flags**: English 🇺🇸 United States, العربية Iraq, کوردی Kurdistan. In the admin and phone top bars it is now a small menu showing the current flag; the sign-in page shows all three with their flags (`<x-flag>`, `config('locales.supported.*.flag')`).
+- **Profile badge KM** (KurdishMedicus): the admin top-bar picture and the *Me* button in the phone app (`KmAvatarProvider`, `public/icons/km-avatar.svg`); no more initials from an outside avatar service.
+
 ## [Client updates — branch switcher, who owes us, product categories] — 2026-11-15
 
 ### Added

@@ -25,7 +25,7 @@ class MorningSummaryReady extends AppNotification
     {
         $summary = $this->summary();
 
-        return __('Morning summary :date', ['date' => Display::date($summary?->summary_date)]);
+        return __('Morning report :date', ['date' => Display::date($summary?->summary_date)]);
     }
 
     public function body(): string

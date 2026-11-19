@@ -28,7 +28,7 @@ class CreateStockCount extends CreateRecord
     public function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('stock_counts.start'))->required()->live()->native(false),
+            Select::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('stock_counts.start'))->required()->live()->native(false),
             ToggleButtons::make('scope')->label(__('What do you count?'))->options(StockCountScope::options())->default(StockCountScope::Full->value)->inline()->live()->required(),
             Select::make('category_id')->label(__('Category'))->options(fn () => Category::options())->searchable()->native(false)
                 ->visible(fn (Get $get) => $get('scope') === StockCountScope::Category->value)->required(fn (Get $get) => $get('scope') === StockCountScope::Category->value),

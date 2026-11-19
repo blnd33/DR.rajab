@@ -105,10 +105,10 @@ class TechnicianResource extends Resource
         return array_values(array_filter([
             TextInput::make('name')->label(__('Full name'))->required()->maxLength(150),
             TextInput::make('phone')->label(__('Phone'))->tel()->maxLength(32)->extraInputAttributes(['dir' => 'ltr']),
-            Select::make('branches')->label(__('Branches'))->multiple()->required()->native(false)
+            Select::make('branches')->label(__('Stations'))->multiple()->required()->native(false)
                 ->options(fn () => Branch::query()->active()->orderBy('code')->get()->mapWithKeys(fn (Branch $b) => [$b->id => $b->label()]))
                 ->default(fn () => array_values(array_filter([User::focusedBranchId() ?? ServiceAction::user()->primary_branch_id])))
-                ->helperText(__('The technician is offered on surgeries of these branches.')),
+                ->helperText(__('The technician is offered on surgeries of these stations.')),
             $editing ? Toggle::make('is_active')->label(__('Active'))->helperText(__('Inactive technicians are no longer offered on new surgeries. Their work is kept.')) : null,
         ]));
     }
@@ -122,7 +122,7 @@ class TechnicianResource extends Resource
             ->columns([
                 TextColumn::make('name')->label(__('Name'))->searchable()->sortable()->weight('semibold'),
                 TextColumn::make('phone')->label(__('Phone'))->placeholder('—')->extraAttributes(['dir' => 'ltr']),
-                TextColumn::make('branches.code')->label(__('Branches'))->badge()->color('gray')->placeholder('—'),
+                TextColumn::make('branches.code')->label(__('Stations'))->badge()->color('gray')->placeholder('—'),
                 TextColumn::make('surgeries_count')->label(__('Surgeries'))->alignEnd()->sortable()->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('last_surgery')->label(__('Last surgery'))->placeholder('—')->sortable()->formatStateUsing(fn ($state) => Display::date($state)),
                 IconColumn::make('is_active')->label(__('Active'))->boolean(),

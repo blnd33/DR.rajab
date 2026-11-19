@@ -48,7 +48,7 @@ class SalesProfitReport extends Report
         return [
             'month' => __('Month'),
             'product' => __('Product'),
-            'branch' => __('Branch'),
+            'branch' => __('Station'),
             'customer' => __('Hospital / customer'),
             'line' => __('Sale line (each piece, with %)'),
         ];
@@ -58,7 +58,7 @@ class SalesProfitReport extends Report
     {
         $head = match ($context->group) {
             'product' => [ReportColumn::code('sku', __('SKU')), ReportColumn::text('product', __('Product'))],
-            'branch' => [ReportColumn::text('branch', __('Branch'))],
+            'branch' => [ReportColumn::text('branch', __('Station'))],
             'customer' => [ReportColumn::text('customer', __('Hospital / customer'))],
             'line' => [ReportColumn::code('invoice', __('Invoice')), ReportColumn::code('sku', __('SKU')), ReportColumn::text('product', __('Product'))],
             default => [ReportColumn::code('month', __('Month'))],

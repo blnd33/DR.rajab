@@ -21,7 +21,7 @@ class BranchForm
         return $schema
             ->columns(1)
             ->components([
-                Section::make(__('Branch'))
+                Section::make(__('Station'))
                     ->columns(['default' => 1, 'md' => 2])
                     ->schema([
                         TextInput::make('code')
@@ -64,9 +64,9 @@ class BranchForm
 
                         Toggle::make('is_head_office')
                             ->label(__('Head office'))
-                            ->helperText(__('Only one branch can be the head office.'))
+                            ->helperText(__('Only one station can be the head office.'))
                             ->unique(ignoreRecord: true, modifyRuleUsing: fn (Unique $rule) => $rule->where('is_head_office', true))
-                            ->validationMessages(['unique' => __('Another branch is already the head office.')]),
+                            ->validationMessages(['unique' => __('Another station is already the head office.')]),
                     ]),
             ]);
     }

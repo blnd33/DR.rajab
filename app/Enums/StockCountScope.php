@@ -21,7 +21,7 @@ enum StockCountScope: string implements HasColor, HasIcon, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Full => __('Whole branch'),
+            self::Full => __('Whole station'),
             self::Category => __('One category'),
             self::Location => __('One shelf'),
         };

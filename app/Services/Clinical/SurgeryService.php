@@ -236,7 +236,7 @@ class SurgeryService
                 'surgeries.warnings',
                 Msg::key('Surgery :number was logged with warnings'),
                 ['number' => $surgery->number],
-                Msg::key('Some items were not in the branch or in the kit of this surgery.'),
+                Msg::key('Some items were not in the station or in the instrument set of this surgery.'),
                 [],
                 route('filament.admin.resources.surgeries.view', $surgery),
                 'heroicon-o-exclamation-triangle',
@@ -626,7 +626,7 @@ class SurgeryService
     private function authorize(User $by, string $permission, int $branchId): void
     {
         if (! $this->scope->allows($by, $permission, $branchId)) {
-            throw new AuthorizationException(__('You are not allowed to do this in this branch.'));
+            throw new AuthorizationException(__('You are not allowed to do this in this station.'));
         }
     }
 
@@ -636,8 +636,8 @@ class SurgeryService
     public static function warningLabel(string $code): string
     {
         return match ($code) {
-            self::WARN_NOT_IN_BRANCH => __('Not in this branch'),
-            self::WARN_NOT_IN_KIT => __('Not in the kit of this surgery'),
+            self::WARN_NOT_IN_BRANCH => __('Not in this station'),
+            self::WARN_NOT_IN_KIT => __('Not in the instrument set of this surgery'),
             default => $code,
         };
     }

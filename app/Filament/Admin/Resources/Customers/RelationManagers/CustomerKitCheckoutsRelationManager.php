@@ -22,7 +22,7 @@ class CustomerKitCheckoutsRelationManager extends RelationManager
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return __('Kits');
+        return __('Instrument sets');
     }
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
@@ -37,12 +37,12 @@ class CustomerKitCheckoutsRelationManager extends RelationManager
             ->defaultSort('checked_out_at', 'desc')
             ->columns([
                 CodeColumn::make('number')->label(__('Number')),
-                TextColumn::make('kit.code')->label(__('Kit')),
+                TextColumn::make('kit.code')->label(__('Instrument set')),
                 TextColumn::make('doctor.name')->label(__('Doctor'))->placeholder('—'),
                 LocalDateTimeColumn::make('checked_out_at')->label(__('Out')),
                 TextColumn::make('status')->label(__('Status'))->badge(),
             ])
             ->recordUrl(fn (KitCheckout $r) => KitCheckoutResource::getUrl('view', ['record' => $r]))
-            ->emptyStateHeading(__('No kits lent to this hospital yet'));
+            ->emptyStateHeading(__('No instrument sets lent to this hospital yet'));
     }
 }

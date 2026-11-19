@@ -47,8 +47,8 @@ enum AssetMovementType: string implements HasColor, HasIcon, HasLabel
             self::MarkDamaged => __('Marked damaged'),
             self::Found => __('Found'),
             self::AssignHolder => __('Holder changed'),
-            self::AddToKit => __('Added to a kit'),
-            self::RemoveFromKit => __('Taken out of a kit'),
+            self::AddToKit => __('Added to an instrument set'),
+            self::RemoveFromKit => __('Taken out of an instrument set'),
             self::Retire => __('Retired'),
         };
     }

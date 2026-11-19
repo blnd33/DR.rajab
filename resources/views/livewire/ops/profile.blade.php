@@ -33,11 +33,11 @@
     @if ($canSummary)
         <form wire:submit="saveSummary" class="ot-card space-y-4 p-4" aria-labelledby="summary-title">
             <h2 id="summary-title" class="flex items-center gap-2 font-semibold">
-                @svg('heroicon-o-sun', 'size-5 text-primary') {{ __('Morning summary') }}
+                @svg('heroicon-o-sun', 'size-5 text-primary') {{ __('Morning report') }}
             </h2>
             <label class="flex min-h-12 items-center gap-3">
                 <input type="checkbox" wire:model="summary.enabled" class="size-5 accent-primary" />
-                <span>{{ __('Send me the morning summary') }}</span>
+                <span>{{ __('Send me the morning report') }}</span>
             </label>
             <div class="grid grid-cols-2 gap-3">
                 <label class="space-y-1">
@@ -46,9 +46,9 @@
                     @error('summary.time') <span class="text-sm text-danger">{{ $message }}</span> @enderror
                 </label>
                 <label class="space-y-1">
-                    <span class="text-sm font-medium">{{ __('Branch') }}</span>
+                    <span class="text-sm font-medium">{{ __('Station') }}</span>
                     <select wire:model="summary.branch_id" class="ot-input">
-                        <option value="">{{ __('All my branches') }}</option>
+                        <option value="">{{ __('All my stations') }}</option>
                         @foreach ($summaryBranches as $id => $label)
                             <option value="{{ $id }}">{{ $label }}</option>
                         @endforeach

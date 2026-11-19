@@ -139,7 +139,7 @@ it('finds a serial, a product and a lot, with where and how many', function () {
 
     // Someone without stock in that branch sees only where the serial is.
     $ebl = userWithRole(Role::BranchStaff, [$this->ebl]);
-    expect($this->answers->lookup($ebl, 'SN-1')['cards'][0]['lines'])->toBe([['label' => 'Branch', 'value' => 'DHK']]);
+    expect($this->answers->lookup($ebl, 'SN-1')['cards'][0]['lines'])->toBe([['label' => 'Station', 'value' => 'DHK']]);
 });
 
 it('tells whether a kit is complete, and finds documents and patient files the person may see', function () {

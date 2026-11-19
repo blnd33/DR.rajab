@@ -77,7 +77,7 @@ class StockBatchResource extends Resource
                 CodeColumn::make('lot')->label(__('Lot'))->searchable()->placeholder('—'),
                 ExpiryColumn::make('expiry_date'),
                 TextColumn::make('quantity')->label(__('Quantity'))->alignEnd()->weight('bold')->sortable()->formatStateUsing(fn ($state) => Display::number($state)),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('location')->label(__('Where'))->state(fn (StockBatch $record) => $record->locationLabel())->toggleable(),
                 TextColumn::make('unit_cost')
                     ->label(__('True cost'))
@@ -90,7 +90,7 @@ class StockBatchResource extends Resource
             ->filters([
                 Filter::make('on_hand')->label(__('Only with quantity'))->default()->query(fn (Builder $query) => $query->where('quantity', '>', 0)),
                 SelectFilter::make('branch_id')
-                    ->label(__('Branch'))
+                    ->label(__('Station'))
                     ->options(fn () => $scope->apply(Branch::query()->orderBy('code'), $user, 'stock.view', 'id')->pluck('code', 'id')),
                 SelectFilter::make('product_id')
                     ->label(__('Product'))

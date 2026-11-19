@@ -21,7 +21,7 @@ class KitsOut extends Fact
 
     public function title(): string
     {
-        return __('Kits out at hospitals');
+        return __('Instrument sets out at hospitals');
     }
 
     public function section(): FactSection

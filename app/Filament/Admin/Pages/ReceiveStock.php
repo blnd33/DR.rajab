@@ -102,7 +102,7 @@ class ReceiveStock extends Page
                     ->columns(['default' => 1, 'md' => 3])
                     ->schema([
                         Select::make('branch_id')
-                            ->label(__('Branch'))
+                            ->label(__('Station'))
                             ->options(fn () => $this->branchOptions())
                             ->required()
                             ->live()

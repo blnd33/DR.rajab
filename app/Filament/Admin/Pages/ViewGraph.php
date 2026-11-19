@@ -133,7 +133,7 @@ class ViewGraph extends Page
             ->components([
                 DatePicker::make('from')->label(__('From'))->native(false)->displayFormat('Y-m-d')->live()->visible($definition->usesPeriod),
                 DatePicker::make('until')->label(__('Until'))->native(false)->displayFormat('Y-m-d')->live()->visible($definition->usesPeriod),
-                Select::make('branch')->label(__('Branch'))->placeholder(__('All branches'))->options($branches)->native(false)->live()->visible(count($branches) > 1),
+                Select::make('branch')->label(__('Station'))->placeholder(__('All stations'))->options($branches)->native(false)->live()->visible(count($branches) > 1),
                 Select::make('currency')->label(__('Show in'))->options(['USD' => 'USD', 'EUR' => 'EUR', 'IQD' => 'IQD'])->selectablePlaceholder(false)->native(false)->live()->visible($definition->usesCurrency),
             ])
             ->columns(['default' => 1, 'sm' => 2, 'lg' => 4]);

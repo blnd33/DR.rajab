@@ -77,7 +77,7 @@ class StockMovementService
         $this->authorize($by, $permission, $branch);
 
         if (! $branch->isActive()) {
-            throw new StockRuleViolation(__('Branch :code is closed. Reopen it before adding stock.', ['code' => $branch->code]));
+            throw new StockRuleViolation(__('Station :code is closed. Reopen it before adding stock.', ['code' => $branch->code]));
         }
 
         if ($lines === []) {
@@ -651,7 +651,7 @@ class StockMovementService
         $this->authorize($by, 'kits.prepare', $unit->branch_id);
 
         if ($unit->status !== StockStatus::InKit) {
-            throw new StockRuleViolation(__('Unit :serial is not in a kit.', ['serial' => $unit->serial]), 'serial');
+            throw new StockRuleViolation(__('Unit :serial is not in an instrument set.', ['serial' => $unit->serial]), 'serial');
         }
 
         return $this->changeUnit($unit, StockStatus::InStock, null, MovementType::KitUnload, $by, $reference, $group);
@@ -684,7 +684,7 @@ class StockMovementService
         $this->authorize($by, 'kits.prepare', $kitBatch->branch_id);
 
         if ($kitBatch->location_type !== LocationType::Kit) {
-            throw new StockRuleViolation(__('This lot is not in a kit.'), 'lot');
+            throw new StockRuleViolation(__('This lot is not in an instrument set.'), 'lot');
         }
 
         $this->takeFromBatch($kitBatch, $quantity, MovementType::KitUnload, $by, $reference, $group);
@@ -701,7 +701,7 @@ class StockMovementService
         $this->authorize($by, 'kits.checkout', $unit->branch_id);
 
         if ($unit->status !== StockStatus::InKit) {
-            throw new StockRuleViolation(__('Unit :serial is not in a kit.', ['serial' => $unit->serial]), 'serial');
+            throw new StockRuleViolation(__('Unit :serial is not in an instrument set.', ['serial' => $unit->serial]), 'serial');
         }
 
         return $this->changeUnit($unit, StockStatus::OutAtHospital, null, MovementType::KitCheckout, $by, $reference, $group, set: ['customer_id' => $hospital->id]);
@@ -716,7 +716,7 @@ class StockMovementService
         $this->authorize($by, 'kits.checkout', $kitBatch->branch_id);
 
         if ($kitBatch->location_type !== LocationType::Kit) {
-            throw new StockRuleViolation(__('This lot is not in a kit.'), 'lot');
+            throw new StockRuleViolation(__('This lot is not in an instrument set.'), 'lot');
         }
 
         $quantity = $kitBatch->quantity;
@@ -832,7 +832,7 @@ class StockMovementService
         $this->authorize($by, 'transfers.receive', $to);
 
         if ($unit->status !== StockStatus::InKit) {
-            throw new StockRuleViolation(__('Unit :serial is not in a kit.', ['serial' => $unit->serial]), 'serial');
+            throw new StockRuleViolation(__('Unit :serial is not in an instrument set.', ['serial' => $unit->serial]), 'serial');
         }
 
         return $this->changeUnit($unit, StockStatus::InKit, $to->id, MovementType::TransferReceive, $by, $reference, $group, [
@@ -1400,7 +1400,7 @@ class StockMovementService
             $this->money($line->unitCost);
 
             if ($line->locationId !== null && ! in_array($line->locationId, $locationIds, true)) {
-                throw new StockRuleViolation(__('Line :row: that shelf is not in branch :code.', ['row' => $row, 'code' => $branch->code]), "lines.{$index}.location_id");
+                throw new StockRuleViolation(__('Line :row: that shelf is not in station :code.', ['row' => $row, 'code' => $branch->code]), "lines.{$index}.location_id");
             }
 
             if ($line->supplierId !== null && ! Supplier::query()->whereKey($line->supplierId)->exists()) {
@@ -1441,7 +1441,7 @@ class StockMovementService
 
         if (isset($changes['branch_location_id'])
             && ! BranchLocation::query()->whereKey($changes['branch_location_id'])->where('branch_id', $branchId)->exists()) {
-            throw new StockRuleViolation(__('That shelf is not in this branch.'), 'branch_location_id');
+            throw new StockRuleViolation(__('That shelf is not in this station.'), 'branch_location_id');
         }
 
         foreach (['supplier_id', 'branch_location_id'] as $field) {
@@ -1518,7 +1518,7 @@ class StockMovementService
         if (! $this->scope->allows($by, $permission, $branchId)) {
             $code = $branch instanceof Branch ? $branch->code : (string) $branchId;
 
-            throw new AuthorizationException(__('You are not allowed to do this in branch :code.', ['code' => $code]));
+            throw new AuthorizationException(__('You are not allowed to do this in station :code.', ['code' => $code]));
         }
     }
 }

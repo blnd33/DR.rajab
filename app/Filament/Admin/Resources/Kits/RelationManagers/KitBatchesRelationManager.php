@@ -61,9 +61,9 @@ class KitBatchesRelationManager extends RelationManager
                         && ServiceAction::user()->canInBranch('kits.prepare', $this->kit()->branch_id))
                     ->fillForm(fn (StockBatch $r) => ['quantity' => $r->quantity])
                     ->schema([TextInput::make('quantity')->label(__('Quantity back to the shelf'))->numeric()->integer()->minValue(1)->required()])
-                    ->action(fn (StockBatch $record, array $data, Action $action) => ServiceAction::run($action, fn ($u) => app(KitService::class)->removeBatch($record, (int) $data['quantity'], $u), __('Taken out of the kit.'))),
+                    ->action(fn (StockBatch $record, array $data, Action $action) => ServiceAction::run($action, fn ($u) => app(KitService::class)->removeBatch($record, (int) $data['quantity'], $u), __('Taken out of the instrument set.'))),
             ])
-            ->emptyStateHeading(__('No lots in this kit'));
+            ->emptyStateHeading(__('No lots in this instrument set'));
     }
 
     private function kit(): Kit

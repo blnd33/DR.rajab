@@ -145,7 +145,7 @@ final class GraphRegistry
             new Graph('profit-per-month', GraphSection::Sales, __('Profit per month'), __('Revenue minus the true cost of the items sold, each month.'), Graph::MONTHS,
                 fn (GraphContext $c) => $this->fromReport($c, SalesProfitReport::class, 'month', 'month', ['profit' => __('Profit')], true, months: true),
                 ['margin', 'earnings'], needsProfit: true, usesCurrency: true),
-            new Graph('sales-by-branch', GraphSection::Sales, __('Sales by branch'), __('Share of the revenue made by each branch.'), Graph::DOUGHNUT,
+            new Graph('sales-by-branch', GraphSection::Sales, __('Sales by station'), __('Share of the revenue made by each station.'), Graph::DOUGHNUT,
                 fn (GraphContext $c) => $this->fromReport($c, SalesProfitReport::class, 'branch', 'branch', ['revenue' => __('Revenue')], true),
                 ['revenue', 'branches'], usesCurrency: true),
             new Graph('sales-by-customer', GraphSection::Sales, __('Sales by hospital / customer'), __('Who bought the most: share of the revenue per hospital or customer.'), Graph::DOUGHNUT,
@@ -199,7 +199,7 @@ final class GraphRegistry
                 ['technician', 'type', 'hip', 'knee', 'shoulder']),
 
             // Items and stock
-            new Graph('stock-value-by-branch', GraphSection::Stock, __('Stock value by branch'), __('What the stock on hand is worth in each branch today (true cost).'), Graph::DOUGHNUT,
+            new Graph('stock-value-by-branch', GraphSection::Stock, __('Stock value by station'), __('What the stock on hand is worth in each station today (true cost).'), Graph::DOUGHNUT,
                 fn (GraphContext $c) => $this->fromReport($c, StockValueReport::class, 'branch', 'branch', ['value' => __('Stock value')], true),
                 ['inventory', 'worth', 'branches'], usesPeriod: false, usesCurrency: true),
             new Graph('stock-value-by-category', GraphSection::Stock, __('Stock value by category'), __('What the stock on hand is worth per category today.'), Graph::DOUGHNUT,
@@ -208,7 +208,7 @@ final class GraphRegistry
             new Graph('stock-value-history', GraphSection::Stock, __('Stock value over time'), __('The stock value every night (saved at 23:50).'), Graph::LINE,
                 fn (GraphContext $c) => $this->fromReport($c, StockValueReport::class, 'history', 'day', ['value' => __('Stock value')], true),
                 ['inventory', 'trend', 'history'], usesCurrency: true, summable: false),
-            new Graph('items-by-branch', GraphSection::Stock, __('Items on hand by branch'), __('How many pieces each branch holds today.'), Graph::RANKING,
+            new Graph('items-by-branch', GraphSection::Stock, __('Items on hand by station'), __('How many pieces each station holds today.'), Graph::RANKING,
                 fn (GraphContext $c) => $this->fromReport($c, StockValueReport::class, 'branch', 'branch', ['units' => __('Pieces')], false),
                 ['inventory', 'quantity', 'branches'], usesPeriod: false),
             new Graph('items-by-expiry', GraphSection::Stock, __('Items by expiry level'), __('Pieces on hand per expiry level (good, soon, expired…).'), Graph::DOUGHNUT,
@@ -234,7 +234,7 @@ final class GraphRegistry
             new Graph('expenses-per-month', GraphSection::Money, __('Expenses per month'), __('Total expenses each month.'), Graph::MONTHS,
                 fn (GraphContext $c) => $this->fromReport($c, ExpensesReport::class, 'month', 'month', ['amount' => __('Amount')], true, months: true),
                 ['costs', 'spending', 'trend'], usesCurrency: true),
-            new Graph('expenses-by-branch', GraphSection::Money, __('Expenses by branch'), __('Share of the expenses carried by each branch.'), Graph::DOUGHNUT,
+            new Graph('expenses-by-branch', GraphSection::Money, __('Expenses by station'), __('Share of the expenses carried by each station.'), Graph::DOUGHNUT,
                 fn (GraphContext $c) => $this->fromReport($c, ExpensesReport::class, 'branch', 'branch', ['amount' => __('Amount')], true),
                 ['costs', 'spending', 'branches'], usesCurrency: true),
             new Graph('supplier-debt', GraphSection::Money, __('What we owe each supplier'), __('Open supplier invoices today, largest first.'), Graph::RANKING,
@@ -242,10 +242,10 @@ final class GraphRegistry
                 ['suppliers', 'debt', 'payable', 'aging'], usesPeriod: false, usesCurrency: true),
 
             // Transfers
-            new Graph('transfers-per-month', GraphSection::Transfers, __('Transfers per month'), __('Transfers sent between branches each month.'), Graph::MONTHS,
+            new Graph('transfers-per-month', GraphSection::Transfers, __('Transfers per month'), __('Transfers sent between stations each month.'), Graph::MONTHS,
                 fn (GraphContext $c) => $this->transfersPerMonth($c),
                 ['moves', 'shipping', 'branches']),
-            new Graph('transfers-by-route', GraphSection::Transfers, __('Transfers by route'), __('Which branch sends to which branch most often.'), Graph::RANKING,
+            new Graph('transfers-by-route', GraphSection::Transfers, __('Transfers by route'), __('Which station sends to which station most often.'), Graph::RANKING,
                 fn (GraphContext $c) => $this->transfersByRoute($c),
                 ['moves', 'from', 'to', 'branches']),
             new Graph('transfer-results', GraphSection::Transfers, __('Transfer results'), __('Received in full, received with differences, still on the way, cancelled.'), Graph::DOUGHNUT,
@@ -253,7 +253,7 @@ final class GraphRegistry
                 ['status', 'missing', 'differences']),
 
             // Kits
-            new Graph('kit-checkouts', GraphSection::Kits, __('Kit check-outs'), __('How often each kit went out to a hospital.'), Graph::RANKING,
+            new Graph('kit-checkouts', GraphSection::Kits, __('Instrument set check-outs'), __('How often each instrument set went out to a hospital.'), Graph::RANKING,
                 fn (GraphContext $c) => $this->fromReport($c, KitsReport::class, null, 'code', ['checkouts' => __('Check-outs')], false),
                 ['sets', 'instruments', 'loans']),
         ];

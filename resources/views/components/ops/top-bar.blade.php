@@ -23,7 +23,7 @@
             @if ($branches->count() > 1)
                 <form method="POST" action="{{ route('ops.branch.switch') }}" x-data>
                     @csrf
-                    <label for="branch-switch" class="sr-only">{{ __('Branch') }}</label>
+                    <label for="branch-switch" class="sr-only">{{ __('Station') }}</label>
                     <select id="branch-switch" name="branch_id" @change="$el.form.submit()"
                             class="h-10 rounded-lg border border-border-strong bg-card px-2 text-sm font-semibold">
                         @foreach ($branches as $branch)

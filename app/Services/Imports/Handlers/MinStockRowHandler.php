@@ -39,7 +39,7 @@ class MinStockRowHandler implements RowHandler
     {
         return [
             'sku' => 'SKU',
-            'branch' => 'Branch',
+            'branch' => 'Station',
             'min_stock' => 'Min stock',
             'max_stock' => 'Max stock',
             'reorder_qty' => 'Reorder quantity',
@@ -59,7 +59,7 @@ class MinStockRowHandler implements RowHandler
     public function instructions(): array
     {
         return [
-            __('One row per product and branch. The branch minimum replaces the product\'s default minimum in that branch.'),
+            __('One row per product and station. The station minimum replaces the product\'s default minimum in that station.'),
             __('Min stock is required. Max stock and Reorder quantity are optional; empty cells keep the current value.'),
             __('A low-stock alert is shown when the quantity on the shelf is below the minimum.'),
         ];
@@ -86,9 +86,9 @@ class MinStockRowHandler implements RowHandler
         }
 
         if ($branch === null) {
-            $result->error($code === null ? __('Branch is empty.') : __('Branch :code does not exist.', ['code' => $code]));
+            $result->error($code === null ? __('Station is empty.') : __('Station :code does not exist.', ['code' => $code]));
         } elseif ($this->allowedBranchIds !== null && ! in_array($branch->id, $this->allowedBranchIds, true)) {
-            $result->error(__('You may not change minimum stock in branch :code.', ['code' => $branch->code]));
+            $result->error(__('You may not change minimum stock in station :code.', ['code' => $branch->code]));
         }
 
         [$min, $minValid] = CellParser::integer($row['min_stock'] ?? null);
@@ -110,7 +110,7 @@ class MinStockRowHandler implements RowHandler
         $key = $product->id.'|'.$branch->id;
 
         if (isset($this->seen[$key])) {
-            return $result->error(__('This product and branch is also on row :row of this file.', ['row' => $this->seen[$key]]));
+            return $result->error(__('This product and station is also on row :row of this file.', ['row' => $this->seen[$key]]));
         }
 
         $this->seen[$key] = $rowNumber;
@@ -140,7 +140,7 @@ class MinStockRowHandler implements RowHandler
         $data = $row->normalized ?? [];
 
         if (! $this->scope->allows($user, 'stock.min_levels', (int) $data['branch_id'])) {
-            throw new RowFailed(__('You may not change minimum stock in this branch.'));
+            throw new RowFailed(__('You may not change minimum stock in this station.'));
         }
 
         try {

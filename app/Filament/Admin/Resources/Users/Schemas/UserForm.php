@@ -104,17 +104,17 @@ class UserForm
                             ->disabled(fn (?User $record) => $record !== null && $record->is(Auth::user())),
                     ]),
 
-                Section::make(__('Branches'))
+                Section::make(__('Stations'))
                     ->columns(['default' => 1, 'md' => 2])
                     ->description(__('Default "where" for every permission. Can be narrowed or widened per permission.'))
                     ->schema([
                         Toggle::make('all_branches')
-                            ->label(__('All branches'))
+                            ->label(__('All stations'))
                             ->live()
                             ->columnSpanFull(),
 
                         Select::make('branches')
-                            ->label(__('Branches'))
+                            ->label(__('Stations'))
                             ->multiple()
                             ->options(fn () => self::branchOptions())
                             ->hidden(fn (Get $get) => (bool) $get('all_branches'))
@@ -123,8 +123,8 @@ class UserForm
                             ->native(false),
 
                         Select::make('primary_branch_id')
-                            ->label(__('Main branch'))
-                            ->helperText(__('The branch the operations app opens in.'))
+                            ->label(__('Main station'))
+                            ->helperText(__('The station the operations app opens in.'))
                             ->options(function (Get $get) {
                                 $options = self::branchOptions();
 

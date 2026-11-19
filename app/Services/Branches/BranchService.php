@@ -115,7 +115,7 @@ class BranchService
 
             if (! $this->canHardDelete($branch)) {
                 throw ValidationException::withMessages([
-                    'branch' => __('This branch has records. Close it instead — history is kept.'),
+                    'branch' => __('This station has records. Close it instead — history is kept.'),
                 ]);
             }
 

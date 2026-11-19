@@ -15,7 +15,7 @@
                     @endif
                 @endif
                 @unless ($settings->enabled)
-                    {{ __('Your morning summary is switched off.') }}
+                    {{ __('Your morning report is switched off.') }}
                 @endunless
             </p>
         </div>

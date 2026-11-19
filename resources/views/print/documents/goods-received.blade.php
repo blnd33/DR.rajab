@@ -6,7 +6,7 @@
 <x-print.layout :title="__('Goods received note').' '.$record->number" :pdf-url="$pdfUrl" :meta="[
     __('Number') => $record->number,
     __('Received') => Display::dateTime($record->received_at),
-    __('Branch') => $record->branch->name,
+    __('Station') => $record->branch->name,
     __('Supplier') => $record->purchase->supplier->name,
     __('Purchase') => $record->purchase->number,
     __('Supplier invoice no.') => $record->purchase->supplier_invoice_number,

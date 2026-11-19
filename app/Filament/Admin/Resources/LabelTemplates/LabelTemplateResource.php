@@ -58,7 +58,7 @@ class LabelTemplateResource extends Resource
             'serial' => __('Serial'),
             'lot' => __('Lot'),
             'expiry' => __('Expiry date'),
-            'branch' => __('Branch'),
+            'branch' => __('Station'),
         ];
     }
 

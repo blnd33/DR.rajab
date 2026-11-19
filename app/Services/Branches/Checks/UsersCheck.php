@@ -27,7 +27,7 @@ class UsersCheck implements BranchDependencyCheck
             ->count();
 
         return $count > 0
-            ? trans_choice(':count active user still works only in this branch — reassign or deactivate them.|:count active users still work only in this branch — reassign or deactivate them.', $count, ['count' => $count])
+            ? trans_choice(':count active user still works only in this station — reassign or deactivate them.|:count active users still work only in this station — reassign or deactivate them.', $count, ['count' => $count])
             : null;
     }
 

@@ -56,7 +56,7 @@ class LowStockReport extends Page implements HasTable
 
     public function getSubheading(): ?string
     {
-        return __('Products with less on the shelf than their minimum. Minimums are set per product or per branch.');
+        return __('Products with less on the shelf than their minimum. Minimums are set per product or per station.');
     }
 
     public static function canAccess(): bool
@@ -96,27 +96,27 @@ class LowStockReport extends Page implements HasTable
             ->columns([
                 ProductColumn::make('product')
                     ->url(fn (LowStock $record) => ProductResource::getUrl('edit', ['record' => $record->product_id])),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('qty_available')->label(__('On shelf'))->alignEnd()->weight('bold')->color('danger')->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('min_stock')->label(__('Minimum'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('shortage')->label(__('Missing'))->alignEnd()->sortable()->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('qty_total')
-                    ->label(__('Elsewhere in branch'))
+                    ->label(__('Elsewhere in station'))
                     ->alignEnd()
                     ->state(fn (LowStock $record) => $record->qty_total - $record->qty_available)
                     ->formatStateUsing(fn ($state) => Display::number($state))
-                    ->tooltip(__('In kits, at hospitals or in transit'))
+                    ->tooltip(__('In instrument sets, at hospitals or in transit'))
                     ->toggleable(),
                 TextColumn::make('reorder_qty')->label(__('Reorder quantity'))->alignEnd()->placeholder('—')->formatStateUsing(fn ($state) => Display::number($state))->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('branch_id')
-                    ->label(__('Branch'))
+                    ->label(__('Station'))
                     ->options(fn () => $scope->apply(Branch::query()->active()->orderBy('code'), $user, 'stock.view', 'id')->pluck('code', 'id')),
             ])
             ->recordActions([
                 Action::make('request')
-                    ->label(__('Request from another branch'))
+                    ->label(__('Request from another station'))
                     ->icon(Heroicon::OutlinedArrowsRightLeft)
                     ->visible(fn (LowStock $record) => $user->canInBranch('stock_requests.create', $record->branch_id))
                     ->url(fn (LowStock $record) => StockRequestResource::getUrl('create', ['branch' => $record->branch_id, 'low' => 1, 'product' => $record->product_id])),
@@ -126,7 +126,7 @@ class LowStockReport extends Page implements HasTable
                     ->color('gray')
                     ->visible(fn (LowStock $record) => $user->canInBranch('stock.min_levels', $record->branch_id))
                     ->fillForm(fn (LowStock $record) => ['min_stock' => $record->min_stock])
-                    ->schema([TextInput::make('min_stock')->label(__('Minimum in this branch'))->numeric()->integer()->minValue(0)->required()])
+                    ->schema([TextInput::make('min_stock')->label(__('Minimum in this station'))->numeric()->integer()->minValue(0)->required()])
                     ->action(function (LowStock $record, array $data) {
                         app(ProductService::class)->setBranchMinimum($record->product, $record->branch_id, (int) $data['min_stock']);
                         Notification::make()->title(__('Minimum saved.'))->success()->send();

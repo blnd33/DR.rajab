@@ -47,12 +47,12 @@ class KitCheckoutResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('Kit checkout');
+        return __('Instrument set checkout');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('Kit checkouts');
+        return __('Instrument set checkouts');
     }
 
     public static function getEloquentQuery(): Builder
@@ -69,7 +69,7 @@ class KitCheckoutResource extends Resource
 
     public static function getNavigationBadgeTooltip(): ?string
     {
-        return __('Kits out at hospitals');
+        return __('Instrument sets out at hospitals');
     }
 
     public static function table(Table $table): Table
@@ -79,7 +79,7 @@ class KitCheckoutResource extends Resource
             ->defaultSort('checked_out_at', 'desc')
             ->columns([
                 CodeColumn::make('number')->label(__('Number'))->searchable()->sortable(),
-                TextColumn::make('kit.code')->label(__('Kit'))->description(fn (KitCheckout $r) => $r->kit->type->name),
+                TextColumn::make('kit.code')->label(__('Instrument set'))->description(fn (KitCheckout $r) => $r->kit->type->name),
                 TextColumn::make('customer.code')->label(__('Hospital'))->badge()->color('gray'),
                 TextColumn::make('doctor.name')->label(__('Doctor'))->placeholder('—')->toggleable(),
                 LocalDateTimeColumn::make('checked_out_at')->label(__('Out'))->sortable(),
@@ -90,12 +90,12 @@ class KitCheckoutResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('status')->label(__('Status'))->options(KitCheckoutStatus::options()),
-                SelectFilter::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('kits.view_any')),
+                SelectFilter::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('kits.view_any')),
                 Filter::make('overdue')->label(__('Overdue only'))
                     ->query(fn (Builder $query) => $query->where('status', KitCheckoutStatus::Out)->where('due_back_at', '<', now())),
             ])
             ->recordActions([ViewAction::make()])
-            ->emptyStateHeading(__('No kit checkouts yet'));
+            ->emptyStateHeading(__('No instrument set checkouts yet'));
     }
 
     public static function infolist(Schema $schema): Schema
@@ -104,7 +104,7 @@ class KitCheckoutResource extends Resource
             Section::make()->columnSpanFull()->columns(['default' => 2, 'md' => 4])->schema([
                 TextEntry::make('number')->label(__('Number'))->fontFamily(FontFamily::Mono)->extraAttributes(['dir' => 'ltr']),
                 TextEntry::make('status')->label(__('Status'))->badge(),
-                TextEntry::make('kit.code')->label(__('Kit'))->fontFamily(FontFamily::Mono)
+                TextEntry::make('kit.code')->label(__('Instrument set'))->fontFamily(FontFamily::Mono)
                     ->url(fn (KitCheckout $r) => KitResource::getUrl('view', ['record' => $r->kit])),
                 TextEntry::make('customer.name')->label(__('Hospital')),
                 TextEntry::make('doctor.name')->label(__('Doctor'))->placeholder('—'),
@@ -114,7 +114,7 @@ class KitCheckoutResource extends Resource
                 LocalDateTimeEntry::make('due_back_at')->label(__('Due back'))
                     ->color(fn (KitCheckout $r) => $r->isOverdue() ? 'danger' : null),
                 LocalDateTimeEntry::make('returned_at')->label(__('Back'))->placeholder('—'),
-                TextEntry::make('surgeries')->label(__('Surgeries with this kit'))
+                TextEntry::make('surgeries')->label(__('Surgeries with this instrument set'))
                     ->state(fn (KitCheckout $r) => $r->surgeries()->pluck('number')->implode(', ') ?: null)->placeholder('—')->fontFamily(FontFamily::Mono),
                 TextEntry::make('notes')->label(__('Notes'))->placeholder('—')->columnSpanFull(),
             ]),

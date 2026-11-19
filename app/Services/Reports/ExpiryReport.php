@@ -42,7 +42,7 @@ class ExpiryReport extends Report
     {
         return [
             'level' => __('Expiry level'),
-            'branch_level' => __('Branch and expiry level'),
+            'branch_level' => __('Station and expiry level'),
         ];
     }
 
@@ -54,7 +54,7 @@ class ExpiryReport extends Report
     public function columns(ReportContext $context): array
     {
         return [
-            ...($context->group === 'branch_level' ? [ReportColumn::text('branch', __('Branch'))] : []),
+            ...($context->group === 'branch_level' ? [ReportColumn::text('branch', __('Station'))] : []),
             ReportColumn::text('level', __('Expiry level')),
             ReportColumn::number('units', __('Items')),
             ReportColumn::money('value', __('Value (true cost)')),

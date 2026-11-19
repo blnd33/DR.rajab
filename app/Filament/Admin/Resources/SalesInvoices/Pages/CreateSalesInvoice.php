@@ -46,7 +46,7 @@ class CreateSalesInvoice extends CreateRecord
 
         return $schema->components([
             Section::make(__('Sale'))->columnSpanFull()->columns(['default' => 1, 'md' => 3])->schema([
-                Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('sales.create'))->required()->native(false)->live(),
+                Select::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('sales.create'))->required()->native(false)->live(),
                 Select::make('currency')->label(__('Currency'))->options(fn () => Currency::options())->default('USD')->required()->native(false)->live(),
                 Toggle::make('paid_now')->label(__('Already paid'))->live()->default(false)->inline(false)
                     ->helperText(fn (Get $get) => $paidNow($get)

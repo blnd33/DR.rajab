@@ -64,7 +64,7 @@ class CustomerReturnResource extends Resource
             ->defaultSort('received_at', 'desc')
             ->columns([
                 CodeColumn::make('number')->label(__('Number'))->searchable()->sortable(),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('customer.name')->label(__('Hospital / customer'))->placeholder('—'),
                 TextColumn::make('status')->label(__('Status'))->badge(),
                 TextColumn::make('items_sum_quantity')->label(__('Items'))->alignEnd()->formatStateUsing(fn ($state) => Display::number((int) $state)),
@@ -81,7 +81,7 @@ class CustomerReturnResource extends Resource
             Section::make()->columnSpanFull()->columns(['default' => 2, 'md' => 4])->schema([
                 TextEntry::make('number')->label(__('Number'))->fontFamily(FontFamily::Mono)->extraAttributes(['dir' => 'ltr']),
                 TextEntry::make('status')->label(__('Status'))->badge(),
-                TextEntry::make('branch.code')->label(__('Branch')),
+                TextEntry::make('branch.code')->label(__('Station')),
                 TextEntry::make('customer.name')->label(__('Hospital / customer'))->placeholder('—'),
                 TextEntry::make('receiver.name')->label(__('Received by')),
                 LocalDateTimeEntry::make('received_at')->label(__('Received')),

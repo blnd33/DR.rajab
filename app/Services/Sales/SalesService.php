@@ -68,7 +68,7 @@ class SalesService
     public function sell(Branch $branch, array $data, User $by): SalesInvoice
     {
         if (! $this->scope->allows($by, 'sales.create', $branch->id)) {
-            throw new AuthorizationException(__('You are not allowed to sell in this branch.'));
+            throw new AuthorizationException(__('You are not allowed to sell in this station.'));
         }
 
         $terms = PaymentTerms::from($data['payment_terms'] ?? PaymentTerms::Cash->value);
@@ -231,7 +231,7 @@ class SalesService
     public function void(SalesInvoice $invoice, string $reason, User $by): SalesInvoice
     {
         if (! $this->scope->allows($by, 'sales.void', $invoice->branch_id)) {
-            throw new AuthorizationException(__('You are not allowed to void sales in this branch.'));
+            throw new AuthorizationException(__('You are not allowed to void sales in this station.'));
         }
 
         if (blank($reason)) {

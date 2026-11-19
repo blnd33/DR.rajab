@@ -39,7 +39,7 @@ class ClinicalOverview extends StatsOverviewWidget
 
     protected function getHeading(): ?string
     {
-        return __('Surgeries and kits');
+        return __('Surgeries and instrument sets');
     }
 
     protected function getStats(): array
@@ -66,7 +66,7 @@ class ClinicalOverview extends StatsOverviewWidget
                 ->whereIn('kit_checkout_id', ServiceAction::scoped(KitCheckout::query(), 'kits.view_any', ['branch_id'])->select('id'))
                 ->sum('qty_unaccounted');
 
-            $stats[] = Stat::make(__('Kits out at hospitals'), Display::number($out->count()))
+            $stats[] = Stat::make(__('Instrument sets out at hospitals'), Display::number($out->count()))
                 ->description($overdue > 0 ? __(':count overdue', ['count' => Display::number($overdue)]) : null)
                 ->descriptionColor('danger')
                 ->icon(Heroicon::OutlinedBriefcase)

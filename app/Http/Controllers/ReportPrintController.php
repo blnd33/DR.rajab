@@ -31,7 +31,7 @@ class ReportPrintController extends Controller
 
         $meta = array_filter([
             __('Period') => in_array('period', $definition->filters(), true) ? Display::date($context->from).' → '.Display::date($context->until) : Display::date(now()),
-            __('Branch') => $branch->name ?? __('All my branches'),
+            __('Station') => $branch->name ?? __('All my stations'),
             __('Amounts in') => in_array('currency', $definition->filters(), true) ? $context->currency : null,
             __('Group by') => $context->group !== null ? ($definition->groups()[$context->group] ?? null) : null,
         ]);

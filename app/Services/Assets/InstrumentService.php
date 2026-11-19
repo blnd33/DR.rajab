@@ -94,7 +94,7 @@ class InstrumentService
     private function assertLoose(Instrument $instrument, array $allowed): void
     {
         if ($instrument->kit_id !== null) {
-            throw new StockRuleViolation(__('Take :code out of its kit first.', ['code' => $instrument->code]));
+            throw new StockRuleViolation(__('Take :code out of its instrument set first.', ['code' => $instrument->code]));
         }
 
         if (! in_array($instrument->status, $allowed, true)) {
@@ -112,7 +112,7 @@ class InstrumentService
     private function authorize(User $by, int $branchId): void
     {
         if (! $this->scope->allows($by, 'instruments.manage', $branchId)) {
-            throw new AuthorizationException(__('You are not allowed to do this in this branch.'));
+            throw new AuthorizationException(__('You are not allowed to do this in this station.'));
         }
     }
 }

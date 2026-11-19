@@ -50,13 +50,13 @@ class CreateSurgery extends CreateRecord
     {
         return $schema->components([
             Section::make(__('Surgery'))->columnSpanFull()->columns(['default' => 1, 'md' => 3])->schema([
-                Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('surgeries.create'))->required()->live()->native(false)
+                Select::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('surgeries.create'))->required()->live()->native(false)
                     ->default(fn () => User::focusedBranchId() ?? ServiceAction::user()->primary_branch_id),
                 DatePicker::make('surgery_date')->label(__('Date'))->default(fn () => now(config('orthotrack.timezone'))->toDateString())->required()->native(false)->displayFormat('Y-m-d')->maxDate(now()->addDay()),
                 Select::make('surgery_type_id')->label(__('Surgery'))->options(fn () => SurgeryType::options())->required()->native(false),
                 Select::make('customer_id')->label(__('Hospital'))->options(fn () => Customer::options())->searchable()->required()->native(false),
                 ToggleButtons::make('laterality')->label(__('Side'))->options(Laterality::options())->default(Laterality::NotApplicable->value)->inline(),
-                Select::make('kit_checkout_id')->label(__('Kit used (optional)'))->native(false)
+                Select::make('kit_checkout_id')->label(__('Instrument set used (optional)'))->native(false)
                     ->options(fn (Get $get) => KitCheckout::query()->with('kit')->where('status', KitCheckoutStatus::Out)->where('branch_id', (int) $get('branch_id'))
                         ->get()->mapWithKeys(fn (KitCheckout $c) => [$c->id => $c->label()])),
                 TextInput::make('fee_amount')->label(__('Surgery fee (optional)'))->numeric()->minValue(0)->extraInputAttributes(['dir' => 'ltr'])
@@ -80,7 +80,7 @@ class CreateSurgery extends CreateRecord
                     }),
                 Select::make('lead_doctor_id')->label(__('Lead surgeon'))->options(fn (Get $get) => User::doctorOptions((int) $get('branch_id') ?: null))->default(fn () => ServiceAction::user()->id)->required()->native(false),
                 Select::make('technician_ids')->label(__('Technicians'))->options(fn (Get $get) => User::technicianOptions((int) $get('branch_id') ?: null))->multiple()->native(false)->columnSpan(2)
-                    ->helperText(fn (Get $get) => User::technicianOptions((int) $get('branch_id') ?: null) === [] ? __('No technicians in this branch yet — add them under Clinical → Technicians.') : null),
+                    ->helperText(fn (Get $get) => User::technicianOptions((int) $get('branch_id') ?: null) === [] ? __('No technicians in this station yet — add them under Clinical → Technicians.') : null),
                 Textarea::make('notes')->label(__('Notes'))->rows(2)->columnSpanFull(),
             ]),
             Section::make(__('Implants and products used'))->columnSpanFull()->schema([
@@ -91,7 +91,7 @@ class CreateSurgery extends CreateRecord
                             ->options(fn () => app(SurgeryProductPicker::class)->categories())
                             ->afterStateUpdated(fn (Set $set) => $set('product_id', null)),
                         Select::make('product_id')->label(__('Product'))->searchable()->native(false)->live()->columnSpan(['default' => 1, 'md' => 2])
-                            ->helperText(__('Only products with stock in this branch.'))
+                            ->helperText(__('Only products with stock in this station.'))
                             ->options(fn (Get $get) => filled($get('../../branch_id'))
                                 ? app(SurgeryProductPicker::class)->productOptions((int) $get('../../branch_id'), filled($get('category_id')) ? (int) $get('category_id') : null)
                                 : [])

@@ -25,7 +25,7 @@ enum CountLineResult: string implements HasColor, HasIcon, HasLabel
         return match ($this) {
             self::Found => __('Found'),
             self::Missing => __('Missing'),
-            self::ExtraOtherBranch => __('Belongs to another branch'),
+            self::ExtraOtherBranch => __('Belongs to another station'),
             self::ExtraUnknown => __('Not in the system'),
             self::QtyMismatch => __('Quantity differs'),
         };

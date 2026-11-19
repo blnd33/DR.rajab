@@ -116,7 +116,7 @@
         {{ __('Uploaded by :name', ['name' => $import->user->name]) }} ·
         <time dir="ltr">{{ Display::dateTime($import->created_at) }}</time>
         @if ($import->branch)
-            · {{ __('Default branch') }}: {{ $import->branch->code }}
+            · {{ __('Default station') }}: {{ $import->branch->code }}
         @endif
     </p>
 </div>

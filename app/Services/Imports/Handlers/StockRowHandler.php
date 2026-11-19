@@ -62,7 +62,7 @@ class StockRowHandler implements RowHandler
             'lot' => 'Lot',
             'expiry_date' => 'Expiry date',
             'quantity' => 'Quantity',
-            'branch' => 'Branch',
+            'branch' => 'Station',
             'purchase_price' => 'Purchase price',
             'currency' => 'Currency',
         ];
@@ -94,7 +94,7 @@ class StockRowHandler implements RowHandler
             __('Serial-tracked products: Serial is required and Quantity is 1. Existing serials are updated (lot, expiry, price) — never moved.'),
             __('Lot-tracked products: leave Serial empty and fill Quantity. A lot that is already in stock must have the same quantity; quantity changes go through a stock count.'),
             __('Expiry date: YYYY-MM-DD (or an Excel date). Expired items are imported with a warning and cannot be used.'),
-            __('Branch: the branch code (DHK, EBL…). Excel cannot move stock between branches or change used, sold or returned units.'),
+            __('Station: the station code (DHK, EBL…). Excel cannot move stock between stations or change used, sold or returned units.'),
             __('Purchase price + Currency: the true unit cost. Empty = the product\'s default purchase price.'),
         ];
     }
@@ -247,7 +247,7 @@ class StockRowHandler implements RowHandler
         }
 
         if ($c['branch'] !== null && $unit->branch_id !== $c['branch']->id) {
-            $result->error(__('Serial :serial is in branch :branch. Excel cannot move stock — use a transfer.', ['serial' => $serial, 'branch' => $unit->branch->code]));
+            $result->error(__('Serial :serial is in station :branch. Excel cannot move stock — use a transfer.', ['serial' => $serial, 'branch' => $unit->branch->code]));
 
             return;
         }
@@ -409,20 +409,20 @@ class StockRowHandler implements RowHandler
 
         if ($branch === null) {
             $result->error($code === null
-                ? __('Branch is empty.')
-                : __('Branch :code does not exist.', ['code' => $code]));
+                ? __('Station is empty.')
+                : __('Station :code does not exist.', ['code' => $code]));
 
             return null;
         }
 
         if (! $branch->isActive()) {
-            $result->error(__('Branch :code is closed.', ['code' => $branch->code]));
+            $result->error(__('Station :code is closed.', ['code' => $branch->code]));
 
             return null;
         }
 
         if ($this->allowedBranchIds !== null && ! in_array($branch->id, $this->allowedBranchIds, true)) {
-            $result->error(__('You may not import stock into branch :code.', ['code' => $branch->code]));
+            $result->error(__('You may not import stock into station :code.', ['code' => $branch->code]));
 
             return null;
         }

@@ -27,10 +27,10 @@
         @endif
         @if (count($branches) > 1)
             <label class="space-y-1 text-sm">
-                <span class="block font-medium text-gray-700 dark:text-gray-200">{{ __('Branch') }}</span>
+                <span class="block font-medium text-gray-700 dark:text-gray-200">{{ __('Station') }}</span>
                 <x-filament::input.wrapper>
                     <x-filament::input.select wire:model.live="branch">
-                        <option value="">{{ __('All my branches') }}</option>
+                        <option value="">{{ __('All my stations') }}</option>
                         @foreach ($branches as $id => $label)
                             <option value="{{ $id }}">{{ $label }}</option>
                         @endforeach
@@ -111,7 +111,7 @@
                             <x-filament::icon icon="heroicon-o-chat-bubble-left-right" class="size-6 shrink-0 text-primary-500" />
                             <div class="space-y-1 text-sm text-gray-600 dark:text-gray-300">
                                 <p class="font-semibold text-gray-950 dark:text-white">{{ __('Tap a question, or type or scan a code.') }}</p>
-                                <p>{{ __('Codes: serial, SKU, barcode, lot, kit, instrument, document number (TRF-…, SRG-…, INV-…) or patient file number.') }}</p>
+                                <p>{{ __('Codes: serial, SKU, barcode, lot, instrument set, instrument, document number (TRF-…, SRG-…, INV-…) or patient file number.') }}</p>
                                 <p>{{ __('Answers come straight from the system. It does not understand full sentences — a few words are enough.') }}</p>
                             </div>
                         </div>

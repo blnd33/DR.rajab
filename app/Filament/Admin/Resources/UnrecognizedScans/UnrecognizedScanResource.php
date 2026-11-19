@@ -51,7 +51,7 @@ class UnrecognizedScanResource extends Resource
                 CodeColumn::make('raw')->label(__('Code'))->state(fn (UnrecognizedScan $record) => $record->visibleRaw())->wrap()->searchable(),
                 CodeColumn::make('raw_hex')->label(__('Bytes (hex)'))->limit(48)->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('context')->label(__('Screen'))->badge()->color('gray'),
-                TextColumn::make('branch.code')->label(__('Branch'))->placeholder('—'),
+                TextColumn::make('branch.code')->label(__('Station'))->placeholder('—'),
                 TextColumn::make('user.name')->label(__('By'))->placeholder('—'),
             ])
             ->filters([SelectFilter::make('context')->label(__('Screen'))->options(ScanContext::options())])

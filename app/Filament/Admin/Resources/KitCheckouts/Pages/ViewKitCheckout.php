@@ -31,7 +31,7 @@ class ViewKitCheckout extends ViewRecord
 
     public function getTitle(): string
     {
-        return __('Kit checkout :number', ['number' => $this->checkout()->number]);
+        return __('Instrument set checkout :number', ['number' => $this->checkout()->number]);
     }
 
     protected function getHeaderActions(): array
@@ -39,7 +39,7 @@ class ViewKitCheckout extends ViewRecord
         return [
             PrintAction::make('kit-checkout', fn () => $this->checkout()),
             Action::make('return')
-                ->label(__('Return the kit'))
+                ->label(__('Return the instrument set'))
                 ->icon(Heroicon::OutlinedArrowDownTray)
                 ->color('success')
                 ->visible(fn () => $this->checkout()->status === KitCheckoutStatus::Out && ServiceAction::user()->canInBranch('kits.return', $this->checkout()->branch_id))
@@ -61,7 +61,7 @@ class ViewKitCheckout extends ViewRecord
                         array_map('intval', (array) ($data['lots'] ?? [])),
                         $u,
                         $data['notes'] ?? null,
-                    ), __('Kit returned and reconciled.'));
+                    ), __('Instrument set returned and reconciled.'));
 
                     $this->record = $this->checkout()->fresh();
                     $this->dispatch('checkout-updated');

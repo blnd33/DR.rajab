@@ -32,12 +32,12 @@ class BranchResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('Branch');
+        return __('Station');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('Branches');
+        return __('Stations');
     }
 
     public static function form(Schema $schema): Schema

@@ -19,7 +19,7 @@ enum LocationType: string implements HasLabel
     {
         return match ($this) {
             self::Shelf => __('Shelf'),
-            self::Kit => __('Kit'),
+            self::Kit => __('Instrument set'),
             self::Hospital => __('Hospital'),
             self::Transit => __('In transit'),
             self::None => __('Not in stock'),

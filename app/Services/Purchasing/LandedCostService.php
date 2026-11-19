@@ -47,7 +47,7 @@ class LandedCostService
     public function add(Purchase $purchase, array $data, User $by): LandedCost
     {
         if (! $this->scope->allows($by, 'purchases.landed_costs', $purchase->branch_id)) {
-            throw new AuthorizationException(__('You are not allowed to add landed costs in this branch.'));
+            throw new AuthorizationException(__('You are not allowed to add landed costs in this station.'));
         }
 
         $amount = BigDecimal::of((string) $data['amount'])->toScale(4, RoundingMode::HalfUp);

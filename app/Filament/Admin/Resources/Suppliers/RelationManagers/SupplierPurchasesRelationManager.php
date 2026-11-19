@@ -36,7 +36,7 @@ class SupplierPurchasesRelationManager extends RelationManager
             ->columns([
                 CodeColumn::make('number')->label(__('Number')),
                 CodeColumn::make('supplier_invoice_number')->label(__('Supplier invoice no.')),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('invoice_date')->label(__('Invoice date'))->formatStateUsing(fn ($state) => Display::date($state)),
                 TextColumn::make('due_date')->label(__('Due'))->placeholder('—')->formatStateUsing(fn ($state) => Display::date($state))
                     ->color(fn (Purchase $r) => PurchaseResource::isOverdue($r) ? 'danger' : null),

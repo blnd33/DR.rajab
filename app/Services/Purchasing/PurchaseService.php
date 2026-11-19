@@ -240,7 +240,7 @@ class PurchaseService
     private function authorize(User $by, string $permission, int $branchId): void
     {
         if (! $this->scope->allows($by, $permission, $branchId)) {
-            throw new AuthorizationException(__('You are not allowed to do this in this branch.'));
+            throw new AuthorizationException(__('You are not allowed to do this in this station.'));
         }
     }
 }

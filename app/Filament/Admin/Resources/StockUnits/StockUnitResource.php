@@ -103,7 +103,7 @@ class StockUnitResource extends Resource
                 CodeColumn::make('lot')->label(__('Lot'))->searchable()->placeholder('—'),
                 ExpiryColumn::make('expiry_date'),
                 TextColumn::make('status')->label(__('Status'))->badge(),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('location')
                     ->label(__('Where'))
                     ->state(fn (StockUnit $record) => $record->locationLabel())
@@ -123,7 +123,7 @@ class StockUnitResource extends Resource
                     ->options(StockStatus::options())
                     ->default(array_map(fn (StockStatus $s) => $s->value, StockStatus::onHand())),
                 SelectFilter::make('branch_id')
-                    ->label(__('Branch'))
+                    ->label(__('Station'))
                     ->options(fn () => $scope->apply(Branch::query()->orderBy('code'), $user, 'stock.view', 'id')->pluck('code', 'id')),
                 SelectFilter::make('product_id')
                     ->label(__('Product'))
@@ -165,7 +165,7 @@ class StockUnitResource extends Resource
                     ExpiryEntry::make('expiry_date'),
                     TextEntry::make('production_date')->label(__('Production date'))->state(fn (StockUnit $record) => Display::date($record->production_date))->placeholder('—'),
                     TextEntry::make('status')->label(__('Status'))->badge(),
-                    TextEntry::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                    TextEntry::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                     TextEntry::make('location')->label(__('Where'))->state(fn (StockUnit $record) => $record->locationLabel()),
                     TextEntry::make('supplier.name')->label(__('Supplier'))->placeholder('—'),
                     TextEntry::make('unit_cost')

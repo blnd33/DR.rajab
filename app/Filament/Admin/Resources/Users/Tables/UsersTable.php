@@ -36,8 +36,8 @@ class UsersTable
                 CodeColumn::make('username')->label(__('Username'))->searchable(),
                 TextColumn::make('roles.name')->label(__('Role'))->badge()
                     ->formatStateUsing(fn (string $state) => RoleService::label($state)),
-                TextColumn::make('primaryBranch.code')->label(__('Main branch'))->badge()->color('gray')
-                    ->placeholder(fn (User $record) => $record->all_branches ? __('All branches') : '—'),
+                TextColumn::make('primaryBranch.code')->label(__('Main station'))->badge()->color('gray')
+                    ->placeholder(fn (User $record) => $record->all_branches ? __('All stations') : '—'),
                 TextColumn::make('locale')->label(__('Language'))->badge()->color('gray')->toggleable(isToggledHiddenByDefault: true),
                 IconColumn::make('is_active')->label(__('Active'))->boolean(),
                 LocalDateTimeColumn::make('last_login_at')->label(__('Last login'))->sortable()->placeholder(__('Never')),
@@ -50,7 +50,7 @@ class UsersTable
                         ? $query->whereHas('roles', fn ($q) => $q->where('name', $data['value']))
                         : $query),
                 SelectFilter::make('branch')
-                    ->label(__('Branch'))
+                    ->label(__('Station'))
                     ->options(fn () => Branch::query()->orderBy('code')->pluck('code', 'id'))
                     ->query(fn (Builder $query, array $data) => filled($data['value'])
                         ? $query->where(fn ($q) => $q->where('all_branches', true)->orWhereHas('branches', fn ($b) => $b->whereKey($data['value'])))

@@ -99,11 +99,11 @@ class PatientResource extends Resource
                 TextColumn::make('age')->label(__('Age'))->state(fn (Patient $r) => $r->age())->formatStateUsing(fn ($state) => Display::number($state))->placeholder('—'),
                 TextColumn::make('gender')->label(__('Gender'))->badge()->placeholder('—')->toggleable(),
                 TextColumn::make('primaryDoctor.name')->label(__('Primary doctor'))->placeholder('—')->toggleable(),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('surgeries_count')->label(__('Surgeries'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
             ])
             ->filters([
-                SelectFilter::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('patients.view_all') ?: ServiceAction::branchOptions('patients.view_own')),
+                SelectFilter::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('patients.view_all') ?: ServiceAction::branchOptions('patients.view_own')),
                 Filter::make('search')
                     ->schema([TextInput::make('q')->label(__('File number, name or phone'))])
                     ->query(fn (Builder $query, array $data) => filled($data['q'] ?? null)

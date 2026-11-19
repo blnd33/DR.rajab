@@ -12,6 +12,6 @@ class BranchClosureBlocked extends RuntimeException
      */
     public function __construct(public readonly Branch $branch, public readonly array $reasons)
     {
-        parent::__construct(__('Branch :code cannot be closed yet.', ['code' => $branch->code]));
+        parent::__construct(__('Station :code cannot be closed yet.', ['code' => $branch->code]));
     }
 }

@@ -297,7 +297,7 @@ class ExpenseService
         $sum = array_reduce($percentages, fn (BigDecimal $s, $p) => $s->plus((string) $p), BigDecimal::zero());
 
         if (! $sum->isEqualTo(100)) {
-            throw new MoneyRuleViolation(__('The branch shares must add up to 100%.'), 'allocations');
+            throw new MoneyRuleViolation(__('The station shares must add up to 100%.'), 'allocations');
         }
 
         $result = [];

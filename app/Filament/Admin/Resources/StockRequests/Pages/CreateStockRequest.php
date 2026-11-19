@@ -51,8 +51,8 @@ class CreateStockRequest extends CreateRecord
     public function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('requesting_branch_id')->label(__('For branch'))->options(fn () => ServiceAction::branchOptions('stock_requests.create'))->required()->live()->native(false),
-            Select::make('preferred_source_branch_id')->label(__('Ask which branch? (optional)'))
+            Select::make('requesting_branch_id')->label(__('For station'))->options(fn () => ServiceAction::branchOptions('stock_requests.create'))->required()->live()->native(false),
+            Select::make('preferred_source_branch_id')->label(__('Ask which station? (optional)'))
                 ->options(fn ($get) => Branch::query()->active()->where('id', '<>', (int) $get('requesting_branch_id'))->orderBy('code')->get()->mapWithKeys(fn ($b) => [$b->id => $b->label()]))
                 ->placeholder(__('Any — the approver decides'))->native(false),
             ToggleButtons::make('priority')->label(__('Priority'))->options(RequestPriority::options())->default(RequestPriority::Normal->value)->inline()->required(),

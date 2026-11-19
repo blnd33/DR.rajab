@@ -168,7 +168,7 @@
                     <span wire:loading wire:target="photo">{{ __('Uploading…') }}</span>
                     <input type="file" accept="image/*" capture="environment" wire:model="photo" class="sr-only">
                 </label>
-                <p class="text-xs text-muted-fg">{{ __('Required. The other branch sees this photo.') }}</p>
+                <p class="text-xs text-muted-fg">{{ __('Required. The other station sees this photo.') }}</p>
             @endif
             @error('photo') <p class="text-sm text-danger">{{ $message }}</p> @enderror
         </section>
@@ -209,7 +209,7 @@
             <div class="mt-3 space-y-2">
                 <label for="cancel-reason" class="block text-sm font-semibold">{{ __('Reason') }}</label>
                 <input id="cancel-reason" wire:model="cancelReason" class="ot-input">
-                <button type="button" wire:click="cancel" class="ot-btn ot-btn-danger w-full" wire:confirm="{{ __('Cancel this transfer? Items in transit go back to the sending branch.') }}">{{ __('Cancel transfer') }}</button>
+                <button type="button" wire:click="cancel" class="ot-btn ot-btn-danger w-full" wire:confirm="{{ __('Cancel this transfer? Items in transit go back to the sending station.') }}">{{ __('Cancel transfer') }}</button>
             </div>
         </details>
     @endif

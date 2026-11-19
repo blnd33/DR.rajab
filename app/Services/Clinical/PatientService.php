@@ -199,7 +199,7 @@ class PatientService
     private function authorize(User $by, Branch|int $branch): void
     {
         if (! $this->scope->allows($by, 'patients.manage', $branch)) {
-            throw new AuthorizationException(__('You are not allowed to manage patients in this branch.'));
+            throw new AuthorizationException(__('You are not allowed to manage patients in this station.'));
         }
     }
 }

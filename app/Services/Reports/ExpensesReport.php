@@ -29,7 +29,7 @@ class ExpensesReport extends Report
 
     public function description(): ?string
     {
-        return __('Paid expenses; costs split over branches count for each branch\'s share.');
+        return __('Paid expenses; costs split over stations count for each station\'s share.');
     }
 
     public function filters(): array
@@ -41,18 +41,18 @@ class ExpensesReport extends Report
     {
         return [
             'category' => __('Category'),
-            'branch' => __('Branch'),
+            'branch' => __('Station'),
             'month' => __('Month'),
-            'category_branch' => __('Category and branch'),
+            'category_branch' => __('Category and station'),
         ];
     }
 
     public function columns(ReportContext $context): array
     {
         $head = match ($context->group) {
-            'branch' => [ReportColumn::text('branch', __('Branch'))],
+            'branch' => [ReportColumn::text('branch', __('Station'))],
             'month' => [ReportColumn::code('month', __('Month'))],
-            'category_branch' => [ReportColumn::text('category', __('Category')), ReportColumn::text('branch', __('Branch'))],
+            'category_branch' => [ReportColumn::text('category', __('Category')), ReportColumn::text('branch', __('Station'))],
             default => [ReportColumn::text('category', __('Category'))],
         };
 

@@ -23,7 +23,7 @@ class CreateInstrument extends CreateRecord
     {
         return $schema->columns(2)->components([
             Select::make('instrument_type_id')->label(__('Instrument type'))->options(fn () => InstrumentType::options())->required()->native(false),
-            Select::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('instruments.manage'))->required()->native(false)
+            Select::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('instruments.manage'))->required()->native(false)
                 ->default(fn () => ServiceAction::user()->primary_branch_id),
             TextInput::make('code')->label(__('Code'))->maxLength(32)->unique('instruments', 'code')
                 ->helperText(__('Leave empty for the next number.'))

@@ -26,7 +26,7 @@ class StockCheck implements BranchDependencyCheck
             return null;
         }
 
-        return __('Stock is still in this branch: :units serial units and :qty lot items. Move or write them off first.', [
+        return __('Stock is still in this station: :units serial units and :qty lot items. Move or write them off first.', [
             'units' => $units,
             'qty' => $lotQuantity,
         ]);

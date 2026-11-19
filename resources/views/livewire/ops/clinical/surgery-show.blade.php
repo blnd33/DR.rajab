@@ -34,7 +34,7 @@
             <div><dt class="text-muted-fg">{{ __('Patient') }}</dt><dd class="font-semibold">{{ $surgery->patientName() ?? '—' }}</dd></div>
             <div><dt class="text-muted-fg">{{ __('Hospital') }}</dt><dd class="font-semibold">{{ $surgery->customer?->name ?? '—' }}</dd></div>
             <div><dt class="text-muted-fg">{{ __('Side') }}</dt><dd class="font-semibold">{{ $surgery->laterality->getLabel() }}</dd></div>
-            <div><dt class="text-muted-fg">{{ __('Branch') }}</dt><dd class="font-semibold">{{ $surgery->branch->code }}</dd></div>
+            <div><dt class="text-muted-fg">{{ __('Station') }}</dt><dd class="font-semibold">{{ $surgery->branch->code }}</dd></div>
             @php
                 $isTechnician = fn ($d) => $d->getRelationValue('pivot')?->getAttribute('role') === \App\Enums\SurgeryDoctorRole::Technician->value;
                 $technicianNames = $surgery->doctors->filter($isTechnician)->pluck('name')->implode(', ');
@@ -47,7 +47,7 @@
                 <div class="col-span-2"><dt class="text-muted-fg">{{ __('Surgery fee') }}</dt><dd class="font-semibold"><x-money :value="$surgery->fee_amount" :currency="$surgery->fee_currency" /></dd></div>
             @endif
             @if ($surgery->kitCheckout)
-                <div class="col-span-2"><dt class="text-muted-fg">{{ __('Kit') }}</dt><dd><x-code :value="$surgery->kitCheckout->kit->code" class="font-semibold" /></dd></div>
+                <div class="col-span-2"><dt class="text-muted-fg">{{ __('Instrument set') }}</dt><dd><x-code :value="$surgery->kitCheckout->kit->code" class="font-semibold" /></dd></div>
             @endif
             @if ($surgery->notes)
                 <div class="col-span-2"><dt class="text-muted-fg">{{ __('Notes') }}</dt><dd>{{ $surgery->notes }}</dd></div>

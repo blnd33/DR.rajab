@@ -59,10 +59,10 @@ class KitUnitsRelationManager extends RelationManager
                     ->color('gray')
                     ->visible(fn () => $this->kit()->status === KitStatus::Available && ServiceAction::user()->canInBranch('kits.prepare', $this->kit()->branch_id))
                     ->requiresConfirmation()
-                    ->modalDescription(__('The unit goes back on the branch shelf.'))
-                    ->action(fn (StockUnit $record, Action $action) => ServiceAction::run($action, fn ($u) => app(KitService::class)->removeUnit($record, $u), __('Taken out of the kit.'))),
+                    ->modalDescription(__('The unit goes back on the station shelf.'))
+                    ->action(fn (StockUnit $record, Action $action) => ServiceAction::run($action, fn ($u) => app(KitService::class)->removeUnit($record, $u), __('Taken out of the instrument set.'))),
             ])
-            ->emptyStateHeading(__('No implants in this kit'));
+            ->emptyStateHeading(__('No implants in this instrument set'));
     }
 
     private function kit(): Kit

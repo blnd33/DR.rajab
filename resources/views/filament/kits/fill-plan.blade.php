@@ -4,9 +4,9 @@
 @endphp
 <div class="space-y-3 text-sm">
     @if ($plan['lines'] === [])
-        <p class="text-gray-500 dark:text-gray-400">{{ __('The kit type\'s list has no instruments.') }}</p>
+        <p class="text-gray-500 dark:text-gray-400">{{ __('The instrument set type\'s list has no instruments.') }}</p>
     @elseif ($todo->isEmpty())
-        <p class="font-medium text-success-600 dark:text-success-400">{{ __('Every instrument on the list is already in the kit.') }}</p>
+        <p class="font-medium text-success-600 dark:text-success-400">{{ __('Every instrument on the list is already in the instrument set.') }}</p>
     @else
         <div class="max-h-80 overflow-auto rounded-lg ring-1 ring-gray-950/5 dark:ring-white/10">
             <table class="w-full">

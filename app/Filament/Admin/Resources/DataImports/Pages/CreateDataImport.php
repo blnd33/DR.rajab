@@ -71,7 +71,7 @@ class CreateDataImport extends CreateRecord
             Section::make(__('2. The supplier workbook'))
                 ->visible(fn (Get $get) => ImportType::tryFrom((string) $get('type'))?->hasTemplate() === false)
                 ->schema([
-                    Text::make(__('Upload the supplier workbook exactly as you received it — no template. Implants become products, instrument sets become kit types with their contents, and the colours become the usage level of each item. You see everything before it is saved.')),
+                    Text::make(__('Upload the supplier workbook exactly as you received it — no template. Implants become products, instrument sets become instrument set types with their contents, and the colours become the usage level of each item. You see everything before it is saved.')),
                 ]),
 
             Section::make(__('2. Fill the template'))
@@ -94,8 +94,8 @@ class CreateDataImport extends CreateRecord
             Section::make(__('3. Upload the file'))
                 ->schema([
                     Select::make('branch_id')
-                        ->label(__('Default branch'))
-                        ->helperText(__('Used for rows with an empty Branch column.'))
+                        ->label(__('Default station'))
+                        ->helperText(__('Used for rows with an empty Station column.'))
                         ->options(fn () => app(BranchScopeResolver::class)->selectableBranches($this->user(), 'stock.import')->get()->mapWithKeys(fn (Branch $b) => [$b->id => $b->label()]))
                         ->visible(fn (Get $get) => $get('type') === ImportType::Stock->value)
                         ->native(false),

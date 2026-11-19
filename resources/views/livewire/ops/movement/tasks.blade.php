@@ -29,7 +29,7 @@
         @if ($canKits)
             <a href="{{ route('ops.kits.index') }}" wire:navigate class="ot-card flex min-h-20 flex-col justify-between gap-2 p-4 hover:bg-subtle">
                 @svg('heroicon-o-briefcase', 'size-7 text-primary')
-                <span class="font-semibold">{{ __('Kits') }}</span>
+                <span class="font-semibold">{{ __('Instrument sets') }}</span>
             </a>
         @endif
         @if ($canCreateTransfer)
@@ -81,7 +81,7 @@
 
     @if ($kitsOut->isNotEmpty())
         <section class="space-y-3">
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('Kits out at hospitals') }}</h2>
+            <h2 class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('Instrument sets out at hospitals') }}</h2>
             @foreach ($kitsOut as $kit)
                 <a href="{{ route('ops.kits.show', $kit) }}" wire:navigate wire:key="ko-{{ $kit->id }}" class="ot-card flex items-center justify-between gap-3 p-4 hover:bg-subtle">
                     <div class="min-w-0 space-y-1">
@@ -99,7 +99,7 @@
     @endif
 
     @php($sections = [
-        ['title' => __('To receive'), 'items' => $incoming, 'empty' => __('Nothing on its way to this branch.'), 'kind' => 'incoming'],
+        ['title' => __('To receive'), 'items' => $incoming, 'empty' => __('Nothing on its way to this station.'), 'kind' => 'incoming'],
         ['title' => __('To prepare and send'), 'items' => $toSend, 'empty' => null, 'kind' => 'draft'],
         ['title' => __('Sent, on the way'), 'items' => $outgoing, 'empty' => null, 'kind' => 'outgoing'],
     ])

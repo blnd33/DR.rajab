@@ -57,7 +57,7 @@ final class SummarySettings
         $branchId = filled($data['branch_id'] ?? null) ? (int) $data['branch_id'] : null;
 
         if ($branchId !== null && ! array_key_exists($branchId, self::branchOptions($user))) {
-            throw ValidationException::withMessages(['branch_id' => __('You cannot choose this branch.')]);
+            throw ValidationException::withMessages(['branch_id' => __('You cannot choose this station.')]);
         }
 
         $user->forceFill(['summary_settings' => [

@@ -33,7 +33,7 @@ class ViewKit extends ViewRecord
 
     public function getTitle(): string
     {
-        return __('Kit :code', ['code' => $this->kit()->code]);
+        return __('Instrument set :code', ['code' => $this->kit()->code]);
     }
 
     protected function getHeaderActions(): array
@@ -48,12 +48,12 @@ class ViewKit extends ViewRecord
                 ->color('primary')
                 ->visible(fn () => $available() && $user->canInBranch('kits.prepare', $this->kit()->branch_id))
                 ->modalHeading(fn () => __('Fill :kit from its list', ['kit' => $this->kit()->code]))
-                ->modalDescription(__('Every instrument missing from the kit type\'s list goes into the kit: free instruments of that type on this branch\'s shelf first, then new ones registered with their own code.'))
+                ->modalDescription(__('Every instrument missing from the instrument set type\'s list goes into the instrument set: free instruments of that type on this station\'s shelf first, then new ones registered with their own code.'))
                 ->modalContent(fn () => view('filament.kits.fill-plan', [
                     'plan' => app(KitService::class)->fillPlan($this->kit()),
                     'canRegister' => $user->canInBranch('instruments.manage', $this->kit()->branch_id),
                 ]))
-                ->modalSubmitActionLabel(__('Fill the kit'))
+                ->modalSubmitActionLabel(__('Fill the instrument set'))
                 ->modalSubmitAction(function (Action $action) {
                     $plan = app(KitService::class)->fillPlan($this->kit());
 
@@ -68,7 +68,7 @@ class ViewKit extends ViewRecord
                     }
 
                     $notification = Notification::make()
-                        ->title(trans_choice(':count instrument added to the kit.|:count instruments added to the kit.', $result['added'], ['count' => Display::number($result['added'])]))
+                        ->title(trans_choice(':count instrument added to the instrument set.|:count instruments added to the instrument set.', $result['added'], ['count' => Display::number($result['added'])]))
                         ->success();
 
                     if ($result['registered'] !== []) {
@@ -84,10 +84,10 @@ class ViewKit extends ViewRecord
                     $this->refreshKit();
                 }),
             Action::make('scan')
-                ->label(__('Scan into kit'))
+                ->label(__('Scan into instrument set'))
                 ->icon(Heroicon::OutlinedQrCode)
                 ->visible(fn () => $available() && $user->canInBranch('kits.prepare', $this->kit()->branch_id))
-                ->modalDescription(__('Scan instruments, serial implants or lot boxes (1 per scan). They come from this branch\'s shelf.'))
+                ->modalDescription(__('Scan instruments, serial implants or lot boxes (1 per scan). They come from this station\'s shelf.'))
                 ->modalSubmitActionLabel(__('Add'))
                 ->schema([TextInput::make('code')->label(__('Code'))->required()->autofocus()
                     ->extraInputAttributes(['dir' => 'ltr', 'class' => 'ot-code', 'data-scan-field' => true])])
@@ -95,7 +95,7 @@ class ViewKit extends ViewRecord
                     $added = ServiceAction::run($action, fn ($u) => app(KitService::class)->addByScan($this->kit(), $data['code'], $u));
 
                     if ($added !== null) {
-                        Notification::make()->title(__(':code added to the kit.', ['code' => $added['code']]))->success()->send();
+                        Notification::make()->title(__(':code added to the instrument set.', ['code' => $added['code']]))->success()->send();
                         $this->refreshKit();
                         $this->replaceMountedAction('scan');
                     }
@@ -106,9 +106,9 @@ class ViewKit extends ViewRecord
                 ->color('gray')
                 ->visible(fn () => $available() && $user->canInBranch('kits.prepare', $this->kit()->branch_id))
                 ->requiresConfirmation()
-                ->modalDescription(fn () => app(KitService::class)->compare($this->kit())['complete'] ? null : __('The kit is not complete — refill it from the branch shelf.'))
+                ->modalDescription(fn () => app(KitService::class)->compare($this->kit())['complete'] ? null : __('The instrument set is not complete — refill it from the station shelf.'))
                 ->action(function (Action $action) {
-                    ServiceAction::run($action, fn ($u) => app(KitService::class)->markPrepared($this->kit(), $u), __('Kit marked as prepared.'));
+                    ServiceAction::run($action, fn ($u) => app(KitService::class)->markPrepared($this->kit(), $u), __('Instrument set marked as prepared.'));
                     $this->refreshKit();
                 }),
             Action::make('checkout')
@@ -134,19 +134,19 @@ class ViewKit extends ViewRecord
                         filled($data['patient_id'] ?? null) ? Patient::query()->find($data['patient_id']) : null,
                         filled($data['planned_surgery_date'] ?? null) ? substr((string) $data['planned_surgery_date'], 0, 10) : null,
                         $data['notes'] ?? null,
-                    ), __('Kit checked out.'));
+                    ), __('Instrument set checked out.'));
 
                     if ($checkout !== null) {
                         $this->redirect(KitCheckoutResource::getUrl('view', ['record' => $checkout]));
                     }
                 }),
             Action::make('open_checkout')
-                ->label(__('Return the kit'))
+                ->label(__('Return the instrument set'))
                 ->icon(Heroicon::OutlinedArrowDownTray)
                 ->color('success')
                 ->visible(fn () => $this->kit()->status === KitStatus::OutAtHospital && $this->kit()->current_checkout_id !== null)
                 ->url(fn () => KitCheckoutResource::getUrl('view', ['record' => $this->kit()->current_checkout_id])),
-            PrintLabelsAction::make('kit')->label(__('Print kit label')),
+            PrintLabelsAction::make('kit')->label(__('Print instrument set label')),
         ];
     }
 

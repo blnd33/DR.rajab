@@ -31,7 +31,7 @@ class SystemOverview extends StatsOverviewWidget
             ->count();
 
         return [
-            Stat::make(__('Open branches'), Display::number(Branch::query()->active()->count()))
+            Stat::make(__('Open stations'), Display::number(Branch::query()->active()->count()))
                 ->icon(Heroicon::OutlinedBuildingOffice2),
             Stat::make(__('Active users'), Display::number(User::query()->active()->count()))
                 ->icon(Heroicon::OutlinedUsers),

@@ -35,7 +35,7 @@ final class FieldLabels
             'supplier_id' => __('Supplier'),
             'branch_location_id' => __('Shelf'),
             'quantity' => __('Quantity'),
-            'branch' => __('Branch'),
+            'branch' => __('Station'),
             'description' => __('Description'),
             'usage_level' => __('Usage'),
             'contents' => __('Set contents'),

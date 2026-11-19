@@ -31,7 +31,7 @@ class ClinicalCheck implements BranchDependencyCheck
             return null;
         }
 
-        return __('Kits and instruments still here: :kits kits, :instruments instruments; :out kits out at hospitals; :drafts draft surgeries. Move, retire or finish them first.', [
+        return __('Instrument sets and instruments still here: :kits instrument sets, :instruments instruments; :out instrument sets out at hospitals; :drafts draft surgeries. Move, retire or finish them first.', [
             'kits' => $kits,
             'instruments' => $instruments,
             'out' => $out,

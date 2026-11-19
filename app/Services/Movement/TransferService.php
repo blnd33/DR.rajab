@@ -66,11 +66,11 @@ class TransferService
         $this->authorize($by, 'transfers.create', $from);
 
         if ($from->id === $to->id) {
-            throw new StockRuleViolation(__('Choose another branch to send to.'), 'to_branch_id');
+            throw new StockRuleViolation(__('Choose another station to send to.'), 'to_branch_id');
         }
 
         if (! $from->isActive() || ! $to->isActive()) {
-            throw new StockRuleViolation(__('Both branches must be open.'), 'to_branch_id');
+            throw new StockRuleViolation(__('Both stations must be open.'), 'to_branch_id');
         }
 
         return DB::transaction(fn () => Transfer::query()->create([
@@ -90,7 +90,7 @@ class TransferService
         $this->authorize($by, 'transfers.create', $transfer->from_branch_id);
 
         if ($unit->branch_id !== $transfer->from_branch_id) {
-            throw new StockRuleViolation(__('Unit :serial is in branch :branch, not in :from.', [
+            throw new StockRuleViolation(__('Unit :serial is in station :branch, not in :from.', [
                 'serial' => $unit->serial, 'branch' => $unit->branch->code, 'from' => $transfer->fromBranch->code,
             ]), 'serial');
         }
@@ -529,7 +529,7 @@ class TransferService
                 throw new StockRuleViolation(__('There is no stock on the shelves of :branch.', ['branch' => $from->code]));
             }
 
-            return $this->send($transfer, $by, __('Branch closing: all stock moved'), $photo);
+            return $this->send($transfer, $by, __('Station closing: all stock moved'), $photo);
         });
     }
 
@@ -626,7 +626,7 @@ class TransferService
     private function authorize(User $by, string $permission, Branch|int $branch): void
     {
         if (! $this->scope->allows($by, $permission, $branch instanceof Branch ? $branch->id : $branch)) {
-            throw new AuthorizationException(__('You are not allowed to do this in branch :code.', [
+            throw new AuthorizationException(__('You are not allowed to do this in station :code.', [
                 'code' => $branch instanceof Branch ? $branch->code : (string) Branch::query()->whereKey($branch)->value('code'),
             ]));
         }

@@ -42,7 +42,7 @@ final class PermissionChecklist
                                 }
 
                                 if (PermissionRegistry::isScoped($name)) {
-                                    $parts[] = __('Limited to branches');
+                                    $parts[] = __('Limited to stations');
                                 }
 
                                 if ($parts !== []) {

@@ -31,7 +31,7 @@ class StockByBranchRelationManager extends RelationManager
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return __('Stock by branch');
+        return __('Stock by station');
     }
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
@@ -49,9 +49,9 @@ class StockByBranchRelationManager extends RelationManager
             ->defaultSort('branch_id')
             ->paginated(false)
             ->columns([
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('qty_available')->label(__('On shelf'))->alignEnd()->weight('bold')->formatStateUsing(fn ($state) => Display::number($state)),
-                TextColumn::make('qty_in_kits')->label(__('In kits'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
+                TextColumn::make('qty_in_kits')->label(__('In instrument sets'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('qty_at_hospital')->label(__('At hospitals'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('qty_in_transit')->label(__('In transit'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
                 TextColumn::make('fefo')

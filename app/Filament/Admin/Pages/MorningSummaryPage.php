@@ -45,12 +45,12 @@ class MorningSummaryPage extends Page
 
     public static function getNavigationLabel(): string
     {
-        return __('Morning summary');
+        return __('Morning report');
     }
 
     public function getTitle(): string
     {
-        return __('Morning summary');
+        return __('Morning report');
     }
 
     public static function canAccess(): bool
@@ -81,14 +81,14 @@ class MorningSummaryPage extends Page
                 ->icon(Heroicon::OutlinedBellAlert)
                 ->color('gray')
                 ->requiresConfirmation()
-                ->modalDescription(__('Today\'s summary is built again and sent to your bell and your phone.'))
+                ->modalDescription(__('Today\'s report is built again and sent to your bell and your phone.'))
                 ->action(function () {
                     app(MorningSummaryService::class)->send(ServiceAction::user());
                     $this->date = MorningSummaryService::today();
-                    Notification::make()->title(__('Morning summary sent.'))->success()->send();
+                    Notification::make()->title(__('Morning report sent.'))->success()->send();
                 }),
             Action::make('settings')
-                ->label(__('My summary settings'))
+                ->label(__('My report settings'))
                 ->icon(Heroicon::OutlinedCog6Tooth)
                 ->color('gray')
                 ->url(EditProfile::getUrl()),

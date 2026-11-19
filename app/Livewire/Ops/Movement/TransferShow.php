@@ -136,7 +136,7 @@ class TransferShow extends Component
     {
         $done = $this->attempt(
             fn () => app(TransferService::class)->send($this->transfer, $this->user(), $this->overrideReason ?: null),
-            __('Transfer sent. The receiving branch has been told.'),
+            __('Transfer sent. The receiving station has been told.'),
         );
 
         if ($done !== null) {

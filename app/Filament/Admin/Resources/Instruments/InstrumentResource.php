@@ -99,8 +99,8 @@ class InstrumentResource extends Resource
                 CodeColumn::make('code')->label(__('Code'))->searchable()->sortable(),
                 TextColumn::make('type.name')->label(__('Instrument type')),
                 CodeColumn::make('manufacturer_serial')->label(__('Maker serial'))->searchable()->placeholder('—')->toggleable(),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
-                TextColumn::make('kit.code')->label(__('Kit'))->placeholder('—')
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
+                TextColumn::make('kit.code')->label(__('Instrument set'))->placeholder('—')
                     ->url(fn (Instrument $r) => $r->kit !== null ? KitResource::getUrl('view', ['record' => $r->kit]) : null),
                 TextColumn::make('status')->label(__('Status'))->badge(),
                 TextColumn::make('holder.name')->label(__('Held by'))->placeholder('—')->toggleable(),
@@ -108,8 +108,8 @@ class InstrumentResource extends Resource
             ->filters([
                 SelectFilter::make('status')->label(__('Status'))->options(InstrumentStatus::options())->multiple(),
                 SelectFilter::make('instrument_type_id')->label(__('Instrument type'))->options(fn () => InstrumentType::options()),
-                SelectFilter::make('branch_id')->label(__('Branch'))->options(fn () => ServiceAction::branchOptions('kits.view_any')),
-                TernaryFilter::make('kit_id')->label(__('In a kit'))->nullable(),
+                SelectFilter::make('branch_id')->label(__('Station'))->options(fn () => ServiceAction::branchOptions('kits.view_any')),
+                TernaryFilter::make('kit_id')->label(__('In an instrument set'))->nullable(),
             ])
             ->recordActions([ViewAction::make(), PrintLabelsAction::make('instrument')->hiddenLabel()->tooltip(__('Print labels'))])
             ->toolbarActions([PrintLabelsAction::bulk('instrument')])
@@ -124,8 +124,8 @@ class InstrumentResource extends Resource
                 TextEntry::make('barcode')->label(__('Barcode'))->fontFamily(FontFamily::Mono)->extraAttributes(['dir' => 'ltr']),
                 TextEntry::make('type.name')->label(__('Instrument type')),
                 TextEntry::make('status')->label(__('Status'))->badge(),
-                TextEntry::make('branch.code')->label(__('Branch')),
-                TextEntry::make('kit.code')->label(__('Kit'))->placeholder('—')
+                TextEntry::make('branch.code')->label(__('Station')),
+                TextEntry::make('kit.code')->label(__('Instrument set'))->placeholder('—')
                     ->url(fn (Instrument $r) => $r->kit !== null ? KitResource::getUrl('view', ['record' => $r->kit]) : null),
                 TextEntry::make('holder.name')->label(__('Held by'))->placeholder('—'),
                 TextEntry::make('customer.name')->label(__('At hospital'))->placeholder('—'),

@@ -33,7 +33,7 @@ class CreateSupplierReturn extends CreateRecord
     {
         return $schema->columns(2)->components([
             Select::make('supplier_id')->label(__('Supplier'))->options(fn () => Supplier::options())->searchable()->required()->native(false),
-            Select::make('branch_id')->label(__('From branch'))->options(fn () => ServiceAction::branchOptions('returns.supplier'))->required()->live()->native(false),
+            Select::make('branch_id')->label(__('From station'))->options(fn () => ServiceAction::branchOptions('returns.supplier'))->required()->live()->native(false),
             Repeater::make('lines')
                 ->label(__('Items'))
                 ->columnSpanFull()

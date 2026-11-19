@@ -20,8 +20,8 @@ enum SurgeryItemSource: string implements HasColor, HasIcon, HasLabel
     public function getLabel(): string
     {
         return match ($this) {
-            self::Shelf => __('Branch shelf'),
-            self::Kit => __('Kit'),
+            self::Shelf => __('Station shelf'),
+            self::Kit => __('Instrument set'),
         };
     }
 

@@ -17,7 +17,7 @@ it('gives the doctor a short home with New surgery and the drafts to finish', fu
         ->assertSee(route('ops.surgeries.create'))
         ->assertSee('My surgeries')
         ->assertSee('Drafts: 1')
-        ->assertDontSee('Stock in this branch')
+        ->assertDontSee('Stock in this station')
         ->assertDontSee('Quick actions');
 });
 
@@ -26,6 +26,6 @@ it('keeps the stock home for branch staff', function () {
 
     $this->actingAs($staff)->get('/app')->assertOk()
         ->assertSee('Scan anything')
-        ->assertSee('Stock in this branch')
+        ->assertSee('Stock in this station')
         ->assertDontSee(route('ops.surgeries.create'));
 });

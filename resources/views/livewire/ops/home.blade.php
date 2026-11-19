@@ -9,7 +9,7 @@
         @endphp
         <h1 id="greeting" class="text-2xl font-bold">{{ __('Hello, :name', ['name' => $short]) }}</h1>
         @unless ($branch)
-            <p class="mt-1"><x-ops.status-chip :label="__('No branch assigned')" color="warning" icon="heroicon-o-exclamation-triangle" /></p>
+            <p class="mt-1"><x-ops.status-chip :label="__('No station assigned')" color="warning" icon="heroicon-o-exclamation-triangle" /></p>
         @endunless
     </section>
 
@@ -17,7 +17,7 @@
         <a href="{{ route('ops.summary') }}" wire:navigate class="ot-card flex items-center gap-3 p-4 hover:bg-subtle">
             @svg('heroicon-o-sun', 'size-8 shrink-0 text-warning')
             <span class="min-w-0 flex-1">
-                <span class="block text-sm text-muted-fg">{{ __('Morning summary') }}</span>
+                <span class="block text-sm text-muted-fg">{{ __('Morning report') }}</span>
                 <span class="block font-semibold">{{ $summaryLine ?? __('Arrives at :time. Open it now to see the latest numbers.', ['time' => \App\Support\Locale\Display::digits($summaryTime)]) }}</span>
             </span>
             @svg('heroicon-m-chevron-right', 'size-5 shrink-0 text-muted-fg rtl:rotate-180')
@@ -29,7 +29,7 @@
             @svg('heroicon-o-chat-bubble-left-right', 'size-8 shrink-0 text-primary')
             <span class="min-w-0 flex-1">
                 <span class="block font-semibold">{{ __('Ask') }}</span>
-                <span class="block text-sm text-muted-fg">{{ __('Kits, stock, sales, any code — answered from the system.') }}</span>
+                <span class="block text-sm text-muted-fg">{{ __('Instrument sets, stock, sales, any code — answered from the system.') }}</span>
             </span>
             @svg('heroicon-m-chevron-right', 'size-5 shrink-0 text-muted-fg rtl:rotate-180')
         </a>
@@ -53,7 +53,7 @@
             @if ($canKits)
                 <a href="{{ route('ops.kits.index') }}" wire:navigate class="ot-card flex min-h-28 flex-col justify-between p-4 hover:bg-subtle">
                     @svg('heroicon-o-briefcase', 'size-8 text-primary')
-                    <span class="text-lg font-semibold">{{ __('Kits') }}</span>
+                    <span class="text-lg font-semibold">{{ __('Instrument sets') }}</span>
                 </a>
             @endif
             @if ($canReceive)
@@ -78,7 +78,7 @@
 
         @if ($canStock)
             <section aria-labelledby="stock-alerts" class="space-y-3">
-                <h2 id="stock-alerts" class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('Stock in this branch') }}</h2>
+                <h2 id="stock-alerts" class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('Stock in this station') }}</h2>
                 <div class="grid grid-cols-2 gap-3">
                     @foreach ($expiry as $row)
                         @php($level = $row['level'])

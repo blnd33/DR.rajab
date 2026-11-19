@@ -38,6 +38,6 @@ class KitCheckoutsRelationManager extends RelationManager
                 TextColumn::make('status')->label(__('Status'))->badge(),
             ])
             ->recordUrl(fn (KitCheckout $r) => KitCheckoutResource::getUrl('view', ['record' => $r]))
-            ->emptyStateHeading(__('This kit has not been out yet'));
+            ->emptyStateHeading(__('This instrument set has not been out yet'));
     }
 }

@@ -85,7 +85,7 @@ class MorningSummaryBuilder
         }
 
         if (($n = $count('kits-out', 'overdue')) > 0) {
-            $parts[] = trans_choice(':count kit overdue|:count kits overdue', $n, ['count' => Display::number($n)]);
+            $parts[] = trans_choice(':count instrument set overdue|:count instrument sets overdue', $n, ['count' => Display::number($n)]);
         }
 
         if (($n = $count('expiring', 'expired')) > 0) {

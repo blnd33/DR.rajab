@@ -69,7 +69,7 @@ class CheckoutItemsRelationManager extends RelationManager
                         && ServiceAction::user()->canInBranch('kits.resolve_unaccounted', $this->checkout()->branch_id))
                     ->schema([
                         Select::make('resolution')->label(__('What happened?'))->required()->native(false)->options([
-                            'found' => __('Found — back in the kit'),
+                            'found' => __('Found — back in the instrument set'),
                             'used' => __('Used — the surgery is logged now'),
                             'lost' => __('Lost — write it off'),
                         ]),
@@ -78,7 +78,7 @@ class CheckoutItemsRelationManager extends RelationManager
                     ->action(fn (KitCheckoutItem $record, array $data, Action $action) => ServiceAction::run($action,
                         fn ($u) => app(KitService::class)->resolveUnaccounted($record, $data['resolution'], $u, $data['note'] ?? null), __('Line settled.'))),
             ])
-            ->emptyStateHeading(__('The kit was empty'));
+            ->emptyStateHeading(__('The instrument set was empty'));
     }
 
     private function checkout(): KitCheckout

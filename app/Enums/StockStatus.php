@@ -30,7 +30,7 @@ enum StockStatus: string implements HasColor, HasIcon, HasLabel
         return match ($this) {
             self::InStock => __('In stock'),
             self::InTransit => __('In transit'),
-            self::InKit => __('In a kit'),
+            self::InKit => __('In an instrument set'),
             self::OutAtHospital => __('Out at hospital'),
             self::UsedInSurgery => __('Used in surgery'),
             self::Sold => __('Sold'),

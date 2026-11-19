@@ -27,7 +27,7 @@ enum InstrumentStatus: string implements HasColor, HasIcon, HasLabel
     {
         return match ($this) {
             self::Available => __('Available'),
-            self::InKit => __('In a kit'),
+            self::InKit => __('In an instrument set'),
             self::InTransit => __('In transit'),
             self::OutAtHospital => __('Out at hospital'),
             self::InMaintenance => __('In maintenance'),

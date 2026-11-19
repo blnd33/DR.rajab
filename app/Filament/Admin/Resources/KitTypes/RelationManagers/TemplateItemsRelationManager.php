@@ -70,7 +70,7 @@ class TemplateItemsRelationManager extends RelationManager
                 DeleteAction::make(),
             ])
             ->emptyStateHeading(__('No template lines yet'))
-            ->emptyStateDescription(__('Add the instruments and implant sizes a full kit holds.'));
+            ->emptyStateDescription(__('Add the instruments and implant sizes a full instrument set holds.'));
     }
 
     /**

@@ -52,7 +52,7 @@ class WriteOffCreate extends Component
             $unit = $result->unit;
 
             if ($unit->branch_id !== $branchId || ! $unit->status->isOnHand()) {
-                $this->scanFailed(__('Unit :serial is not in stock in this branch.', ['serial' => $unit->serial]));
+                $this->scanFailed(__('Unit :serial is not in stock in this station.', ['serial' => $unit->serial]));
 
                 return;
             }
@@ -68,7 +68,7 @@ class WriteOffCreate extends Component
             $batch = $result->batches->where('branch_id', $branchId)->filter(fn (StockBatch $b) => $b->location_type === LocationType::Shelf)->sortBy('expiry_date')->first();
 
             if ($batch === null) {
-                $this->scanFailed(__('No :sku on the shelf in this branch.', ['sku' => $result->product->sku]));
+                $this->scanFailed(__('No :sku on the shelf in this station.', ['sku' => $result->product->sku]));
 
                 return;
             }

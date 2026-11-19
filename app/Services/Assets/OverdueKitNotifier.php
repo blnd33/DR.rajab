@@ -34,7 +34,7 @@ class OverdueKitNotifier
 
             $this->notifier->toBranch('kits.checkout', (int) $branchId, new DocumentEvent(
                 'kits.overdue',
-                Msg::key('Overdue kits: :count'),
+                Msg::key('Overdue instrument sets: :count'),
                 ['count' => $checkouts->count()],
                 Msg::key(':kit at :hospital since :date (and others if more than one).'),
                 ['kit' => $first->kit->code, 'hospital' => $first->customer->code, 'date' => $first->checked_out_at->toDateString()],

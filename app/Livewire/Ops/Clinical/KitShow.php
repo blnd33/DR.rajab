@@ -85,7 +85,7 @@ class KitShow extends Component
         $added = $this->attempt(fn () => $kits->addByScan($this->kit, $raw, $this->user()), scan: true);
 
         if ($added !== null) {
-            $this->dispatch('toast', type: 'success', message: __(':code added to the kit.', ['code' => $added['code']]));
+            $this->dispatch('toast', type: 'success', message: __(':code added to the instrument set.', ['code' => $added['code']]));
             $this->kit->refresh();
         }
     }
@@ -93,19 +93,19 @@ class KitShow extends Component
     public function removeUnit(int $unitId, KitService $kits): void
     {
         $unit = StockUnit::query()->where('kit_id', $this->kit->id)->findOrFail($unitId);
-        $this->attempt(fn () => $kits->removeUnit($unit, $this->user()), __('Taken out of the kit.'));
+        $this->attempt(fn () => $kits->removeUnit($unit, $this->user()), __('Taken out of the instrument set.'));
     }
 
     public function removeInstrument(int $instrumentId, KitService $kits): void
     {
         $instrument = Instrument::query()->where('kit_id', $this->kit->id)->findOrFail($instrumentId);
-        $this->attempt(fn () => $kits->removeInstrument($instrument, $this->user()), __('Taken out of the kit.'));
+        $this->attempt(fn () => $kits->removeInstrument($instrument, $this->user()), __('Taken out of the instrument set.'));
     }
 
     public function removeBatch(int $batchId, KitService $kits): void
     {
         $batch = StockBatch::query()->where('kit_id', $this->kit->id)->findOrFail($batchId);
-        $this->attempt(fn () => $kits->removeBatch($batch, $batch->quantity, $this->user()), __('Taken out of the kit.'));
+        $this->attempt(fn () => $kits->removeBatch($batch, $batch->quantity, $this->user()), __('Taken out of the instrument set.'));
     }
 
     /** "Fill from its list": every missing instrument of the list into the kit (shelf first, then new). */
@@ -118,13 +118,13 @@ class KitShow extends Component
         }
 
         $this->labelsUrl = $result['registered'] !== [] ? LabelPrintController::url('instrument', $result['registered']) : null;
-        $this->dispatch('toast', type: 'success', message: trans_choice(':count instrument added to the kit.|:count instruments added to the kit.', $result['added'], ['count' => Display::number($result['added'])]));
+        $this->dispatch('toast', type: 'success', message: trans_choice(':count instrument added to the instrument set.|:count instruments added to the instrument set.', $result['added'], ['count' => Display::number($result['added'])]));
         $this->kit->refresh();
     }
 
     public function markPrepared(KitService $kits): void
     {
-        $this->attempt(fn () => $kits->markPrepared($this->kit, $this->user()), __('Kit marked as prepared.'));
+        $this->attempt(fn () => $kits->markPrepared($this->kit, $this->user()), __('Instrument set marked as prepared.'));
     }
 
     public function checkout(KitService $kits): void
@@ -137,7 +137,7 @@ class KitShow extends Component
             $this->user(),
             $this->doctorId !== null ? User::query()->find($this->doctorId) : null,
             plannedDate: $this->plannedDate,
-        ), __('Kit checked out.'));
+        ), __('Instrument set checked out.'));
 
         if ($done !== null) {
             $this->kit->refresh();
@@ -153,7 +153,7 @@ class KitShow extends Component
             return;
         }
 
-        $done = $this->attempt(fn () => $kits->return($checkout, $this->instrumentResults, $this->returnedUnits, array_map('intval', $this->lotReturned), $this->user()), __('Kit returned and reconciled.'));
+        $done = $this->attempt(fn () => $kits->return($checkout, $this->instrumentResults, $this->returnedUnits, array_map('intval', $this->lotReturned), $this->user()), __('Instrument set returned and reconciled.'));
 
         if ($done !== null) {
             $this->kit->refresh();
@@ -198,7 +198,7 @@ class KitShow extends Component
             $this->instrumentResults[(int) $instrument->instrument_id] = 'returned';
         } elseif (app(AssetLookup::class)->kit($code)?->id !== $this->kit->id) {
             $this->dispatch('scan-feedback', type: 'error');
-            $this->dispatch('toast', type: 'error', message: __(':code did not go out with this kit.', ['code' => $code]));
+            $this->dispatch('toast', type: 'error', message: __(':code did not go out with this instrument set.', ['code' => $code]));
 
             return;
         }

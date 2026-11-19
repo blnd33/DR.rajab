@@ -12,7 +12,7 @@
     <h1 class="text-2xl font-bold">{{ __('New surgery') }}</h1>
 
     @unless ($canHere)
-        <div class="ot-card border-warning p-4 text-sm font-semibold">{{ __('Not allowed in this branch.') }}</div>
+        <div class="ot-card border-warning p-4 text-sm font-semibold">{{ __('Not allowed in this station.') }}</div>
     @endunless
 
     <p x-show="!online" x-cloak class="ot-card flex items-center gap-2 border-warning p-3 text-sm font-semibold">
@@ -136,7 +136,7 @@
              }">
         <h2 id="pick-title" class="font-semibold">{{ __('Or choose from the list') }}</h2>
         <template x-if="catalog.products.length === 0">
-            <p class="text-sm text-muted-fg">{{ __('No products in stock in this branch.') }}</p>
+            <p class="text-sm text-muted-fg">{{ __('No products in stock in this station.') }}</p>
         </template>
         <div x-show="catalog.products.length > 0" class="grid grid-cols-1 gap-3">
             <label class="space-y-1">
@@ -212,9 +212,9 @@
         <div x-show="more" x-cloak class="mt-4 space-y-5">
             @if ($checkouts !== [])
                 <label class="block space-y-1">
-                    <span class="text-sm font-medium">{{ __('Kit') }}</span>
+                    <span class="text-sm font-medium">{{ __('Instrument set') }}</span>
                     <select x-model.number="form.kit_checkout_id" class="ot-input">
-                        <option value="">{{ __('No kit') }}</option>
+                        <option value="">{{ __('No instrument set') }}</option>
                         @foreach ($checkouts as $id => $label)
                             <option value="{{ $id }}">{{ $label }}</option>
                         @endforeach
@@ -237,7 +237,7 @@
                         <span>{{ $name }}</span>
                     </label>
                 @empty
-                    <p class="text-sm text-muted-fg">{{ __('No technicians in this branch yet — the admin adds them under Clinical → Technicians.') }}</p>
+                    <p class="text-sm text-muted-fg">{{ __('No technicians in this station yet — the admin adds them under Clinical → Technicians.') }}</p>
                 @endforelse
             </fieldset>
             <label class="block space-y-1">

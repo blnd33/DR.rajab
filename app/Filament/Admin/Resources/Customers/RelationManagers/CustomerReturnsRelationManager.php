@@ -37,7 +37,7 @@ class CustomerReturnsRelationManager extends RelationManager
             ->defaultSort('received_at', 'desc')
             ->columns([
                 CodeColumn::make('number')->label(__('Number')),
-                TextColumn::make('branch.code')->label(__('Branch'))->badge()->color('gray'),
+                TextColumn::make('branch.code')->label(__('Station'))->badge()->color('gray'),
                 TextColumn::make('items_sum_quantity')->label(__('Items'))->alignEnd(),
                 LocalDateTimeColumn::make('received_at')->label(__('Received')),
                 TextColumn::make('status')->label(__('Status'))->badge(),

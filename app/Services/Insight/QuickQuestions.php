@@ -26,7 +26,7 @@ final class QuickQuestions
         return [
             'day' => __('Today and yesterday'),
             'stock' => __('Stock'),
-            'kits' => __('Kits'),
+            'kits' => __('Instrument sets'),
             'surgeries' => __('Surgeries'),
             'money' => __('Money'),
             'attention' => __('Needs attention'),
@@ -63,14 +63,14 @@ final class QuickQuestions
                 prompt: __('Scan or type the serial number.'), permission: 'stock.view',
                 keywords: ['serial', 'تسلسلي', 'سيريال', 'زنجیرە', 'سریاڵ']),
 
-            new QuickQuestion('kits-out', 'kits', __('Which kits are out now?'), 'kits-out',
+            new QuickQuestion('kits-out', 'kits', __('Which instrument sets are out now?'), 'kits-out',
                 keywords: [...$kit, 'out', 'hospital', 'مستشفى', 'خارج', 'نەخۆشخانە', 'دەرەوە']),
-            new QuickQuestion('kits-overdue', 'kits', __('Which kits are overdue?'), 'kits-out', ['overdue' => true],
+            new QuickQuestion('kits-overdue', 'kits', __('Which instrument sets are overdue?'), 'kits-out', ['overdue' => true],
                 keywords: [...$kit, 'overdue', 'late', 'متأخر', 'تأخر', 'دواکەوتوو', 'دواکەوت']),
-            new QuickQuestion('kits-missing', 'kits', __('What is missing from returned kits?'), 'unaccounted-implants',
+            new QuickQuestion('kits-missing', 'kits', __('What is missing from returned instrument sets?'), 'unaccounted-implants',
                 keywords: [...$kit, 'missing', 'lost', 'unaccounted', 'ناقص', 'مفقود', 'نقص', 'ون بوو', 'بزر', 'کەم']),
-            new QuickQuestion('kit-complete', 'kits', __('Is a kit complete?'),
-                prompt: __("Scan or type the kit's code."), permission: 'kits.view_any',
+            new QuickQuestion('kit-complete', 'kits', __('Is an instrument set complete?'),
+                prompt: __("Scan or type the instrument set's code."), permission: 'kits.view_any',
                 keywords: [...$kit, 'complete', 'full', 'كامل', 'مكتمل', 'تەواو']),
 
             new QuickQuestion('surgeries-hospital', 'surgeries', __('Surgeries by hospital'), 'surgeries-done',

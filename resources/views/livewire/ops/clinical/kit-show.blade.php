@@ -1,7 +1,7 @@
 <div x-data="scanner({ method: 'handleScan', serverFeedback: true })" class="space-y-5">
     <a href="{{ route('ops.kits.index') }}" wire:navigate class="inline-flex min-h-11 items-center gap-1 text-sm font-semibold text-primary">
         @svg('heroicon-o-chevron-left', 'size-5 rtl:rotate-180')
-        <span>{{ __('Kits') }}</span>
+        <span>{{ __('Instrument sets') }}</span>
     </a>
 
     <header class="space-y-2">
@@ -37,9 +37,9 @@
                     {{ __('In total: :reuse from the shelf, :register registered new.', ['reuse' => \App\Support\Locale\Display::number($fillPlan['reuse']), 'register' => \App\Support\Locale\Display::number($fillPlan['register'])]) }}
                 </p>
                 <button type="button" wire:click="fillFromList" wire:loading.attr="disabled" class="ot-btn ot-btn-primary w-full"
-                    wire:confirm="{{ __('Put :count instruments into the kit?', ['count' => \App\Support\Locale\Display::number($fillPlan['reuse'] + $fillPlan['register'])]) }}">
+                    wire:confirm="{{ __('Put :count instruments into the instrument set?', ['count' => \App\Support\Locale\Display::number($fillPlan['reuse'] + $fillPlan['register'])]) }}">
                     @svg('heroicon-o-queue-list', 'size-5')
-                    <span>{{ __('Fill the kit') }}</span>
+                    <span>{{ __('Fill the instrument set') }}</span>
                 </button>
             </section>
         @endif
@@ -63,7 +63,7 @@
         <section class="ot-card space-y-4 p-4" aria-labelledby="checkout-title">
             <h2 id="checkout-title" class="font-semibold">{{ __('Check out to hospital') }}</h2>
             @unless ($compare['complete'])
-                <p class="text-sm font-semibold text-warning">{{ __('The kit is not complete — refill it from the branch shelf.') }}</p>
+                <p class="text-sm font-semibold text-warning">{{ __('The instrument set is not complete — refill it from the station shelf.') }}</p>
             @endunless
             <label class="block space-y-1">
                 <span class="text-sm font-medium">{{ __('Hospital') }}</span>
@@ -156,17 +156,17 @@
                         </span>
                     </li>
                 @empty
-                    <li class="py-2 text-sm text-muted-fg">{{ __('This kit type has no template yet.') }}</li>
+                    <li class="py-2 text-sm text-muted-fg">{{ __('This instrument set type has no template yet.') }}</li>
                 @endforelse
             </ul>
             <p @class(['text-sm font-semibold', 'text-success' => $compare['complete'], 'text-danger' => ! $compare['complete']])>
-                {{ $compare['complete'] ? __('The kit is complete.') : __('The kit is not complete — refill it from the branch shelf.') }}
+                {{ $compare['complete'] ? __('The instrument set is complete.') : __('The instrument set is not complete — refill it from the station shelf.') }}
             </p>
         </section>
 
         {{-- Contents --}}
         <section class="space-y-3" aria-labelledby="contents-title">
-            <h2 id="contents-title" class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('In the kit') }}</h2>
+            <h2 id="contents-title" class="text-sm font-semibold uppercase tracking-wide text-muted-fg">{{ __('In the instrument set') }}</h2>
             @foreach ($instruments as $instrument)
                 <div wire:key="in-{{ $instrument->id }}" class="ot-card flex items-center justify-between gap-3 p-3">
                     <div class="min-w-0">
@@ -203,7 +203,7 @@
                 </div>
             @endforeach
             @if ($instruments->isEmpty() && $units->isEmpty() && $batches->isEmpty())
-                <div class="ot-card"><x-ops.empty-state icon="heroicon-o-briefcase" :title="__('The kit is empty')" /></div>
+                <div class="ot-card"><x-ops.empty-state icon="heroicon-o-briefcase" :title="__('The instrument set is empty')" /></div>
             @endif
         </section>
     @endif

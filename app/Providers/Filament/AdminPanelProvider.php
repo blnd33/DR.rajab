@@ -6,6 +6,7 @@ use App\Enums\Panel as AppPanel;
 use App\Filament\Admin\Auth\EditProfile;
 use App\Filament\Admin\Auth\Login;
 use App\Filament\Admin\Pages\Dashboard;
+use App\Filament\Admin\Support\KmAvatarProvider;
 use App\Http\Middleware\FilamentAuthenticate;
 use App\Http\Middleware\FocusAdminBranch;
 use App\Http\Middleware\NormalizeDigits;
@@ -66,6 +67,7 @@ class AdminPanelProvider extends PanelProvider
             ->monoFont('JetBrains Mono Variable', provider: LocalFontProvider::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->favicon(asset('icons/favicon.svg'))
+            ->defaultAvatarProvider(KmAvatarProvider::class)
             ->sidebarCollapsibleOnDesktop()
             ->databaseNotifications()
             ->unsavedChangesAlerts()
