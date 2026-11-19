@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
                 DemoMovementSeeder::class,
                 DemoClinicalSeeder::class,
                 DemoMoneySeeder::class,
+                DemoAgentSeeder::class,
             ]);
         }
     }

@@ -78,6 +78,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make(fn () => __('Stock'))->collapsible(),
                 NavigationGroup::make(fn () => __('Catalog'))->collapsible(),
                 NavigationGroup::make(fn () => __('Finance'))->collapsible(),
+                NavigationGroup::make(fn () => __('Company agents'))->collapsible(),
                 NavigationGroup::make(fn () => __('Administration'))->collapsible(),
                 NavigationGroup::make(fn () => __('System'))->collapsible(),
             ])

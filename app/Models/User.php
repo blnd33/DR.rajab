@@ -20,9 +20,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Auth;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -122,6 +123,16 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function technicianSurgeries(): BelongsToMany
     {
         return $this->belongsToMany(Surgery::class, 'surgery_doctors')->wherePivot('role', SurgeryDoctorRole::Technician->value)->withPivot('role');
+    }
+
+    /**
+     * Company-agent profile (CV, position, salary): technicians, and employees linked to their account.
+     *
+     * @return HasOne<CompanyAgent, $this>
+     */
+    public function agentProfile(): HasOne
+    {
+        return $this->hasOne(CompanyAgent::class);
     }
 
     /** @return BelongsToMany<Branch, $this> */

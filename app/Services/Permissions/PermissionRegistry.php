@@ -157,6 +157,9 @@ final class PermissionRegistry
                 'reports.profit' => ['View profit reports', true],
                 'reports.export' => ['Export reports', true],
             ],
+            'agents' => [
+                'agents.manage' => ['Manage company agents and drivers', false],
+            ],
             'insight' => [
                 'summary.receive' => ['Receive the morning report', false],
                 'assistant.use' => ['Use Quick answers', false],
@@ -226,6 +229,7 @@ final class PermissionRegistry
             'purchasing' => __('Suppliers & purchases'),
             'sales' => __('Sales & expenses'),
             'reports' => __('Reports'),
+            'agents' => __('Company agents'),
             'insight' => __('Morning report & Quick answers'),
             default => $group,
         };

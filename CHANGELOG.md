@@ -2,6 +2,25 @@
 
 All notable changes per build phase.
 
+## [Client updates — company agents and drivers] — 2026-11-19
+
+### Added
+- **Company agents** in the admin side menu (permission *Manage company agents and drivers*, `agents.manage`: Super Admin and Manager). Kept by the super admin; none of them signs in; never deleted (made inactive):
+  - **Distributors**: name, phone, city, notes.
+  - **Direct sellers**: city, persons, value (amount + currency), stock.
+  - **Representatives**: CV, salary, fee per mission.
+  - **Partners**: city, stocks (share %), value, profit per month and per year (empty year = month × 12).
+  - **Technicians**: the existing technicians moved here from Clinical, now with CV, position and salary (shown only with `agents.manage`). Still picked on surgeries; their history stays.
+  - **Employees**: CV, position, salary, and an optional link to their system account (one account per employee, never a technician).
+  - Money is an amount with IQD, USD or EUR. CVs (PDF, Word or photo, up to 10 MB) are private attachments; a new CV is kept next to the old ones.
+- **Drivers** (Company agents → Drivers): driver name and number, car type, our car or the driver's own, and the **car plate**:
+  - English plate: 2-digit code, letter, number → `24 A 3003`.
+  - Arabic plate: number and *Iraq* or the governorate (all 19) → `12345 دهوك`.
+  - The form checks the format and shows how the plate reads; Arabic-Indic digits are stored as Western digits (`App\Support\Plate`).
+  - **Trips** per driver: date of arrival, date received (can be added later with *Mark received*), and what we paid in IQD, USD or EUR, with the totals per currency. Recorded only — no cash box moves. A wrong trip is voided with a reason (the amount is never edited).
+- Tables `company_agents`, `drivers`, `driver_trips`; attachment kind `cv` (`2026_11_19_000100_add_company_agents`). Demo data: one or two of each agent, two drivers with trips.
+- **Tests**: what each kind keeps, money and share rules, CV upload and privacy, employee account links, technician profiles, both plate kinds and the wrong ones, trips (totals, dates, void), the screens in every language.
+
 ## [Client updates — new names, language flags, KM badge] — 2026-11-19
 
 Names changed everywhere on screen, in English, Arabic and Kurdish (menus, pages, forms, messages, reports, notifications, Excel help, permission names). Only the words people see changed — database tables, URLs and codes stay the same.

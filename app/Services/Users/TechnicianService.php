@@ -8,6 +8,7 @@ use App\Enums\SurgeryStatus;
 use App\Models\Branch;
 use App\Models\Surgery;
 use App\Models\User;
+use App\Services\Agents\CompanyAgentService;
 use App\Support\Locale\Display;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +21,10 @@ use Illuminate\Support\Str;
  */
 class TechnicianService
 {
-    public function __construct(private readonly UserService $users) {}
+    public function __construct(
+        private readonly UserService $users,
+        private readonly CompanyAgentService $agents,
+    ) {}
 
     /**
      * @param  array{name: string, phone?: ?string, branches?: list<int|string>}  $data
@@ -52,7 +56,7 @@ class TechnicianService
         $this->authorize($by);
         abort_unless($technician->isTechnician(), 404);
 
-        return $this->users->update($technician, [
+        $technician = $this->users->update($technician, [
             'name' => trim($data['name']),
             'phone' => filled($data['phone'] ?? null) ? trim((string) $data['phone']) : null,
             'is_active' => (bool) ($data['is_active'] ?? $technician->is_active),
@@ -60,6 +64,11 @@ class TechnicianService
             'permissions' => [],
             ...(array_key_exists('branches', $data) ? ['branches' => $this->branches($data), 'primary_branch_id' => $this->branches($data)[0] ?? null] : []),
         ], $by);
+
+        // The company-agent profile shows the same name, phone and active state.
+        $this->agents->syncTechnician($technician);
+
+        return $technician;
     }
 
     /**
