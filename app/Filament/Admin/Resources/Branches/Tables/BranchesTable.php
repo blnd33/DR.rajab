@@ -38,6 +38,7 @@ class BranchesTable
                 CodeColumn::make('code')->label(__('Code'))->sortable()->searchable(),
                 TextColumn::make('name')->label(__('Name'))->searchable(query: fn ($query, string $search) => $query->whereRaw(Pg::jsonContainsSql('name'), ["%{$search}%"])),
                 TextColumn::make('city')->label(__('City'))->toggleable(),
+                TextColumn::make('governorate')->label(__('Governorate'))->placeholder('—')->toggleable(),
                 TextColumn::make('manager.name')->label(__('Manager'))->toggleable(),
                 TextColumn::make('default_currency')->label(__('Currency'))->badge()->color('gray'),
                 TextColumn::make('users_count')->label(__('Users'))->numeric()->alignEnd(),

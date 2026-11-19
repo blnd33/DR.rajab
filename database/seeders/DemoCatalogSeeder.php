@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\BarcodeSymbology;
 use App\Enums\MovementType;
 use App\Enums\Role;
+use App\Enums\Specialty;
 use App\Enums\TrackingType;
 use App\Models\Branch;
 use App\Models\BranchLocation;
@@ -200,7 +201,8 @@ class DemoCatalogSeeder extends Seeder
             $ids[$code] = $parent->id;
 
             foreach ($children as $childCode => $childName) {
-                $ids[$childCode] = Category::query()->create(['code' => $childCode, 'name' => $childName, 'parent_id' => $parent->id, 'sort' => $sort++])->id;
+                $ids[$childCode] = Category::query()->create(['code' => $childCode, 'name' => $childName, 'parent_id' => $parent->id, 'sort' => $sort++,
+                    'specialty' => Specialty::guess($childCode.' '.$childName['en'])])->id;
             }
         }
 

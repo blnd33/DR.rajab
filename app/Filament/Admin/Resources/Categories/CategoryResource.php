@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Categories;
 
+use App\Enums\Specialty;
 use App\Filament\Admin\Forms\TranslatableInput;
 use App\Filament\Admin\Resources\Categories\Pages\ManageCategories;
 use App\Filament\Admin\Tables\Columns\CodeColumn;
@@ -61,6 +62,11 @@ class CategoryResource extends Resource
                 ->searchable()
                 ->native(false),
             TranslatableInput::make('name', __('Name'))->columnSpanFull(),
+            Select::make('specialty')
+                ->label(__('Specialty'))
+                ->options(Specialty::options())
+                ->native(false)
+                ->helperText(__('Products in this category (and its sub-categories without their own) count under this specialty on the Main page.')),
             TextInput::make('sort')->label(__('Order'))->numeric()->integer()->default(0),
             Toggle::make('is_active')->label(__('Active'))->default(true)->inline(false),
         ]);
@@ -77,6 +83,7 @@ class CategoryResource extends Resource
                     ->label(__('Name'))
                     ->state(fn (Category $record) => $record->path())
                     ->searchable(query: fn ($query, string $search) => $query->whereRaw(Pg::jsonContainsSql('name'), ["%{$search}%"])),
+                TextColumn::make('specialty')->label(__('Specialty'))->badge()->color('info')->placeholder('—'),
                 TextColumn::make('products_count')->label(__('Products'))->alignEnd()->formatStateUsing(fn ($state) => Display::number($state)),
                 IconColumn::make('is_active')->label(__('Active'))->boolean(),
             ])

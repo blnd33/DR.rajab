@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\BranchStatus;
+use App\Enums\Governorate;
 use App\Models\Concerns\HasCleanTranslations;
 use App\Models\Concerns\TracksAuthor;
 use Database\Factories\BranchFactory;
@@ -19,6 +20,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property string $code
  * @property string $name
+ * @property ?Governorate $governorate
  * @property BranchStatus $status
  */
 class Branch extends Model
@@ -38,6 +40,7 @@ class Branch extends Model
         'code',
         'name',
         'city',
+        'governorate',
         'address',
         'phone',
         'manager_id',
@@ -49,6 +52,7 @@ class Branch extends Model
     {
         return [
             'status' => BranchStatus::class,
+            'governorate' => Governorate::class,
             'is_head_office' => 'boolean',
             'closed_at' => 'datetime',
             'reopened_at' => 'datetime',
@@ -66,7 +70,7 @@ class Branch extends Model
     {
         return LogOptions::defaults()
             ->useLogName('branches')
-            ->logOnly(['code', 'name', 'city', 'address', 'phone', 'manager_id', 'default_currency', 'is_head_office', 'status', 'close_reason'])
+            ->logOnly(['code', 'name', 'city', 'governorate', 'address', 'phone', 'manager_id', 'default_currency', 'is_head_office', 'status', 'close_reason'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

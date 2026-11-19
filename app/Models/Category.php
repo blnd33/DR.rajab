@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Specialty;
 use App\Models\Concerns\HasCleanTranslations;
 use App\Models\Concerns\TracksAuthor;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,6 +17,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @property int $id
  * @property ?int $parent_id
+ * @property ?Specialty $specialty
  * @property string $code
  * @property string $name
  * @property bool $is_active
@@ -29,13 +31,14 @@ class Category extends Model
     /** @var list<string> */
     public array $translatable = ['name'];
 
-    protected $fillable = ['parent_id', 'code', 'name', 'is_active', 'sort'];
+    protected $fillable = ['parent_id', 'specialty', 'code', 'name', 'is_active', 'sort'];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
             'sort' => 'integer',
+            'specialty' => Specialty::class,
         ];
     }
 

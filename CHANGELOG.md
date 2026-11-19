@@ -2,6 +2,21 @@
 
 All notable changes per build phase.
 
+## [Client updates — Main page buttons, overview by region, search] — 2026-11-19
+
+### Added
+- **Big buttons in the centre of the Main page** (`OverviewLauncher`, shown first):
+  - Row 1: **Arthroplasty · Trauma · Spine · Sport medicine** and a **search over the whole system**.
+  - Row 2: **Stations · Stock · Value · Sales · Profit**.
+- **Overview page** (`/admin/overview`, `OverviewPage` + `OverviewService`):
+  - A row-2 button shows **Total in Iraq** (the 15 governorates outside the Kurdistan Region), **Total in Kurdistan** (Duhok, Erbil, Sulaymaniyah, Halabja) and **Iraq and Kurdistan**, then the **19 governorates** — green where there is something, red where there is nothing. A governorate → the four specialties with their numbers → product by product (SKU, product, station).
+  - A specialty button shows every button's numbers for that specialty per region, the governorates, and a governorate product by product.
+  - Stock = pieces on hand; Value = true cost in USD; Sales and Profit = like the Sales and profit report, in USD, with a period (Today / This month / This year / All time / dates; this month by default). Stations count the stations there (with a specialty: those holding its stock).
+  - Each button only for people who may see it, and only their stations: stock & stations `stock.view`, value `stock.view_cost`, sales `reports.view`, profit `reports.profit`.
+- **Search the whole system** (`SystemSearch`): codes (serial, lot, barcode, SKU, instrument set, document numbers), every admin list the person may open, and product / hospital / station names in all three languages.
+- **Station governorate** (Administration → Stations) and **category specialty** (Catalog → Categories; a product takes the nearest one up its category tree). Existing stations and categories are filled with a best guess from their names; supplier imports set it (Lima → Arthroplasty, Mikron → Trauma). Stations without a governorate are listed on the overview so they can be fixed (`2026_11_19_000200_add_governorates_and_specialties`).
+- **Tests**: regions and guesses, stock / value / sales / profit per region, governorate and specialty, permissions and stations, walking through the screens, every language, the search.
+
 ## [Client updates — company agents and drivers] — 2026-11-19
 
 ### Added

@@ -2,6 +2,7 @@
 
 namespace App\Services\Catalog;
 
+use App\Enums\Specialty;
 use App\Enums\UsageLevel;
 use App\Models\Category;
 use App\Models\InstrumentType;
@@ -29,6 +30,8 @@ class SupplierCatalogService
         $parent = Category::query()->where('code', $area)->first()
             ?? Category::query()->create([
                 'code' => $area,
+                // Lima (hip, knee, shoulder) is arthroplasty; the Mikron workbook is trauma.
+                'specialty' => $area === 'TRAUMA' ? Specialty::Trauma : Specialty::Arthroplasty,
                 'name' => $this->allLocales(self::AREAS[$area] ?? Str::title($area)),
                 'is_active' => true,
                 'sort' => array_search($area, array_keys(self::AREAS), true) ?: 0,
