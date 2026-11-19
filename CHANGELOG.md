@@ -2,6 +2,12 @@
 
 All notable changes per build phase.
 
+## [Test site — open without signing in] — 2026-11-19
+
+### Added
+- **`ORTHOTRACK_AUTO_LOGIN`** (test site only): with `ORTHOTRACK_TEST_SITE=true`, every visitor is signed in automatically — as the first active super admin (`true`) or as a named account (a username). No login page, no two-factor step. The test-site strip says *Open without signing in.* Ignored on any site that is not a test site, so the real site always asks to sign in; remove the line to ask again (`AutoLogin`, `AutoLoginOnTestSite`, docs/TEST-SITE.md).
+- **Tests**: admin panel and phone app open without signing in, the named account, never on a real site, off / unknown account.
+
 ## [Test site — test prices] — 2026-11-19
 
 ### Added

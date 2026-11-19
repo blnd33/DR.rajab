@@ -7,6 +7,7 @@ use App\Filament\Admin\Auth\EditProfile;
 use App\Filament\Admin\Auth\Login;
 use App\Filament\Admin\Pages\Dashboard;
 use App\Filament\Admin\Support\KmAvatarProvider;
+use App\Http\Middleware\AutoLoginOnTestSite;
 use App\Http\Middleware\FilamentAuthenticate;
 use App\Http\Middleware\FocusAdminBranch;
 use App\Http\Middleware\NormalizeDigits;
@@ -129,6 +130,8 @@ class AdminPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                // Test site only (ORTHOTRACK_AUTO_LOGIN): sign visitors in automatically.
+                AutoLoginOnTestSite::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 PreventRequestForgery::class,

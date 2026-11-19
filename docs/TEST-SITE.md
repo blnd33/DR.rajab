@@ -104,6 +104,16 @@ php artisan orthotrack:create-admin rajab --name="Dr. Rajab"
 
 The reset asks you to type the site name (`test.example.com`) and then erases all data and uploaded files (photos, invoices, imports) and puts the base data back. It refuses on any site without `ORTHOTRACK_TEST_SITE=true` — the real site cannot be emptied with it.
 
+## Open without signing in (optional)
+
+For trying things out, the test site can open with no login page and no two-factor step: add to its `.env`
+
+```
+ORTHOTRACK_AUTO_LOGIN=true        # every visitor is the first super admin; or a username, e.g. staff.dhk
+```
+
+then `php artisan optimize:clear` (and `php artisan optimize` again on the server). Anyone who knows the address can then see and change everything, patients included. It only works together with `ORTHOTRACK_TEST_SITE=true`, so the real site always asks to sign in. To ask for sign-in again, remove the line (or set it to `false`) and clear the caches.
+
 ## 5. Going live
 
 Nothing moves from the test site to the real site: the real site also starts empty (`db:seed` in production adds base data only) and gets its own `orthotrack:create-admin`. When testing is finished the test site can stay for training, or be switched off:

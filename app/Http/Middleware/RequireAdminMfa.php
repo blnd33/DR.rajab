@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\User;
 use App\Services\Settings\SettingsRepository;
+use App\Support\AutoLogin;
 use Closure;
 use Filament\Facades\Filament;
 use Illuminate\Http\Request;
@@ -29,6 +30,8 @@ class RequireAdminMfa
             || filled($user->getAppAuthenticationSecret())
             || $request->hasHeader('X-Livewire')
             || $request->routeIs('filament.admin.auth.*')
+            // Test site opened without signing in: nobody to ask for a code.
+            || AutoLogin::active()
         ) {
             return $next($request);
         }

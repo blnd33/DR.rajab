@@ -32,6 +32,11 @@ return [
     // will empty. See docs/TEST-SITE.md.
     'test_site' => (bool) env('ORTHOTRACK_TEST_SITE', false),
 
+    // Test site only: open it without signing in. Every visitor is signed in as this user
+    // (a username, or "true" for the first active super admin) — no login page, no two-factor.
+    // Ignored unless ORTHOTRACK_TEST_SITE=true, so it can never open the real site.
+    'auto_login' => env('ORTHOTRACK_AUTO_LOGIN'),
+
     // Shared hosting without Supervisor / Horizon (docs/HOSTINGER.md): the one-minute cron
     // (schedule:run) also works the database queue — Excel imports, notifications.
     'queue_via_scheduler' => (bool) env('ORTHOTRACK_QUEUE_VIA_SCHEDULER', false),

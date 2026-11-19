@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Middleware\AutoLoginOnTestSite;
 use App\Http\Middleware\EnsureOpsAccess;
 use App\Http\Middleware\NormalizeDigits;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackUserSession;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -24,9 +26,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            // Test site only (ORTHOTRACK_AUTO_LOGIN): sign visitors in automatically.
+            AutoLoginOnTestSite::class,
             SetLocale::class,
             NormalizeDigits::class,
         ]);
+
+        // Laravel moves its "who are you" check early; the automatic sign-in must come first.
+        $middleware->prependToPriorityList(before: AuthenticatesRequests::class, prepend: AutoLoginOnTestSite::class);
 
         $middleware->alias([
             'ops' => EnsureOpsAccess::class,
