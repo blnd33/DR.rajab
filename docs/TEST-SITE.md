@@ -104,6 +104,25 @@ php artisan orthotrack:create-admin rajab --name="Dr. Rajab"
 
 The reset asks you to type the site name (`test.example.com`) and then erases all data and uploaded files (photos, invoices, imports) and puts the base data back. It refuses on any site without `ORTHOTRACK_TEST_SITE=true` — the real site cannot be emptied with it.
 
+## Sample data from the supplier workbook (optional)
+
+To see the screens filled in without typing everything, load sample data from the supplier's own workbook (for example the Mikron trauma list). Copy the file to the server first, then:
+
+```bash
+cd /var/www/orthotrack-test
+sudo -u www-data php artisan orthotrack:sample-data /root/IT_MIKRON_Trauma_items.xlsx
+```
+
+It adds, in this order:
+
+1. exchange rates, if none are set (1 USD = 1,460 IQD, 1 EUR = 1.08 USD);
+2. five stations: **Duhok, Erbil, Sulaymaniyah** (Kurdistan Region) and **Baghdad, Basra** (Iraq), so the Main page shows these governorates green and the others red;
+3. every item of the workbook, through the normal supplier-catalog import (products, instruments, instrument sets, under Trauma);
+4. **60 products in stock** (`--products=` to change), spread over the stations, one lot each (`SMP-DHK-001` …), expiring in three years;
+5. **test prices**: those products in SKU order cost **1, 2, 3… USD** and sell for **cost + 20 %** (1.20, 2.40, 3.60…), and the stock carries the same cost.
+
+Running it again adds nothing twice (stations and products are matched by code; stock is only added while there is none). It refuses on any site without `ORTHOTRACK_TEST_SITE=true`. To start over, empty the site (section 4) and run it again.
+
 ## Open without signing in (optional)
 
 For trying things out, the test site can open with no login page and no two-factor step: add to its `.env`

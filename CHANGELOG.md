@@ -2,6 +2,12 @@
 
 All notable changes per build phase.
 
+## [Test site — sample data from the supplier workbook] — 2026-11-19
+
+### Added
+- **`php artisan orthotrack:sample-data <workbook.xlsx>`** (`SampleDataService`), for the test site, from the doctor's own supplier workbook (e.g. *IT_MIKRON_Trauma_items*): exchange rates if none (1 USD = 1,460 IQD, 1 EUR = 1.08 USD); five stations — Duhok, Erbil, Sulaymaniyah, Baghdad, Basra, each with its governorate; the whole workbook through the normal supplier-catalog import; **60 products in stock** (`--products=`) spread over the stations, one lot each (`SMP-<station>-001`…), received through the stock ledger at their test cost; then the **test prices** (1, 2, 3… USD by SKU, selling + 20 %). Runs again without adding anything twice; refused on a real site (docs/TEST-SITE.md).
+- **Tests**: stations, import, stock and prices; a second run; refused on a real site; the command.
+
 ## [Test site — open without signing in] — 2026-11-19
 
 ### Added

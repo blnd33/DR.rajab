@@ -4,6 +4,7 @@ use App\Enums\Role;
 use App\Models\IdempotencyKey;
 use App\Models\User;
 use App\Services\Assets\OverdueKitNotifier;
+use App\Services\Catalog\SampleDataService;
 use App\Services\Catalog\TestPricingService;
 use App\Services\Expenses\RecurringExpenseService;
 use App\Services\Expiry\ExpiryTransitionNotifier;
@@ -294,3 +295,45 @@ Artisan::command('prices:test-fill {--user= : Username who makes the change (def
 
     return 0;
 })->purpose('Test prices: cost 1, 2, 3… USD by SKU for products in stock, selling price = cost + 20 %');
+
+/*
+| Sample data for the test site, from the supplier's workbook (Mikron / Lima):
+| stations in five governorates, the workbook's products, stock, and test prices (1, 2, 3… USD, +20 %).
+|   php artisan orthotrack:sample-data /path/to/IT_MIKRON_Trauma_items.xlsx
+*/
+Artisan::command('orthotrack:sample-data {file : The supplier workbook (.xlsx)} {--products=60 : How many products to put in stock} {--user= : Username who makes the changes (default: the first super admin)} {--force : Do not ask}', function (SampleDataService $sample) {
+    if (! SampleDataService::allowed()) {
+        $this->error('Sample data is only for a test site (set ORTHOTRACK_TEST_SITE=true).');
+
+        return 1;
+    }
+
+    $username = $this->option('user');
+    $user = $username
+        ? User::query()->where('username', $username)->first()
+        : User::query()->where('is_active', true)->whereHas('roles', fn ($q) => $q->where('name', Role::SuperAdmin->value))->orderBy('id')->first();
+
+    if ($user === null) {
+        $this->error('No such user (use --user=<username> of a super admin).');
+
+        return 1;
+    }
+
+    if (! $this->option('force') && ! $this->confirm("Add sample stations, the workbook's products, stock and test prices, as {$user->username}?")) {
+        $this->line('Nothing was changed.');
+
+        return 0;
+    }
+
+    try {
+        $sample->run((string) $this->argument('file'), $user, max(1, (int) $this->option('products')), fn (string $line) => $this->line($line));
+    } catch (RuntimeException $e) {
+        $this->error($e->getMessage());
+
+        return 1;
+    }
+
+    $this->info('Sample data is ready.');
+
+    return 0;
+})->purpose('Test site: stations, products from the supplier workbook, stock and test prices');
