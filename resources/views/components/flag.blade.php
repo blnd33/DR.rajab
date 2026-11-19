@@ -2,6 +2,7 @@
     Flag shown next to a language (config('locales.supported.*.flag')).
     Inline SVG: flag emoji do not show on Windows and there is no emoji for the Kurdistan flag.
     The language name is always written next to it, so the flag itself is decorative.
+    Shown as a circle: the middle square of the 30×20 flag (viewBox 5 0 20 20), rounded.
 --}}
 @props(['locale'])
 
@@ -10,8 +11,8 @@
 @endphp
 
 @if ($flag)
-    <svg viewBox="0 0 30 20" aria-hidden="true" focusable="false"
-         {{ $attributes->class(['inline-block h-4 w-6 shrink-0 overflow-hidden rounded-[3px] shadow-[0_0_0_1px_rgb(0_0_0/0.12)]']) }}>
+    <svg viewBox="5 0 20 20" aria-hidden="true" focusable="false"
+         {{ $attributes->class(['inline-block size-5 shrink-0 overflow-hidden rounded-full shadow-[0_0_0_1px_rgb(0_0_0/0.12)]']) }}>
         @switch($flag)
             @case('us')
                 <rect width="30" height="20" fill="#fff"/>
@@ -36,7 +37,7 @@
                 <rect y="13.33" width="30" height="6.67" fill="#000"/>
                 <text x="15" y="11.6" text-anchor="middle" direction="rtl" fill="#007A3D"
                       font-family="'Vazirmatn Variable', 'Noto Sans Arabic', Tahoma, sans-serif"
-                      font-size="5.2" font-weight="700">الله أكبر</text>
+                      font-size="4.4" font-weight="700">الله أكبر</text>
                 @break
             @case('krd')
                 <rect width="30" height="6.67" fill="#ED2024"/>

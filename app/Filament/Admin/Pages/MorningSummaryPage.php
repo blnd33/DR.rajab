@@ -45,12 +45,12 @@ class MorningSummaryPage extends Page
 
     public static function getNavigationLabel(): string
     {
-        return __('Morning report');
+        return __('Daily Business Report');
     }
 
     public function getTitle(): string
     {
-        return __('Morning report');
+        return __('Daily Business Report');
     }
 
     public static function canAccess(): bool
@@ -85,7 +85,7 @@ class MorningSummaryPage extends Page
                 ->action(function () {
                     app(MorningSummaryService::class)->send(ServiceAction::user());
                     $this->date = MorningSummaryService::today();
-                    Notification::make()->title(__('Morning report sent.'))->success()->send();
+                    Notification::make()->title(__('Daily Business Report sent.'))->success()->send();
                 }),
             Action::make('settings')
                 ->label(__('My report settings'))

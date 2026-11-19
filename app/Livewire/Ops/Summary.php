@@ -41,7 +41,7 @@ class Summary extends Component
             'summary' => $summary,
             'headline' => MorningSummaryBuilder::headline($summary['payload']),
             'today' => MorningSummaryService::today(),
-        ])->title(__('Morning report'));
+        ])->title(__('Daily Business Report'));
     }
 
     private function validDate(?string $date): string

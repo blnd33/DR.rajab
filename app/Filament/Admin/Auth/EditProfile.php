@@ -64,12 +64,12 @@ class EditProfile extends BaseEditProfile
 
     protected function getSummaryFormComponent(): Component
     {
-        return Section::make(__('Morning report'))
+        return Section::make(__('Daily Business Report'))
             ->description(__('A short report of yesterday and what needs attention today, in your bell and as a phone notification.'))
             ->visible(fn () => $this->user() !== null && MorningSummaryService::canReceive($this->user()))
             ->columns(['default' => 1, 'md' => 2])
             ->schema([
-                Toggle::make('summary.enabled')->label(__('Send me the morning report'))->columnSpanFull(),
+                Toggle::make('summary.enabled')->label(__('Send me the Daily Business Report'))->columnSpanFull(),
                 TextInput::make('summary.time')->label(__('Time'))->type('time')->required()
                     ->helperText(__('Business time (Baghdad).'))
                     ->extraInputAttributes(['dir' => 'ltr']),

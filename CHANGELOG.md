@@ -2,6 +2,14 @@
 
 All notable changes per build phase.
 
+## [Client updates — round flags, one search, Daily Business Report, specialty icons] — 2026-11-19
+
+### Changed
+- **Language flags are round** (the middle of each flag in a circle) in the top bar, the language menu and the sign-in page.
+- **One search**: the top-bar search is removed; *Search the whole system* on the Main page stays.
+- **Morning report → Daily Business Report** everywhere (menu, page, phone app, profile, settings, notification, permission) — Arabic *تقرير الأعمال اليومي*, Kurdish *ڕاپۆرتی ڕۆژانەی کار*.
+- **Specialty icons** (Main page buttons and overview): new line drawings — Trauma a broken bone, Spine the vertebrae, Sport medicine the knee, Arthroplasty a hip prosthesis (`resources/svg`, icon set `ot-`), shown larger.
+
 ## [Test site — sample data from the supplier workbook] — 2026-11-19
 
 ### Added

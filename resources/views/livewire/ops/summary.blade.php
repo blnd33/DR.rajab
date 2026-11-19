@@ -7,7 +7,7 @@
     @endphp
 
     <header class="space-y-2">
-        <h1 class="flex items-center gap-2 text-2xl font-bold">@svg('heroicon-o-sun', 'size-7 text-warning') {{ __('Morning report') }}</h1>
+        <h1 class="flex items-center gap-2 text-2xl font-bold">@svg('heroicon-o-sun', 'size-7 text-warning') {{ __('Daily Business Report') }}</h1>
         <p class="font-semibold">{{ $headline }}</p>
         <p class="text-sm text-muted-fg">
             {{ __('Yesterday = :day.', ['day' => Display::date($payload['day'])]) }}

@@ -33,11 +33,11 @@
     @if ($canSummary)
         <form wire:submit="saveSummary" class="ot-card space-y-4 p-4" aria-labelledby="summary-title">
             <h2 id="summary-title" class="flex items-center gap-2 font-semibold">
-                @svg('heroicon-o-sun', 'size-5 text-primary') {{ __('Morning report') }}
+                @svg('heroicon-o-sun', 'size-5 text-primary') {{ __('Daily Business Report') }}
             </h2>
             <label class="flex min-h-12 items-center gap-3">
                 <input type="checkbox" wire:model="summary.enabled" class="size-5 accent-primary" />
-                <span>{{ __('Send me the morning report') }}</span>
+                <span>{{ __('Send me the Daily Business Report') }}</span>
             </label>
             <div class="grid grid-cols-2 gap-3">
                 <label class="space-y-1">

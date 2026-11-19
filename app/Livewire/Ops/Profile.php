@@ -42,7 +42,7 @@ class Profile extends Component
         }
 
         $this->resetErrorBag();
-        $this->dispatch('toast', type: 'success', message: __('Morning report settings saved.'));
+        $this->dispatch('toast', type: 'success', message: __('Daily Business Report settings saved.'));
     }
 
     public function setLocale(string $locale): void

@@ -6,7 +6,7 @@
             @foreach ($specialties as $item)
                 <a href="{{ $item['url'] }}" wire:navigate
                    class="flex min-h-20 flex-col items-center justify-center gap-2 rounded-xl bg-white p-3 text-center font-semibold text-gray-800 shadow-sm ring-1 ring-gray-950/5 transition hover:bg-primary-50 hover:text-primary-700 hover:ring-primary-600/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 dark:bg-gray-900 dark:text-gray-100 dark:ring-white/10 dark:hover:bg-primary-500/10">
-                    @svg($item['icon'], 'size-7 text-primary-600 dark:text-primary-400')
+                    @svg($item['icon'], 'size-10 text-primary-600 dark:text-primary-400')
                     <span>{{ $item['label'] }}</span>
                 </a>
             @endforeach

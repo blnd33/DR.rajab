@@ -31,10 +31,11 @@ enum Specialty: string implements HasLabel
     public function icon(): string
     {
         return match ($this) {
-            self::Arthroplasty => 'heroicon-o-cog-6-tooth',
-            self::Trauma => 'heroicon-o-bolt',
-            self::Spine => 'heroicon-o-bars-3',
-            self::SportMedicine => 'heroicon-o-trophy',
+            // Line drawings in resources/svg (icon set "ot").
+            self::Arthroplasty => 'ot-hip-prosthesis',
+            self::Trauma => 'ot-trauma',
+            self::Spine => 'ot-spine',
+            self::SportMedicine => 'ot-knee',
         };
     }
 

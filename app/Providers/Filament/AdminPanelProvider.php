@@ -70,6 +70,8 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('icons/favicon.svg'))
             ->defaultAvatarProvider(KmAvatarProvider::class)
             ->sidebarCollapsibleOnDesktop()
+            // One search only: "Search the whole system" on the Main page (not the top-bar search).
+            ->globalSearch(false)
             ->databaseNotifications()
             ->unsavedChangesAlerts()
             ->navigationGroups([

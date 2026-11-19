@@ -87,7 +87,7 @@ it('sends the due summaries once, keeps them, and notifies with counts only', fu
     Notification::assertSentTo($this->accountant, MorningSummaryReady::class, function (MorningSummaryReady $n) {
         $data = $n->toArray($this->accountant);
 
-        return $data['title'] === 'Morning report 2026-11-11'
+        return $data['title'] === 'Daily Business Report 2026-11-11'
             && $data['body'] === 'Yesterday: 1 open issue'
             && str_contains($data['url'], '/admin/morning-summary?date=2026-11-11');
     });
@@ -142,7 +142,7 @@ it('shows any morning on the summary page, as sent or built now', function () {
 });
 
 it('has the summary on the phone, with its settings on the Me page', function () {
-    $this->actingAs($this->admin)->get(route('ops.summary', ['date' => '2026-11-11']))->assertOk()->assertSee('Morning report');
+    $this->actingAs($this->admin)->get(route('ops.summary', ['date' => '2026-11-11']))->assertOk()->assertSee('Daily Business Report');
     $this->actingAs($this->admin)->get(route('ops.home'))->assertOk()->assertSee('Arrives at 07:30');
 
     Livewire::actingAs($this->admin)->test(Profile::class)

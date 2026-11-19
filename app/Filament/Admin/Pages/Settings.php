@@ -158,12 +158,12 @@ class Settings extends Page
                                 Toggle::make('fx.eur_usd_auto_confirm')->label(__('Use the fetched EUR/USD rate without manual confirmation')),
                             ]),
 
-                        Tab::make(__('Morning report'))
+                        Tab::make(__('Daily Business Report'))
                             ->icon(Heroicon::OutlinedSun)
                             ->columns(['default' => 1, 'md' => 2])
                             ->schema([
                                 TextInput::make('summary.time')->label(__('Default time'))->type('time')->required()
-                                    ->helperText(__('For people who have not chosen their own time (Profile → Morning report).'))
+                                    ->helperText(__('For people who have not chosen their own time (Profile → Daily Business Report).'))
                                     ->extraInputAttributes(['dir' => 'ltr']),
                                 Toggle::make('summary.skip_fridays')->label(__('Not on Fridays by default')),
                                 CheckboxList::make('summary.sections')->label(__('Default sections'))

@@ -2,7 +2,7 @@
     <a href="{{ $url }}" class="flex items-center gap-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-gray-950/5 hover:bg-gray-50 dark:bg-gray-900 dark:ring-white/10 dark:hover:bg-white/5">
         <x-filament::icon icon="heroicon-o-sun" class="size-8 shrink-0 text-warning-500" />
         <div class="min-w-0 flex-1">
-            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Morning report') }}</p>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ __('Daily Business Report') }}</p>
             @if ($headline !== null)
                 <p class="font-semibold text-gray-950 dark:text-white">{{ $headline }}</p>
             @elseif ($settings->enabled)

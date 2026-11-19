@@ -166,7 +166,7 @@ final class PermissionRegistry
                 'documents.folders' => ['Add and rename document folders', false],
             ],
             'insight' => [
-                'summary.receive' => ['Receive the morning report', false],
+                'summary.receive' => ['Receive the Daily Business Report', false],
                 'assistant.use' => ['Use Quick answers', false],
             ],
         ];
@@ -236,7 +236,7 @@ final class PermissionRegistry
             'reports' => __('Reports'),
             'agents' => __('Company agents'),
             'documents' => __('Company documents'),
-            'insight' => __('Morning report & Quick answers'),
+            'insight' => __('Daily Business Report & Quick answers'),
             default => $group,
         };
     }
