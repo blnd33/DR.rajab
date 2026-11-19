@@ -6,7 +6,9 @@ All notable changes per build phase.
 
 ### Changed
 - **Al-Fadhaa' Bureau is now a company of its own** (replaces the zero-only Main page of the previous entry): same system, **separate data**. Each company has its own database — staff and logins, stations, stock, money, documents, settings — and its own session, cache, uploaded files and backups (`App\Support\CompanyContext`). The company is chosen when the request starts: the top-bar switch (also on the sign-in page) sets a cookie; commands and cron use `ORTHOTRACK_COMPANY=al_fadhaa`. Switching company opens the other company's own system (sign in there; automatic on the test site).
-- A company is switched on by giving it a database: `ORTHOTRACK_AL_FADHAA_DATABASE` (same server and login as `DB_*`). The switch only shows when it has one.
+- **One switch button, next to the company name** (and on the sign-in page): in KurdishMedicus it says *Al-Fadhaa' Bureau*; in Al-Fadhaa' Bureau it shows KurdishMedicus' own name (its Settings → company name).
+- **Each company sees only its own governorates** on the Main page overview: KurdishMedicus all 19, Al-Fadhaa' Bureau **Baghdad, Karbala, Babil** (only "Total in Iraq"; the Iraq-and-Kurdistan total only when a company works in both).
+- - A company is switched on by giving it a database: `ORTHOTRACK_AL_FADHAA_DATABASE` (same server and login as `DB_*`). The switch only shows when it has one.
 
 ### Added
 - **`orthotrack:setup-company`**: tables, base data, company name and stations of the current company — Al-Fadhaa' Bureau: **Baghdad, Karbala, Babil** (governorates set, so the Main page shows them green). Safe to run again.

@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\Insight\OverviewFact;
 use App\Services\Insight\OverviewService;
+use App\Support\CompanyContext;
 use App\Support\Locale\Display;
 use Filament\Pages\Page;
 use Filament\Panel;
@@ -22,7 +23,8 @@ use Livewire\Attributes\Url;
  * Opened from the big buttons on the Main page.
  *
  *  - A button of the second row (Stations, Stock, Value, Sales, Profit): Iraq / Kurdistan / both,
- *    then the 19 governorates (green = something there, red = nothing), then a specialty, then
+ *    then the governorates (green = something there, red = nothing; the company's own: all 19 for
+ *    KurdishMedicus, Baghdad / Karbala / Babil for Al-Fadhaa' Bureau), then a specialty, then
  *    what is there product by product.
  *  - A specialty of the first row: every button for that specialty, per region and governorate,
  *    then one governorate product by product.
@@ -160,6 +162,15 @@ class OverviewPage extends Page
         $specialty = Specialty::tryFrom((string) $this->specialty);
         [$from, $until] = $this->bounds();
 
+        // Only the governorates this company works in (Al-Fadhaa' Bureau: Baghdad, Karbala, Babil).
+        $covered = CompanyContext::governorates();
+        $governorates = collect([Governorate::KURDISTAN, Governorate::IRAQ])
+            ->mapWithKeys(fn (string $region) => [$region => array_values(array_filter(Governorate::inRegion($region), fn (Governorate $g) => in_array($g, $covered, true)))])
+            ->filter()->all();
+        $regions = array_values(array_filter([Governorate::IRAQ, Governorate::KURDISTAN], fn (string $r) => isset($governorates[$r])));
+        // "Total in Iraq and Kurdistan" only when the company works in both.
+        $regions = count($regions) > 1 ? [...$regions, null] : $regions;
+
         $metrics = $metric !== null ? [$metric] : $service->metrics($user);
         $facts = [];
         $stations = [];
@@ -178,8 +189,8 @@ class OverviewPage extends Page
             'metrics' => $metrics,
             'usesPeriod' => $focus !== null || $metric?->usesPeriod(),
             'periodLabel' => Display::date($from).' → '.Display::date($until),
-            'regions' => [Governorate::IRAQ, Governorate::KURDISTAN, null],
-            'governorates' => [Governorate::KURDISTAN => Governorate::inRegion(Governorate::KURDISTAN), Governorate::IRAQ => Governorate::inRegion(Governorate::IRAQ)],
+            'regions' => $regions,
+            'governorates' => $governorates,
             'value' => fn (OverviewMetric $m, ?string $region = null, ?Governorate $g = null, ?Specialty $s = null) => $this->value($m, $facts[$m->value], $stations[$m->value], $region, $g, $s),
             'has' => fn (OverviewMetric $m, ?Governorate $g, ?Specialty $s = null) => $this->has($m, $facts[$m->value], $stations[$m->value], $g, $s),
             'unassigned' => collect($stations)->flatten(1)->unique('id')->filter(fn (Branch $b) => $b->governorate === null)->values(),

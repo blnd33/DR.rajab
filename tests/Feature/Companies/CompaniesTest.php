@@ -43,10 +43,21 @@ it('offers a company only when it has a database', function () {
     withAlFadhaa($this->file);
 
     expect(CompanyContext::available())->toBe([Company::KurdishMedicus, Company::AlFadhaa]);
+    // One button, next to the company name: the other company.
     $this->get('/admin')->assertOk()
         ->assertSee('data-company-switch', false)
-        ->assertSee('KurdishMedicus')
-        ->assertSee("Al-Fadhaa' Bureau");
+        ->assertSee('value="al_fadhaa"', false)
+        ->assertDontSee('value="kurdmedicus"', false);
+});
+
+it('shows each company only the governorates it works in', function () {
+    withAlFadhaa($this->file);
+
+    expect(CompanyContext::governorates())->toHaveCount(19);
+
+    CompanyContext::activate(Company::AlFadhaa);
+
+    expect(CompanyContext::governorates())->toBe([Governorate::Baghdad, Governorate::Babil, Governorate::Karbala]);
 });
 
 it('gives the other company its own database, sign-in, cache, files and backups', function () {

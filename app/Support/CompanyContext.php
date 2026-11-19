@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Enums\Company;
+use App\Enums\Governorate;
 use App\Services\Settings\SettingsRepository;
 use Illuminate\Contracts\Foundation\Application;
 use Spatie\Permission\PermissionRegistrar;
@@ -121,13 +122,71 @@ final class CompanyContext
     }
 
     /**
+     * The governorates the current company works in: KurdishMedicus all of them, another company
+     * those of its stations (config orthotrack.companies.<company>.stations). The Main page
+     * overview lists only these.
+     *
+     * @return list<Governorate>
+     */
+    public static function governorates(): array
+    {
+        $company = self::current();
+
+        if ($company->isMain()) {
+            return Governorate::cases();
+        }
+
+        $covered = collect((array) config("orthotrack.companies.{$company->value}.stations", []))
+            ->map(fn (array $station) => Governorate::tryFrom((string) ($station[3] ?? '')))
+            ->filter()->unique()->values();
+
+        return array_values(array_filter(Governorate::cases(), fn (Governorate $g) => $covered->contains($g)));
+    }
+
+    /**
+     * A company's own name (its Settings → company name), for the switch button.
+     */
+    public static function name(Company $company): string
+    {
+        static $names = [];
+
+        if (! array_key_exists($company->value, $names)) {
+            try {
+                $value = app('db')->connection(self::connection($company))->table('settings')
+                    ->where('group', 'company')->where('key', 'name')->value('value');
+                $names[$company->value] = is_string($value) ? json_decode($value, true) : null;
+            } catch (\Throwable) {
+                $names[$company->value] = null;
+            }
+        }
+
+        return filled($names[$company->value]) && $names[$company->value] !== config('app.name')
+            ? (string) $names[$company->value]
+            : $company->getLabel();
+    }
+
+    /**
      * The database connection name of a company.
      */
     public static function connection(Company $company): string
     {
         self::remember();
 
-        return $company->isMain() ? self::$base['database.default'] : 'company_'.$company->value;
+        if ($company->isMain()) {
+            return self::$base['database.default'];
+        }
+
+        $connection = 'company_'.$company->value;
+
+        // Same server and login as the main database, its own database name (unless set in full).
+        if (! is_array(config("database.connections.{$connection}"))) {
+            config(["database.connections.{$connection}" => array_merge(
+                (array) config('database.connections.'.self::$base['database.default']),
+                ['database' => config("orthotrack.companies.{$company->value}.database"), 'url' => null],
+            )]);
+        }
+
+        return $connection;
     }
 
     private static function configure(Company $company): void
@@ -144,14 +203,6 @@ final class CompanyContext
 
         $suffix = $company->value;
         $connection = self::connection($company);
-
-        // Same server and login as the main database, its own database name (unless set in full).
-        if (! is_array(config("database.connections.{$connection}"))) {
-            config(["database.connections.{$connection}" => array_merge(
-                (array) config('database.connections.'.$base['database.default']),
-                ['database' => config("orthotrack.companies.{$suffix}.database"), 'url' => null],
-            )]);
-        }
 
         config([
             'database.default' => $connection,
