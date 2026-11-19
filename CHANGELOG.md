@@ -2,6 +2,21 @@
 
 All notable changes per build phase.
 
+## [Client updates — company documents] — 2026-11-19
+
+### Added
+- **Company documents in the side menu**: four new sections, each folder an entry inside it:
+  - **Catalogues**: Lima, Mikron, Covision.
+  - **Official company documents**: Company registration.
+  - **Supplier company documents**: Contractual, Declarations, PL / invoice / Dual use / COO, Others.
+  - **Shipment documents**: AWB, Customs clearance, Income tax, Internal transport, Other.
+  - In the existing **Finance** menu: Legal / Regulatory department, Internal transport invoices / PL.
+- **A folder** (`DocumentFolderPage`, `/admin/documents?folder=…`): upload a document (title, reference number, document date, optional expiry date, notes, one or more files — PDF, Word, Excel, photos or zip, up to 50 MB each), open / download its files, search, add files later, edit the details. Nothing is deleted: a document is **archived with a reason** (Archived filter) and can be brought back. Expiry dates show red when passed, amber within 30 days.
+- **Administration → Document folders**: the super admin adds a folder (e.g. a new catalogue supplier) in any section, renames it (three languages), reorders or hides it; the menu follows at once (`DocumentNavigation`).
+- Permissions *View company documents*, *Upload and archive company documents*, *Add and rename document folders* (`documents.*`), given to Super Admin and Manager; files are private (opened only by people who may view documents).
+- Tables `document_folders`, `company_documents`; attachment kind `document` (`2026_11_19_000300_add_company_documents`, which also creates the folders above).
+- **Tests**: the folders and their sections, upload / edit / archive / bring back, wrong files and dates, permissions and private files, the menu (new and hidden folders), upload from the page, every language.
+
 ## [Client updates — Main page buttons, overview by region, search] — 2026-11-19
 
 ### Added

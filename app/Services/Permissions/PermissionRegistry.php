@@ -160,6 +160,11 @@ final class PermissionRegistry
             'agents' => [
                 'agents.manage' => ['Manage company agents and drivers', false],
             ],
+            'documents' => [
+                'documents.view' => ['View company documents', false],
+                'documents.upload' => ['Upload and archive company documents', false],
+                'documents.folders' => ['Add and rename document folders', false],
+            ],
             'insight' => [
                 'summary.receive' => ['Receive the morning report', false],
                 'assistant.use' => ['Use Quick answers', false],
@@ -230,6 +235,7 @@ final class PermissionRegistry
             'sales' => __('Sales & expenses'),
             'reports' => __('Reports'),
             'agents' => __('Company agents'),
+            'documents' => __('Company documents'),
             'insight' => __('Morning report & Quick answers'),
             default => $group,
         };

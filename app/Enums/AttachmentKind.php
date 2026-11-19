@@ -17,6 +17,7 @@ enum AttachmentKind: string implements HasLabel
     case TransferSent = 'transfer_sent';
     case TransferReceived = 'transfer_received';
     case Cv = 'cv';
+    case Document = 'document';
     case Other = 'other';
 
     public function getLabel(): string
@@ -30,6 +31,7 @@ enum AttachmentKind: string implements HasLabel
             self::TransferSent => __('Photo when sent'),
             self::TransferReceived => __('Photo when received'),
             self::Cv => __('CV'),
+            self::Document => __('Document'),
             self::Other => __('Other'),
         };
     }
