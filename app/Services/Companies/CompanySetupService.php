@@ -40,8 +40,9 @@ class CompanySetupService
         }
         $say('Base data ready (currencies, roles and permissions, settings, units).');
 
+        // Still the system's default name (OrthoTrack / APP_NAME): give it the company's name.
         $name = (string) $this->settings->get('company.name', '');
-        if ($name === '' || $name === config('app.name')) {
+        if (in_array($name, ['', (string) config('app.name'), (string) ($this->settings->defaults()['company.name'] ?? '')], true)) {
             $this->settings->set('company.name', $company->getLabel());
         }
 

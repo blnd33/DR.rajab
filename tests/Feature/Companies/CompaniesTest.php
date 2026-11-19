@@ -99,6 +99,11 @@ it('sets up Al-Fadhaa\' Bureau with its own stations, and the data never mixes',
             ->and(Product::query()->pluck('sku')->all())->toBe(['AF-ONLY'])
             ->and(app(SettingsRepository::class)->get('company.name'))->toBe("Al-Fadhaa' Bureau");
 
+        // A name left at the system default is replaced, a chosen one is kept.
+        app(SettingsRepository::class)->set('company.name', 'OrthoTrack');
+        app(CompanySetupService::class)->setup();
+        expect(app(SettingsRepository::class)->get('company.name'))->toBe("Al-Fadhaa' Bureau");
+
         // Running it again adds nothing.
         expect(app(CompanySetupService::class)->setup()['stations'])->toBe(0);
 
