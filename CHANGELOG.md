@@ -2,6 +2,18 @@
 
 All notable changes per build phase.
 
+## [Client updates — two companies, separate data] — 2026-11-19
+
+### Changed
+- **Al-Fadhaa' Bureau is now a company of its own** (replaces the zero-only Main page of the previous entry): same system, **separate data**. Each company has its own database — staff and logins, stations, stock, money, documents, settings — and its own session, cache, uploaded files and backups (`App\Support\CompanyContext`). The company is chosen when the request starts: the top-bar switch (also on the sign-in page) sets a cookie; commands and cron use `ORTHOTRACK_COMPANY=al_fadhaa`. Switching company opens the other company's own system (sign in there; automatic on the test site).
+- A company is switched on by giving it a database: `ORTHOTRACK_AL_FADHAA_DATABASE` (same server and login as `DB_*`). The switch only shows when it has one.
+
+### Added
+- **`orthotrack:setup-company`**: tables, base data, company name and stations of the current company — Al-Fadhaa' Bureau: **Baghdad, Karbala, Babil** (governorates set, so the Main page shows them green). Safe to run again.
+- **`orthotrack:migrate-all`**: database changes for every company.
+- **Tests**: a company only with a database; its own database, session, cache, files, backups and permission cache; setup with stations; data never mixes (second database as SQLite); the command-line company; the switch.
+- docs/TEST-SITE.md: *Two companies* — server steps and the second cron line.
+
 ## [Client updates — Al-Fadhaa' Bureau] — 2026-11-19
 
 ### Added

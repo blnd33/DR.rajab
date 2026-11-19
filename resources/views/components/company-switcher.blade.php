@@ -1,13 +1,17 @@
-{{-- Admin top bar: which company's Main page and figures are shown (KurdishMedicus | Al-Fadhaa' Bureau). --}}
+{{--
+    Company switch (top bar and sign-in page): KurdishMedicus | Al-Fadhaa' Bureau. Each company is its
+    own system (data, staff, sign-in); shown only when more than one company has a database.
+--}}
 @php
-    $current = \App\Support\AdminCompany::current();
+    $companies = \App\Support\CompanyContext::available();
+    $current = \App\Support\CompanyContext::current();
 @endphp
 
-@auth
+@if (count($companies) > 1)
     <form method="POST" action="{{ route('admin.company.switch') }}" data-company-switch
           {{ $attributes->class(['flex h-10 items-center overflow-hidden rounded-lg border border-slate-300 bg-white text-sm font-semibold dark:border-white/15 dark:bg-white/5']) }}>
         @csrf
-        @foreach (\App\Enums\Company::cases() as $company)
+        @foreach ($companies as $company)
             <button type="submit" name="company" value="{{ $company->value }}"
                     aria-pressed="{{ $company === $current ? 'true' : 'false' }}"
                     @class([
@@ -21,4 +25,4 @@
             </button>
         @endforeach
     </form>
-@endauth
+@endif

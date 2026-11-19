@@ -5,6 +5,7 @@ use App\Http\Middleware\EnsureOpsAccess;
 use App\Http\Middleware\NormalizeDigits;
 use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\TrackUserSession;
+use App\Support\CompanyContext;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -25,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // The company cookie only names a company; the data and the sign-in are per company.
+        $middleware->encryptCookies(except: [CompanyContext::COOKIE]);
+
         $middleware->web(append: [
             // Test site only (ORTHOTRACK_AUTO_LOGIN): sign visitors in automatically.
             AutoLoginOnTestSite::class,

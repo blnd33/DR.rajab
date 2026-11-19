@@ -25,8 +25,9 @@ Route::post('/locale/{locale}', LocaleController::class)->name('locale.switch');
 // Admin top-bar branch: everything branch-based follows it.
 Route::post('/admin-branch', AdminBranchController::class)->middleware('auth')->name('admin.branch.switch');
 
-// Admin top-bar company (KurdishMedicus | Al-Fadhaa' Bureau): opens that company's Main page.
-Route::post('/admin-company', AdminCompanyController::class)->middleware('auth')->name('admin.company.switch');
+// Company switch (KurdishMedicus | Al-Fadhaa' Bureau): each company has its own data and sign-in,
+// so it is offered on the sign-in page too.
+Route::post('/company', AdminCompanyController::class)->name('admin.company.switch');
 
 // PWA
 Route::get('/manifest.webmanifest', [PwaController::class, 'manifest'])->name('pwa.manifest');

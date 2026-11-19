@@ -12,6 +12,7 @@ use App\Services\Expiry\ExpiryClassifier;
 use App\Services\Permissions\BranchScopeResolver;
 use App\Services\Settings\SettingsRepository;
 use App\Services\Stock\AlertRecipients;
+use App\Support\CompanyContext;
 use App\Support\Locale\DigitConverter;
 use App\Support\Locale\LocaleRegistry;
 use App\Support\Locale\NumberLocale;
@@ -38,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        // Which company (database, session, cache, files) this request or command works in.
+        CompanyContext::boot($this->app);
+
         $this->app->singleton(SettingsRepository::class);
         $this->app->singleton(LocaleRegistry::class);
         // Memoised per request (and per Octane request if ever used).

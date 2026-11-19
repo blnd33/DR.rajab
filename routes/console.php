@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\Assets\OverdueKitNotifier;
 use App\Services\Catalog\SampleDataService;
 use App\Services\Catalog\TestPricingService;
+use App\Services\Companies\CompanySetupService;
 use App\Services\Expenses\RecurringExpenseService;
 use App\Services\Expiry\ExpiryTransitionNotifier;
 use App\Services\Health\Heartbeat;
@@ -16,8 +17,10 @@ use App\Services\Reports\StockValueSnapshotter;
 use App\Services\Settings\SettingsRepository;
 use App\Services\Stock\LowStockDetector;
 use App\Services\Users\UserService;
+use App\Support\CompanyContext;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Schedule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -337,3 +340,36 @@ Artisan::command('orthotrack:sample-data {file : The supplier workbook (.xlsx)} 
 
     return 0;
 })->purpose('Test site: stations, products from the supplier workbook, stock and test prices');
+
+/*
+| Companies (same system, separate data — App\Support\CompanyContext). Commands work in the main
+| company unless ORTHOTRACK_COMPANY names another:
+|   ORTHOTRACK_COMPANY=al_fadhaa php artisan orthotrack:setup-company
+|   php artisan orthotrack:migrate-all
+*/
+Artisan::command('orthotrack:setup-company', function (CompanySetupService $setup) {
+    $company = CompanyContext::current();
+    $this->info('Company: '.$company->getLabel().' (database '.config('database.connections.'.config('database.default').'.database').')');
+
+    $setup->setup(fn (string $line) => $this->line($line));
+
+    $this->info("Ready. Create its first login: ORTHOTRACK_COMPANY={$company->value} php artisan orthotrack:create-admin <username>");
+
+    return 0;
+})->purpose('Prepare the current company\'s database: tables, base data, its name and stations');
+
+Artisan::command('orthotrack:migrate-all', function () {
+    $failed = false;
+
+    foreach (CompanyContext::available() as $company) {
+        $this->info($company->getLabel().':');
+        $result = Process::env([CompanyContext::ENV => $company->value])
+            ->timeout(600)
+            ->run([PHP_BINARY, base_path('artisan'), 'migrate', '--force']);
+
+        $this->line(trim($result->output().$result->errorOutput()));
+        $failed = $failed || $result->failed();
+    }
+
+    return $failed ? 1 : 0;
+})->purpose('Run the database migrations for every company');

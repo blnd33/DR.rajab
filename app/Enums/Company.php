@@ -6,9 +6,8 @@ use App\Enums\Concerns\EnumHelpers;
 use Filament\Support\Contracts\HasLabel;
 
 /**
- * The companies the admin can switch between (top bar). KurdishMedicus is the main company: all
- * stations belong to it. Another company sees only its own stations — none yet, so its Main page
- * shows zero everywhere.
+ * The owner's companies: one system, separate data (App\Support\CompanyContext). KurdishMedicus is
+ * the main company (main database); the others have their own database.
  */
 enum Company: string implements HasLabel
 {

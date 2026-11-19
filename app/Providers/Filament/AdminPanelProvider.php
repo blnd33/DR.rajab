@@ -105,7 +105,7 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
-                fn () => Blade::render('<x-auth-notice /><x-language-switcher class="mb-2" />'),
+                fn () => Blade::render('<x-auth-notice /><x-company-switcher class="mx-auto mb-2 w-fit" /><x-language-switcher class="mb-2" />'),
             )
             // Company switch where the top-bar search used to be (left of the bell).
             ->renderHook(

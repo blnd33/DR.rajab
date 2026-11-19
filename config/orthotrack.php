@@ -37,6 +37,21 @@ return [
     // Ignored unless ORTHOTRACK_TEST_SITE=true, so it can never open the real site.
     'auto_login' => env('ORTHOTRACK_AUTO_LOGIN'),
 
+    // The owner's other companies: same system, separate data (App\Support\CompanyContext).
+    // KurdishMedicus uses DB_DATABASE. A company is switched on by giving it its own database
+    // (same server and login as DB_*); `orthotrack:setup-company` fills it and adds its stations.
+    'companies' => [
+        'al_fadhaa' => [
+            'database' => env('ORTHOTRACK_AL_FADHAA_DATABASE'),
+            // code => [English, Arabic, Kurdish, governorate]
+            'stations' => [
+                'BGD' => ['Baghdad', 'بغداد', 'بەغدا', 'baghdad'],
+                'KRB' => ['Karbala', 'كربلاء', 'کەربەلا', 'karbala'],
+                'BBL' => ['Babil', 'بابل', 'بابل', 'babil'],
+            ],
+        ],
+    ],
+
     // Shared hosting without Supervisor / Horizon (docs/HOSTINGER.md): the one-minute cron
     // (schedule:run) also works the database queue — Excel imports, notifications.
     'queue_via_scheduler' => (bool) env('ORTHOTRACK_QUEUE_VIA_SCHEDULER', false),

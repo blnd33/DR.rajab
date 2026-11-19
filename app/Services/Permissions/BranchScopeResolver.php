@@ -31,9 +31,6 @@ class BranchScopeResolver
 
     private ?int $focusUser = null;
 
-    /** User working in a company that has no stations yet (see focusNoBranches). */
-    private ?int $noBranchesUser = null;
-
     /**
      * @return list<int>|null null = all branches
      */
@@ -66,15 +63,6 @@ class BranchScopeResolver
         $this->focusUser = $branchId === null ? null : $user->id;
     }
 
-    /**
-     * Work in a company with no stations yet: every branch-based permission of this user finds no
-     * branch, so lists, the Main page and reports show nothing. Null user = off.
-     */
-    public function focusNoBranches(?User $user): void
-    {
-        $this->noBranchesUser = $user?->id;
-    }
-
     public function focusedBranch(User $user): ?int
     {
         return $this->focusUser === $user->id ? $this->focusBranch : null;
@@ -86,10 +74,6 @@ class BranchScopeResolver
      */
     private function narrow(User $user, string $permission, ?array $ids): ?array
     {
-        if ($this->noBranchesUser === $user->id && PermissionRegistry::isScoped($permission)) {
-            return [];
-        }
-
         $focus = $this->focusedBranch($user);
 
         if ($focus === null || ! PermissionRegistry::isScoped($permission)) {
@@ -121,10 +105,7 @@ class BranchScopeResolver
      */
     public function hasAny(User $user, string $permission): bool
     {
-        // In a company with no stations yet the user keeps their screens; they just show nothing.
-        $ids = $this->noBranchesUser === $user->id
-            ? $this->unfocusedBranchIdsFor($user, $permission)
-            : $this->branchIdsFor($user, $permission);
+        $ids = $this->branchIdsFor($user, $permission);
 
         return $ids === null || $ids !== [];
     }

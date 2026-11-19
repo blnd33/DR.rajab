@@ -123,6 +123,38 @@ It adds, in this order:
 
 Running it again adds nothing twice (stations and products are matched by code; stock is only added while there is none). It refuses on any site without `ORTHOTRACK_TEST_SITE=true`. To start over, empty the site (section 4) and run it again.
 
+## Two companies: KurdishMedicus and Al-Fadhaa' Bureau
+
+One system, two companies of the same owner, **separate data**: each company has its own database —
+its own staff and logins, stations, stock, money, documents and settings — and its own session,
+cache, uploaded files and backups. The top bar (and the sign-in page) shows
+**KurdishMedicus | Al-Fadhaa' Bureau**; clicking the other company opens its own system (sign in
+there; on the test site it signs in by itself). KurdishMedicus uses `DB_DATABASE`; Al-Fadhaa' Bureau is
+switched on by giving it a database.
+
+Once, on the server:
+
+```bash
+sudo -u postgres psql -p 5434 -c "CREATE DATABASE orthotrack_alfadhaa OWNER orthotrack_testsite"
+echo "ORTHOTRACK_AL_FADHAA_DATABASE=orthotrack_alfadhaa" >> .env
+sudo -u www-data php artisan optimize
+sudo -u www-data env ORTHOTRACK_COMPANY=al_fadhaa php artisan orthotrack:setup-company
+sudo -u www-data env ORTHOTRACK_COMPANY=al_fadhaa php artisan orthotrack:create-admin rajab --name="Dr. Rajab"
+```
+
+`orthotrack:setup-company` creates the tables, the base data, the company name and its stations
+(**Baghdad, Karbala, Babil** — `config/orthotrack.php`, `companies.al_fadhaa.stations`).
+
+Its daily jobs need their own cron line (next to KurdishMedicus' line):
+
+```
+* * * * * cd /var/www/orthotrack-test && ORTHOTRACK_COMPANY=al_fadhaa php artisan schedule:run >> /dev/null 2>&1
+```
+
+Any command works in Al-Fadhaa' Bureau with `ORTHOTRACK_COMPANY=al_fadhaa` in front of it. After an
+update with new database changes, run `php artisan orthotrack:migrate-all` (both companies) instead of
+`php artisan migrate`.
+
 ## Open without signing in (optional)
 
 For trying things out, the test site can open with no login page and no two-factor step: add to its `.env`
