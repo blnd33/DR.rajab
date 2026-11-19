@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminBranchController;
+use App\Http\Controllers\AdminCompanyController;
 use App\Http\Controllers\AttachmentController;
 use App\Http\Controllers\DocumentPrintController;
 use App\Http\Controllers\HomeController;
@@ -23,6 +24,9 @@ Route::post('/locale/{locale}', LocaleController::class)->name('locale.switch');
 
 // Admin top-bar branch: everything branch-based follows it.
 Route::post('/admin-branch', AdminBranchController::class)->middleware('auth')->name('admin.branch.switch');
+
+// Admin top-bar company (KurdishMedicus | Al-Fadhaa' Bureau): opens that company's Main page.
+Route::post('/admin-company', AdminCompanyController::class)->middleware('auth')->name('admin.company.switch');
 
 // PWA
 Route::get('/manifest.webmanifest', [PwaController::class, 'manifest'])->name('pwa.manifest');

@@ -5,7 +5,7 @@
  * stay in Latin letters on purpose are listed here.
  */
 
-const LATIN_ON_PURPOSE = ['Code 128', 'EAN-13', 'Excel', 'GTIN', 'GTIN (GS1)', 'IBAN', 'SKU'];
+const LATIN_ON_PURPOSE = ['Code 128', 'EAN-13', 'Excel', 'GTIN', 'GTIN (GS1)', 'IBAN', 'KurdishMedicus', 'SKU'];
 
 it('has no Arabic or Sorani string left in English', function (string $locale) {
     $english = json_decode((string) file_get_contents(lang_path('en.json')), true);

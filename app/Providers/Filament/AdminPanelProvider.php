@@ -107,6 +107,11 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn () => Blade::render('<x-auth-notice /><x-language-switcher class="mb-2" />'),
             )
+            // Company switch where the top-bar search used to be (left of the bell).
+            ->renderHook(
+                PanelsRenderHook::GLOBAL_SEARCH_BEFORE,
+                fn () => Blade::render('<x-company-switcher class="me-2" />'),
+            )
             // Language can be changed from every page, not only before logging in.
             ->renderHook(
                 PanelsRenderHook::USER_MENU_BEFORE,

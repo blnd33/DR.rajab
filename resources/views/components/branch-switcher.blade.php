@@ -5,7 +5,8 @@
     $current = \App\Support\AdminBranch::id();
 @endphp
 
-@if ($branches->count() > 1)
+{{-- Hidden in another company: its stations are not these. --}}
+@if ($branches->count() > 1 && \App\Support\AdminCompany::current()->isMain())
     <form method="POST" action="{{ route('admin.branch.switch') }}" {{ $attributes->class(['relative flex items-center']) }}>
         @csrf
         <label for="admin-branch-switch" class="sr-only">{{ __('Station') }}</label>

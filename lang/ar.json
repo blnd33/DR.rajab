@@ -2939,5 +2939,8 @@
     "View company documents": "عرض مستندات الشركة",
     "Upload and archive company documents": "رفع مستندات الشركة وأرشفتها",
     "Add and rename document folders": "إضافة مجلدات المستندات وإعادة تسميتها",
-    "Open without signing in.": "مفتوح دون تسجيل الدخول."
+    "Open without signing in.": "مفتوح دون تسجيل الدخول.",
+    "KurdishMedicus": "KurdishMedicus",
+    "Al-Fadhaa' Bureau": "مكتب الفضاء",
+    "This company has no stations yet, so everything shows zero.": "لا توجد محطات لهذه الشركة بعد، لذلك تظهر جميع القيم صفراً."
 }

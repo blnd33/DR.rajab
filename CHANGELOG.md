@@ -2,6 +2,14 @@
 
 All notable changes per build phase.
 
+## [Client updates — Al-Fadhaa' Bureau] — 2026-11-19
+
+### Added
+- **Company switch in the top bar** (where the top-bar search was): **KurdishMedicus | Al-Fadhaa' Bureau** (Arabic *مكتب الفضاء*, Kurdish *نووسینگەی ئەلفەزاء*); the chosen one is highlighted. Clicking a company opens its **Main page**.
+- **Al-Fadhaa' Bureau's Main page** is the same page as KurdishMedicus' — specialty and overview buttons, search, stock, money, invoices, waiting work, surgeries, expiry, charts, most used implants — for that company's own stations. It has none yet, so **everything shows zero** (*This company has no stations yet…*). The system-wide boxes (alerts, users, Daily Business Report) stay on KurdishMedicus' page only; the station picker is hidden there.
+  - How: all stations belong to KurdishMedicus; in another company every branch-based permission finds no station (`AdminCompany`, `BranchScopeResolver::focusNoBranches`, `FocusAdminBranch`), so screens stay but show nothing.
+- **Tests**: switch and back, zero stock and overview, unknown company, guests.
+
 ## [Client updates — Arthroplasty icon] — 2026-11-19
 
 ### Changed
