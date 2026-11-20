@@ -160,7 +160,10 @@ final class CompanyContext
             }
         }
 
-        return filled($names[$company->value]) && $names[$company->value] !== config('app.name')
+        // A name still at the system default (OrthoTrack / APP_NAME) says nothing: use the company's.
+        $defaults = [(string) config('app.name'), (string) (config('orthotrack.settings_defaults')['company.name'] ?? '')];
+
+        return filled($names[$company->value]) && ! in_array($names[$company->value], $defaults, true)
             ? (string) $names[$company->value]
             : $company->getLabel();
     }
