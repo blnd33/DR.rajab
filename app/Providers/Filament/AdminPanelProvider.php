@@ -80,6 +80,8 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make(fn () => __('Clinical'))->collapsible(),
                 NavigationGroup::make(fn () => __('Operations'))->collapsible(),
                 NavigationGroup::make(fn () => __('Stock'))->collapsible(),
+                // Its own section under Stock (not inside it): Pricelist, Catalogues.
+                NavigationGroup::make(fn () => __('Catalogues & Pricelist'))->collapsible(),
                 NavigationGroup::make(fn () => __('Catalog'))->collapsible(),
                 NavigationGroup::make(fn () => __('Finance'))->collapsible(),
                 NavigationGroup::make(fn () => __('Company agents'))->collapsible(),
@@ -97,7 +99,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\Filament\Admin\Widgets')
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn () => Blade::render('<x-pwa-head />'),
+                fn () => Blade::render('<x-pwa-head /><x-nav-title-case />'),
             )
             ->renderHook(
                 PanelsRenderHook::BODY_START,

@@ -2972,5 +2972,13 @@
     "Iraq, Kurdistan and the whole": "عێراق، کوردستان و کۆی گشتی",
     "Item: Iraq, Kurdistan and the whole": "کاڵا: عێراق، کوردستان و کۆی گشتی",
     "Region": "هەرێم",
-    "No governorate": "بێ پارێزگا"
+    "No governorate": "بێ پارێزگا",
+    "Catalogues & Pricelist": "کاتالۆگەکان و لیستی نرخەکان",
+    "Stock per Specialty > Category > Subcategory / Items Group > Item": "کۆگا بەپێی پسپۆڕی > پۆل > ژێرپۆل / گرووپی کاڵاکان > کاڵا",
+    "Pieces on hand now per specialty, category, subcategory (items group) or item.": "پارچە بەردەستەکانی ئێستا بەپێی پسپۆڕی، پۆل، ژێرپۆل (گرووپی کاڵاکان) یان کاڵا.",
+    "Specialty > Category": "پسپۆڕی > پۆل",
+    "Specialty > Category > Subcategory": "پسپۆڕی > پۆل > ژێرپۆل",
+    "Subcategory / items group": "ژێرپۆل / گرووپی کاڵاکان",
+    "No specialty": "بێ پسپۆڕی",
+    "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "بەهای ئەوەی ئێستا لە کۆگادایە بە تێچووی ڕاستەقینە، بەپێی کاڵا، پسپۆڕی، پۆل یان ژێرپۆل."
 }

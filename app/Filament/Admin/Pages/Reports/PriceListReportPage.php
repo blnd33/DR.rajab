@@ -12,7 +12,10 @@ class PriceListReportPage extends ReportPage
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
-    protected static bool $inStockMenu = true;
+    protected static ?int $navigationSort = 10;
 
-    protected static ?int $navigationSort = 90;
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Catalogues & Pricelist');
+    }
 }

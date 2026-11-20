@@ -2,6 +2,14 @@
 
 All notable changes per build phase.
 
+## [Client updates — menu capitals, stock per specialty, Catalogues & Pricelist] — 2026-11-20
+
+### Changed
+- **Every word of the menus starts with a capital letter** (the doctor's choice), across the whole admin: "Inventory / Stock Volume", "PL / Invoice / Dual Use / COO". Shown with `text-transform: capitalize` on the menu labels (`<x-nav-title-case />`), so the texts, exports and prints are unchanged; long names wrap instead of being cut off.
+- **Item / group / subgroup stock → "Stock per Specialty > Category > Subcategory / Items Group > Item"**: adds up per specialty (Arthroplasty, Trauma…, the nearest one up the category tree), specialty > category, specialty > category > subcategory, or item. **Stock value per item / group** groups the same way; the Pricelist shows the category.
+- **Pricelist and Catalogues are a section of their own under Stock: "Catalogues & Pricelist"** (no longer inside Stock).
+- **Stock movement totals is off the menu** (Stock movement shows the movements; the totals screen still opens from its address and prints / exports).
+
 ## [Client updates — Stock menu] — 2026-11-20
 
 ### Changed

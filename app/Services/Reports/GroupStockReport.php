@@ -5,8 +5,9 @@ namespace App\Services\Reports;
 use Brick\Math\BigDecimal;
 
 /**
- * Stock → Item / group / subgroup stock (and, with values, Stock value per item / group): on hand
- * now per group (top category), subgroup (the category under it) or item.
+ * Stock → Stock per Specialty > Category > Subcategory / Items Group > Item (and, with values,
+ * Stock value per item / group): on hand now per specialty, category (top of the category tree),
+ * subcategory / items group (the level under it) or item.
  */
 class GroupStockReport extends Report
 {
@@ -22,12 +23,12 @@ class GroupStockReport extends Report
 
     public function title(): string
     {
-        return __('Item / group / subgroup stock');
+        return __('Stock per Specialty > Category > Subcategory / Items Group > Item');
     }
 
     public function description(): ?string
     {
-        return __('Pieces on hand now per group, subgroup or item (groups are the top categories, subgroups the categories under them).');
+        return __('Pieces on hand now per specialty, category, subcategory (items group) or item.');
     }
 
     public function filters(): array
@@ -38,18 +39,26 @@ class GroupStockReport extends Report
     public function groups(): array
     {
         return [
-            'group' => __('Group'),
-            'subgroup' => __('Group and subgroup'),
-            'product' => __('Item'),
+            'specialty' => __('Specialty'),
+            'category' => __('Specialty > Category'),
+            'subcategory' => __('Specialty > Category > Subcategory'),
+            'item' => __('Item'),
         ];
     }
 
     public function columns(ReportContext $context): array
     {
+        $levels = [
+            ReportColumn::text('specialty', __('Specialty')),
+            ReportColumn::text('category', __('Category')),
+            ReportColumn::text('subcategory', __('Subcategory / items group')),
+        ];
+
         $head = match ($context->group) {
-            'subgroup' => [ReportColumn::text('group', __('Group')), ReportColumn::text('subgroup', __('Subgroup'))],
-            'product' => [ReportColumn::code('sku', __('SKU')), ReportColumn::text('item', __('Item')), ReportColumn::text('group', __('Group')), ReportColumn::text('subgroup', __('Subgroup'))],
-            default => [ReportColumn::text('group', __('Group'))],
+            'category' => array_slice($levels, 0, 2),
+            'subcategory' => $levels,
+            'item' => [ReportColumn::code('sku', __('SKU')), ReportColumn::text('item', __('Item')), ...$levels],
+            default => array_slice($levels, 0, 1),
         };
 
         return [
@@ -66,14 +75,15 @@ class GroupStockReport extends Report
         $rows = [];
 
         foreach ($lines as $line) {
-            $item = $items[$line['product_id']] ?? ['sku' => '—', 'name' => '—', 'group' => __('No category'), 'subgroup' => '—'];
+            $item = $items[$line['product_id']] ?? ['sku' => '—', 'name' => '—', 'specialty' => __('No specialty'), 'category' => __('No category'), 'subcategory' => '—'];
             $key = match ($context->group) {
-                'subgroup' => $item['group'].'|'.$item['subgroup'],
-                'product' => 'p'.$line['product_id'],
-                default => $item['group'],
+                'category' => $item['specialty'].'|'.$item['category'],
+                'subcategory' => $item['specialty'].'|'.$item['category'].'|'.$item['subcategory'],
+                'item' => 'p'.$line['product_id'],
+                default => $item['specialty'],
             };
 
-            $rows[$key] ??= ['key' => $key, 'sku' => $item['sku'], 'item' => $item['name'], 'group' => $item['group'], 'subgroup' => $item['subgroup'], 'quantity' => 0, 'value' => '0'];
+            $rows[$key] ??= ['key' => $key, 'sku' => $item['sku'], 'item' => $item['name'], 'specialty' => $item['specialty'], 'category' => $item['category'], 'subcategory' => $item['subcategory'], 'quantity' => 0, 'value' => '0'];
             $rows[$key]['quantity'] += $line['quantity'];
             $rows[$key]['value'] = self::money(BigDecimal::of($rows[$key]['value'])->plus($line['value']));
         }

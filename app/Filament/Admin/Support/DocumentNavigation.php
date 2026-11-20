@@ -20,8 +20,8 @@ final class DocumentNavigation
     /** Finance already has entries; the folders come after them. */
     private const SORT_OFFSET = 100;
 
-    /** Stock → Catalogues: item 10 of the Stock menu (after Pricelist). */
-    private const CATALOGUES_SORT = 100;
+    /** Catalogues & Pricelist → Catalogues, after Pricelist. */
+    private const CATALOGUES_SORT = 20;
 
     /**
      * @return list<NavigationItem>
@@ -45,8 +45,8 @@ final class DocumentNavigation
 
         $items = $folders->map(fn (DocumentFolder $folder) => NavigationItem::make('document-folder-'.$folder->id)
             ->label((string) $folder->name)
-            ->group($folder->section === DocumentSection::Catalogues ? __('Stock') : $folder->section->getLabel())
-            // Catalogues are in the Stock menu, as "Catalogues" with Lima, Mikron… under it.
+            ->group($folder->section === DocumentSection::Catalogues ? __('Catalogues & Pricelist') : $folder->section->getLabel())
+            // Catalogues are in the "Catalogues & Pricelist" section, with Lima, Mikron… under them.
             ->parentItem($folder->section === DocumentSection::Catalogues ? __('Catalogues') : null)
             // Under "Catalogues" the parent has the icon (a menu item and its children cannot both have one).
             ->icon(match ($folder->section) {
@@ -64,7 +64,7 @@ final class DocumentNavigation
         if ($first !== null) {
             $items->prepend(NavigationItem::make('catalogues')
                 ->label(__('Catalogues'))
-                ->group(__('Stock'))
+                ->group(__('Catalogues & Pricelist'))
                 ->icon(DocumentSection::Catalogues->icon())
                 ->sort(self::CATALOGUES_SORT)
                 ->url(DocumentFolderPage::getUrl(['folder' => $first->id]))

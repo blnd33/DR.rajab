@@ -52,7 +52,7 @@ class PriceListReport extends Report
         return [
             ReportColumn::code('sku', __('SKU')),
             ReportColumn::text('item', __('Item')),
-            ReportColumn::text('group', __('Group')),
+            ReportColumn::text('category', __('Category')),
             ReportColumn::moneyIn('cost', __('Cost price'), 'cost_currency'),
             ReportColumn::moneyIn('selling', __('Selling price'), 'selling_currency'),
             ReportColumn::percent('margin', __('Profit %'), profit: true),
@@ -80,7 +80,7 @@ class PriceListReport extends Report
                 'key' => 'p'.$p->id,
                 'sku' => (string) $p->sku,
                 'item' => (string) $p->name,
-                'group' => $items[$p->id]['group'] ?? __('No category'),
+                'category' => $items[$p->id]['category'] ?? __('No category'),
                 'cost' => $cost !== null ? self::money($cost) : null,
                 'cost_currency' => $p->purchase_currency,
                 'selling' => $selling !== null ? self::money($selling) : null,

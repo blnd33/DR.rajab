@@ -2,6 +2,7 @@
 
 use App\Enums\Governorate;
 use App\Enums\Role;
+use App\Enums\Specialty;
 use App\Enums\TrackingType;
 use App\Enums\WriteOffReason;
 use App\Models\Category;
@@ -20,9 +21,10 @@ use App\Services\Settings\SettingsRepository;
 use Database\Seeders\InventoryBaseSeeder;
 
 /*
- * The Stock menu as the client listed it: Inventory / stock volume, Stock value, Item / group /
- * subgroup stock, Stock value per item / group, Stock movement, Input, Output, Items list,
- * Pricelist, Catalogues — then the older Stock screens.
+ * The Stock menu as the client listed it: Inventory / stock volume, Stock value, Stock per
+ * Specialty > Category > Subcategory / Items Group > Item, Stock value per item / group, Stock
+ * movement, Input, Output, Items list — then the older Stock screens. Pricelist and Catalogues are
+ * a section of their own under it.
  */
 
 beforeEach(function () {
@@ -35,10 +37,10 @@ beforeEach(function () {
     app(FxService::class)->setRate('USD', 'IQD', '1460', $this->admin);
     app(FxService::class)->setRate('EUR', 'USD', '1.10', $this->admin);
 
-    // Group "Trauma" with subgroup "Plates"; group "Spine" without subgroups.
-    $trauma = Category::query()->create(['code' => 'TRAUMA', 'name' => ['en' => 'Trauma'], 'is_active' => true]);
+    // Specialty Trauma: category "Trauma" with subcategory "Plates". Specialty Spine: category "Spine".
+    $trauma = Category::query()->create(['code' => 'TRAUMA', 'name' => ['en' => 'Trauma'], 'specialty' => Specialty::Trauma, 'is_active' => true]);
     $plates = Category::query()->create(['code' => 'PLATES', 'parent_id' => $trauma->id, 'name' => ['en' => 'Plates'], 'is_active' => true]);
-    $spine = Category::query()->create(['code' => 'SPINE', 'name' => ['en' => 'Spine'], 'is_active' => true]);
+    $spine = Category::query()->create(['code' => 'SPINE', 'name' => ['en' => 'Spine Cages'], 'specialty' => Specialty::Spine, 'is_active' => true]);
 
     $this->plate = Product::factory()->create(['sku' => 'PL-1', 'category_id' => $plates->id, 'tracking_type' => TrackingType::Lot, 'purchase_price' => '10', 'purchase_currency' => 'USD', 'selling_price' => '12', 'selling_currency' => 'USD']);
     $this->cage = Product::factory()->create(['sku' => 'SP-1', 'category_id' => $spine->id, 'purchase_price' => '100', 'purchase_currency' => 'USD', 'selling_price' => null]);
@@ -85,13 +87,17 @@ it('shows the whole stock: Iraq, Kurdistan, and Iraq including Kurdistan', funct
         ->and(collect(stockReport(InventoryReport::class, ['group' => 'branch']))->sum('quantity'))->toBe(37);
 });
 
-it('adds stock up per group and subgroup, with the value per item', function () {
-    expect(collect(stockReport(GroupStockReport::class))->pluck('quantity', 'group')->all())->toBe(['Spine' => 2, 'Trauma' => 35])
-        ->and(collect(stockReport(GroupStockReport::class, ['group' => 'subgroup']))->map(fn ($r) => [$r['group'], $r['subgroup'], $r['quantity']])->sort()->values()->all())
-        ->toBe([['Spine', '—', 2], ['Trauma', 'Plates', 35]]);
+it('adds stock up per specialty > category > subcategory > item, with the value per item', function () {
+    expect(collect(stockReport(GroupStockReport::class))->pluck('quantity', 'specialty')->sortKeys()->all())->toBe(['Spine' => 2, 'Trauma' => 35])
+        ->and(collect(stockReport(GroupStockReport::class, ['group' => 'category']))->map(fn ($r) => [$r['specialty'], $r['category'], $r['quantity']])->sortBy(0)->values()->all())
+        ->toBe([['Spine', 'Spine Cages', 2], ['Trauma', 'Trauma', 35]])
+        ->and(collect(stockReport(GroupStockReport::class, ['group' => 'subcategory']))->map(fn ($r) => [$r['specialty'], $r['category'], $r['subcategory'], $r['quantity']])->sortBy(0)->values()->all())
+        ->toBe([['Spine', 'Spine Cages', '—', 2], ['Trauma', 'Trauma', 'Plates', 35]])
+        ->and(collect(stockReport(GroupStockReport::class, ['group' => 'item']))->pluck('quantity', 'sku')->sortKeys()->all())->toBe(['PL-1' => 35, 'SP-1' => 2]);
 
-    $values = collect(stockReport(StockValueByItemReport::class))->pluck('value', 'sku')->all();
-    expect($values)->toBe(['PL-1' => '350.00', 'SP-1' => '200.00']);
+    $values = collect(stockReport(StockValueByItemReport::class))->pluck('value', 'sku')->sortKeys()->all();
+    expect($values)->toBe(['PL-1' => '350.00', 'SP-1' => '200.00'])
+        ->and(collect(stockReport(StockValueByItemReport::class, ['group' => 'specialty']))->pluck('value', 'specialty')->sortKeys()->all())->toBe(['Spine' => '200.00', 'Trauma' => '350.00']);
 });
 
 it('splits movements into what came in and what went out', function () {
@@ -117,16 +123,19 @@ it('lists prices with the profit, priced items first and all on request', functi
         ->and(collect(stockReport(PriceListReport::class, ['group' => 'all']))->pluck('sku')->all())->toBe(['PL-1', 'SP-1']);
 });
 
-it('puts the client\'s list first in the Stock menu, and takes Stock value and movements out of Reports', function () {
+it('puts the client\'s list first in the Stock menu, Pricelist and Catalogues in a section of their own', function () {
     $html = $this->get('/admin')->assertOk()->getContent();
 
-    $order = ['Inventory / stock volume', 'Stock value', 'Item / group / subgroup stock', 'Stock value per item / group', 'Stock movement', 'Input', 'Output', 'Items list', 'Pricelist', 'Receive stock'];
-    $positions = array_map(fn (string $label) => mb_strpos($html, '>'.$label.'<') ?: mb_strpos($html, $label), $order);
+    $order = ['Inventory / stock volume', 'Stock value', 'Stock per Specialty > Category > Subcategory / Items Group > Item', 'Stock value per item / group', 'Stock movement', 'Input', 'Output', 'Items list', 'Receive stock', 'Catalogues & Pricelist', 'Pricelist', 'Catalogues'];
+    $this->get('/admin')->assertSeeInOrder(array_map(fn (string $label) => e($label), $order), false);
 
-    expect(array_filter($positions, fn ($p) => $p === false))->toBe([])
-        ->and($positions)->toBe(collect($positions)->sort()->values()->all());
+    // Off the menu.
+    expect($html)->not->toContain('Stock movement totals');
 
-    foreach (['/admin/reports/inventory', '/admin/reports/group-stock', '/admin/reports/stock-value-items', '/admin/reports/stock-input', '/admin/reports/stock-output', '/admin/reports/price-list', '/admin/products'] as $url) {
+    // Every word of the menus starts with a capital letter.
+    expect($html)->toContain('text-transform: capitalize');
+
+    foreach (['/admin/reports/inventory', '/admin/reports/group-stock', '/admin/reports/stock-value-items', '/admin/reports/stock-input', '/admin/reports/stock-output', '/admin/reports/price-list', '/admin/reports/stock-movements', '/admin/products'] as $url) {
         $this->get($url)->assertOk();
     }
 });

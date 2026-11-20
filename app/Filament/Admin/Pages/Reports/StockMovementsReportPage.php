@@ -21,4 +21,7 @@ class StockMovementsReportPage extends ReportPage
     {
         return __('Stock movement totals');
     }
+
+    // Not in the menu (the client's list): Stock movement shows the movements themselves.
+    protected static bool $shouldRegisterNavigation = false;
 }

@@ -2972,5 +2972,13 @@
     "Iraq, Kurdistan and the whole": "العراق، كردستان والمجموع الكلي",
     "Item: Iraq, Kurdistan and the whole": "الصنف: العراق، كردستان والمجموع الكلي",
     "Region": "المنطقة",
-    "No governorate": "بدون محافظة"
+    "No governorate": "بدون محافظة",
+    "Catalogues & Pricelist": "الكتالوجات وقائمة الأسعار",
+    "Stock per Specialty > Category > Subcategory / Items Group > Item": "المخزون حسب التخصص > الفئة > الفئة الفرعية / مجموعة الأصناف > الصنف",
+    "Pieces on hand now per specialty, category, subcategory (items group) or item.": "القطع المتوفرة الآن حسب التخصص أو الفئة أو الفئة الفرعية (مجموعة الأصناف) أو الصنف.",
+    "Specialty > Category": "التخصص > الفئة",
+    "Specialty > Category > Subcategory": "التخصص > الفئة > الفئة الفرعية",
+    "Subcategory / items group": "الفئة الفرعية / مجموعة الأصناف",
+    "No specialty": "بدون تخصص",
+    "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "قيمة المتوفر الآن بالتكلفة الحقيقية، حسب الصنف أو التخصص أو الفئة أو الفئة الفرعية."
 }

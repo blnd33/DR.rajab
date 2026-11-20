@@ -2772,5 +2772,13 @@
     "Iraq, Kurdistan and the whole": "Iraq, Kurdistan and the whole",
     "Item: Iraq, Kurdistan and the whole": "Item: Iraq, Kurdistan and the whole",
     "Region": "Region",
-    "No governorate": "No governorate"
+    "No governorate": "No governorate",
+    "Catalogues & Pricelist": "Catalogues & Pricelist",
+    "Stock per Specialty > Category > Subcategory / Items Group > Item": "Stock per Specialty > Category > Subcategory / Items Group > Item",
+    "Pieces on hand now per specialty, category, subcategory (items group) or item.": "Pieces on hand now per specialty, category, subcategory (items group) or item.",
+    "Specialty > Category": "Specialty > Category",
+    "Specialty > Category > Subcategory": "Specialty > Category > Subcategory",
+    "Subcategory / items group": "Subcategory / items group",
+    "No specialty": "No specialty",
+    "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "Value at true cost of what is on hand now, per item, specialty, category or subcategory."
 }

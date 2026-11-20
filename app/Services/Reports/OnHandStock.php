@@ -12,7 +12,8 @@ use Brick\Math\BigDecimal;
 /**
  * What is on hand now, per station and item (serial units + lot quantities: shelves, instrument
  * sets, at hospitals, in transit), with its value at true cost in the report currency, and each
- * item's group and subgroup (the top two levels of its category). Shared by the Stock screens.
+ * item's specialty, category and subcategory (the top two levels of its category tree). Shared
+ * by the Stock screens.
  */
 class OnHandStock
 {
@@ -52,33 +53,37 @@ class OnHandStock
     }
 
     /**
-     * Each product's SKU, name, group and subgroup.
+     * Each product's SKU, name, specialty (the nearest one up its category tree), category (the top
+     * of the tree) and subcategory / items group (the level under it).
      *
      * @param  iterable<int>  $productIds
-     * @return array<int, array{sku: string, name: string, group: string, subgroup: string}>
+     * @return array<int, array{sku: string, name: string, specialty: string, category: string, subcategory: string}>
      */
     public function items(iterable $productIds): array
     {
         $products = Product::query()->whereIn('id', collect($productIds)->unique()->values())->get(['id', 'sku', 'name', 'category_id']);
-        $categories = Category::query()->get(['id', 'parent_id', 'name'])->keyBy('id');
+        $categories = Category::query()->get(['id', 'parent_id', 'name', 'specialty'])->keyBy('id');
         $items = [];
 
         foreach ($products as $product) {
-            // The category's path from the top: [group, subgroup, …].
+            // The category's path from the top: [category, subcategory, …].
             $path = [];
+            $specialty = null;
             $category = $categories->get($product->category_id);
             $guard = 0;
 
             while ($category !== null && $guard++ < 20) {
                 array_unshift($path, (string) $category->name);
+                $specialty ??= $category->specialty;
                 $category = $category->parent_id !== null ? $categories->get($category->parent_id) : null;
             }
 
             $items[$product->id] = [
                 'sku' => (string) $product->sku,
                 'name' => (string) $product->name,
-                'group' => $path[0] ?? __('No category'),
-                'subgroup' => $path[1] ?? '—',
+                'specialty' => $specialty?->getLabel() ?? __('No specialty'),
+                'category' => $path[0] ?? __('No category'),
+                'subcategory' => $path[1] ?? '—',
             ];
         }
 

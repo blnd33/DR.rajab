@@ -103,9 +103,9 @@ it('lets only Super Admin and Manager see and upload, and keeps the files privat
 it('shows every folder in its menu section, and new or hidden folders at once', function () {
     $this->actingAs($this->admin);
 
-    // Catalogues is an item of the Stock menu; its folders show under it once it is open.
+    // Catalogues is in the "Catalogues & Pricelist" section; its folders show under it once it is open.
     $this->get('/admin')->assertOk()
-        ->assertSeeInOrder(['Stock', 'Pricelist', 'Catalogues'])
+        ->assertSeeInOrder(['Catalogues &amp; Pricelist', 'Pricelist', 'Catalogues'], false)
         ->assertSeeInOrder(['Shipment documents', 'AWB', 'Customs clearance', 'Income tax', 'Internal transport'])
         ->assertSee('Legal / Regulatory department')
         ->assertSee('Internal transport invoices / PL');
