@@ -11,7 +11,7 @@ use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * The centre of the Main page: the specialties (arthroplasty, trauma, spine, sport medicine)
+ * The centre of the Home page: the specialties (arthroplasty, trauma, spine, sport medicine)
  * and the search over the whole system on the first row; stations, stock, value, sales and
  * profit on the second. Each button opens the overview page.
  */

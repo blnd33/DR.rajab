@@ -1,4 +1,4 @@
-{{-- The centre of the Main page: specialties + search, then stations, stock, value, sales, profit. --}}
+{{-- The centre of the Home page: specialties + search, then stations, stock, value, sales, profit. --}}
 <x-filament-widgets::widget>
     <div class="mx-auto flex w-full max-w-6xl flex-col gap-4" data-overview-launcher>
         {{-- Row 1: the specialties and the search. --}}

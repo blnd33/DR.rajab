@@ -6,7 +6,7 @@ use App\Enums\Concerns\EnumHelpers;
 use Filament\Support\Contracts\HasLabel;
 
 /**
- * The second row of big buttons on the Main page. Each counts something per region,
+ * The second row of big buttons on the Home page. Each counts something per region,
  * governorate and specialty, within the stations the user may see for its permission.
  */
 enum OverviewMetric: string implements HasLabel

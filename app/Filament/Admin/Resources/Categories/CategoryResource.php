@@ -66,7 +66,7 @@ class CategoryResource extends Resource
                 ->label(__('Specialty'))
                 ->options(Specialty::options())
                 ->native(false)
-                ->helperText(__('Products in this category (and its sub-categories without their own) count under this specialty on the Main page.')),
+                ->helperText(__('Products in this category (and its sub-categories without their own) count under this specialty on the Home page.')),
             TextInput::make('sort')->label(__('Order'))->numeric()->integer()->default(0),
             Toggle::make('is_active')->label(__('Active'))->default(true)->inline(false),
         ]);

@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
 /**
- * The big search on the Main page: one box for the whole system. Codes first (serial, lot,
+ * The big search on the Home page: one box for the whole system. Codes first (serial, lot,
  * barcode, SKU, instrument set, document numbers — the Quick answers lookup), then every admin
  * list the user may open (Filament's search), plus names kept in three languages (products,
  * hospitals, stations), which that search does not read.
@@ -61,7 +61,7 @@ class SystemSearch
                 }
             } catch (\Throwable $e) {
                 // One list failing must not break the search.
-                Log::warning('Main page search: '.$resource.' failed', ['error' => $e->getMessage()]);
+                Log::warning('Home page search: '.$resource.' failed', ['error' => $e->getMessage()]);
             }
         }
 

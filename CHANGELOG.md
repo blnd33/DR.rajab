@@ -2,6 +2,12 @@
 
 All notable changes per build phase.
 
+## [Client updates — Home page, menu button] — 2026-11-20
+
+### Changed
+- **Main page → Home page** everywhere (menu, title, links, help texts); Arabic and Kurdish already said "home page".
+- **The side menu's fold / unfold button ("<")** sits on its own line at the top of the menu, above Home Page, instead of in the top bar next to the company name (`<x-sidebar-toggle />`; computers only — on a phone the menu opens from the top bar as before).
+
 ## [Client updates — Pricelist and Catalogues apart, stock volume / value per specialty] — 2026-11-20
 
 ### Changed

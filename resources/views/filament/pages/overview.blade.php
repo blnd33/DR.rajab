@@ -14,7 +14,7 @@
         {{-- Where we are, and the way back. --}}
         <div class="flex flex-wrap items-center justify-between gap-3">
             <nav class="flex flex-wrap items-center gap-2 text-sm" aria-label="{{ __('Overview') }}">
-                <a href="{{ \App\Filament\Admin\Pages\Dashboard::getUrl() }}" class="font-medium text-primary-600 hover:underline dark:text-primary-400">{{ __('Main page') }}</a>
+                <a href="{{ \App\Filament\Admin\Pages\Dashboard::getUrl() }}" class="font-medium text-primary-600 hover:underline dark:text-primary-400">{{ __('Home page') }}</a>
                 <span class="text-gray-400" aria-hidden="true">/</span>
                 @if ($theCity)
                     <button type="button" wire:click="$set('city', null)" class="font-medium text-primary-600 hover:underline dark:text-primary-400">{{ $this->getTitle() }}</button>

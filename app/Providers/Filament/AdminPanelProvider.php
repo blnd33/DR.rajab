@@ -71,7 +71,7 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('icons/favicon.svg'))
             ->defaultAvatarProvider(KmAvatarProvider::class)
             ->sidebarCollapsibleOnDesktop()
-            // One search only: "Search the whole system" on the Main page (not the top-bar search).
+            // One search only: "Search the whole system" on the Home page (not the top-bar search).
             ->globalSearch(false)
             ->databaseNotifications()
             ->unsavedChangesAlerts()
@@ -101,6 +101,11 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn () => Blade::render('<x-pwa-head /><x-nav-title-case />'),
+            )
+            // The side menu's fold / unfold button, above Home page.
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_NAV_START,
+                fn () => Blade::render('<x-sidebar-toggle />'),
             )
             ->renderHook(
                 PanelsRenderHook::BODY_START,

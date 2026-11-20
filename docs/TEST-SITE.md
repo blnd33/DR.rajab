@@ -116,7 +116,7 @@ sudo -u www-data php artisan orthotrack:sample-data /tmp/mikron.xlsx
 It adds, in this order:
 
 1. exchange rates, if none are set (1 USD = 1,460 IQD, 1 EUR = 1.08 USD);
-2. five stations: **Duhok, Erbil, Sulaymaniyah** (Kurdistan Region) and **Baghdad, Basra** (Iraq), so the Main page shows these governorates green and the others red;
+2. five stations: **Duhok, Erbil, Sulaymaniyah** (Kurdistan Region) and **Baghdad, Basra** (Iraq), so the Home page shows these governorates green and the others red;
 3. every item of the workbook, through the normal supplier-catalog import (products, instruments, instrument sets, under Trauma);
 4. **60 products in stock** (`--products=` to change), spread over the stations, one lot each (`SMP-DHK-001` …), expiring in three years;
 5. **test prices**: those products in SKU order cost **1, 2, 3… USD** and sell for **cost + 20 %** (1.20, 2.40, 3.60…), and the stock carries the same cost.

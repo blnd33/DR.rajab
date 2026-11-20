@@ -14,4 +14,21 @@
         white-space: normal;
         overflow-wrap: anywhere;
     }
+
+    /* The fold / unfold button sits at the top of the side menu (<x-sidebar-toggle />), not in the
+       top bar; computers only (a phone opens the menu from the top bar). */
+    .fi-topbar-collapse-sidebar-btn-ctn {
+        display: none !important;
+    }
+
+    .ot-sidebar-toggle {
+        display: none;
+        padding: 0 0.25rem 0.5rem;
+    }
+
+    @media (min-width: 1024px) {
+        .ot-sidebar-toggle {
+            display: flex;
+        }
+    }
 </style>

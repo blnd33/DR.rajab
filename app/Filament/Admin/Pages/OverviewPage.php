@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
 
 /**
- * Opened from the big buttons on the Main page.
+ * Opened from the big buttons on the Home page.
  *
  *  - A button of the second row (Stations, Stock, Value, Sales, Profit): Iraq / Kurdistan / both,
  *    then the governorates (green = something there, red = nothing; the company's own: all 19 for

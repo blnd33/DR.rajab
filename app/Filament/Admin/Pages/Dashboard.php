@@ -30,12 +30,12 @@ class Dashboard extends BaseDashboard
 {
     public function getTitle(): string
     {
-        return __('Main page');
+        return __('Home page');
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('Main page');
+        return __('Home page');
     }
 
     public function getWidgets(): array

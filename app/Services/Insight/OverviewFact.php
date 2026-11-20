@@ -6,7 +6,7 @@ use App\Enums\Governorate;
 use App\Enums\Specialty;
 
 /**
- * One station × product on the Main page overview: the pieces and the button's amount.
+ * One station × product on the Home page overview: the pieces and the button's amount.
  */
 final class OverviewFact
 {

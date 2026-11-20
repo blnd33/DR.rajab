@@ -123,7 +123,7 @@ final class CompanyContext
 
     /**
      * The governorates the current company works in: KurdishMedicus all of them, another company
-     * those of its stations (config orthotrack.companies.<company>.stations). The Main page
+     * those of its stations (config orthotrack.companies.<company>.stations). The Home page
      * overview lists only these.
      *
      * @return list<Governorate>

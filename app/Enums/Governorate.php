@@ -7,7 +7,7 @@ use Filament\Support\Contracts\HasLabel;
 
 /**
  * The 19 governorates of Iraq. Duhok, Erbil, Sulaymaniyah and Halabja form the Kurdistan
- * Region; the others are "Iraq" on the Main page overview.
+ * Region; the others are "Iraq" on the Home page overview.
  */
 enum Governorate: string implements HasLabel
 {

@@ -51,7 +51,7 @@ class BranchForm
                             ->options(Governorate::options())
                             ->searchable()
                             ->native(false)
-                            ->helperText(__('Used on the Main page: Kurdistan (Duhok, Erbil, Sulaymaniyah, Halabja) or the rest of Iraq.')),
+                            ->helperText(__('Used on the Home page: Kurdistan (Duhok, Erbil, Sulaymaniyah, Halabja) or the rest of Iraq.')),
 
                         TextInput::make('phone')
                             ->label(__('Phone'))

@@ -19,7 +19,7 @@ use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 
 /*
- * The Main page buttons: stations, stock, value, sales and profit per region (Iraq, Kurdistan,
+ * The Home page buttons: stations, stock, value, sales and profit per region (Iraq, Kurdistan,
  * both), governorate and specialty; the specialty buttons; the search over the whole system.
  */
 
@@ -153,7 +153,7 @@ it('walks from the totals to a governorate, a specialty and the products', funct
         ->assertSee('BGW');
 });
 
-it('opens the Main page with the buttons and the overview in every language', function (string $locale) {
+it('opens the Home page with the buttons and the overview in every language', function (string $locale) {
     $this->admin->forceFill(['locale' => $locale])->save();
     $this->actingAs($this->admin->fresh());
 

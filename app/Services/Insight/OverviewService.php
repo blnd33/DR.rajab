@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
- * The Main page overview: stations, stock, value, sales and profit per region (Iraq, Kurdistan,
+ * The Home page overview: stations, stock, value, sales and profit per region (Iraq, Kurdistan,
  * both), per governorate and per specialty. Money is in USD at the rates of each purchase / sale
  * (like the reports). Every figure is limited to the stations the user may see for that button.
  *

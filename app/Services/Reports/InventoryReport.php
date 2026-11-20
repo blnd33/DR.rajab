@@ -143,7 +143,7 @@ class InventoryReport extends Report
     }
 
     /**
-     * The company's governorates, with or without stock (like the Main page).
+     * The company's governorates, with or without stock (like the Home page).
      *
      * @param  list<array{branch_id: int, product_id: int, quantity: int}>  $lines
      * @return list<array<string, mixed>>
