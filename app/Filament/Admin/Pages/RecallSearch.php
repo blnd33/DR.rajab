@@ -19,7 +19,7 @@ class RecallSearch extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldExclamation;
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 240;
 
     protected string $view = 'filament.pages.recall-search';
 

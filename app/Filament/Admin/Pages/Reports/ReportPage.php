@@ -46,9 +46,12 @@ abstract class ReportPage extends Page implements HasTable
         return app(static::$reportClass);
     }
 
+    /** Shown in the Stock menu instead of Reports. */
+    protected static bool $inStockMenu = false;
+
     public static function getNavigationGroup(): ?string
     {
-        return __('Reports');
+        return static::$inStockMenu ? __('Stock') : __('Reports');
     }
 
     public static function getNavigationLabel(): string

@@ -48,7 +48,7 @@ class ReceiveStock extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInboxArrowDown;
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 200;
 
     /** @var array<string, mixed>|null */
     public ?array $data = [];

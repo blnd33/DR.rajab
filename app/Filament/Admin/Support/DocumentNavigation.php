@@ -20,6 +20,9 @@ final class DocumentNavigation
     /** Finance already has entries; the folders come after them. */
     private const SORT_OFFSET = 100;
 
+    /** Stock → Catalogues: item 10 of the Stock menu (after Pricelist). */
+    private const CATALOGUES_SORT = 100;
+
     /**
      * @return list<NavigationItem>
      */
@@ -40,13 +43,34 @@ final class DocumentNavigation
             return [];
         }
 
-        return $folders->map(fn (DocumentFolder $folder) => NavigationItem::make('document-folder-'.$folder->id)
+        $items = $folders->map(fn (DocumentFolder $folder) => NavigationItem::make('document-folder-'.$folder->id)
             ->label((string) $folder->name)
-            ->group($folder->section->getLabel())
-            ->icon($folder->section === DocumentSection::Finance ? 'heroicon-o-folder' : 'heroicon-o-folder-open')
+            ->group($folder->section === DocumentSection::Catalogues ? __('Stock') : $folder->section->getLabel())
+            // Catalogues are in the Stock menu, as "Catalogues" with Lima, Mikron… under it.
+            ->parentItem($folder->section === DocumentSection::Catalogues ? __('Catalogues') : null)
+            // Under "Catalogues" the parent has the icon (a menu item and its children cannot both have one).
+            ->icon(match ($folder->section) {
+                DocumentSection::Catalogues => null,
+                DocumentSection::Finance => 'heroicon-o-folder',
+                default => 'heroicon-o-folder-open',
+            })
             ->sort(self::SORT_OFFSET + $folder->sort)
             ->url(DocumentFolderPage::getUrl(['folder' => $folder->id]))
             ->isActiveWhen(fn () => request()->routeIs(DocumentFolderPage::getRouteName()) && (int) request()->query('folder') === $folder->id))
-            ->values()->all();
+            ->values();
+
+        $first = $folders->first(fn (DocumentFolder $f) => $f->section === DocumentSection::Catalogues);
+
+        if ($first !== null) {
+            $items->prepend(NavigationItem::make('catalogues')
+                ->label(__('Catalogues'))
+                ->group(__('Stock'))
+                ->icon(DocumentSection::Catalogues->icon())
+                ->sort(self::CATALOGUES_SORT)
+                ->url(DocumentFolderPage::getUrl(['folder' => $first->id]))
+                ->isActiveWhen(fn () => false));
+        }
+
+        return $items->all();
     }
 }

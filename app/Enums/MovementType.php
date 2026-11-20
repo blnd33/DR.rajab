@@ -36,6 +36,28 @@ enum MovementType: string implements HasColor, HasIcon, HasLabel
     case StatusOverride = 'status_override';
     case CostAdjustment = 'cost_adjustment';
 
+    /**
+     * Stock coming into the company from outside (Stock → Input).
+     *
+     * @return list<self>
+     */
+    public static function inputs(): array
+    {
+        return [self::OpeningBalance, self::Import, self::PurchaseReceipt, self::CustomerReturn, self::SaleReturn, self::SurgeryReversal];
+    }
+
+    /**
+     * Stock leaving the company (Stock → Output). Transfers and instrument-set moves stay inside
+     * the company and are neither; a count correction is input when it adds pieces, output when
+     * it removes them.
+     *
+     * @return list<self>
+     */
+    public static function outputs(): array
+    {
+        return [self::Sale, self::SurgeryUse, self::WriteOff, self::SupplierReturn];
+    }
+
     public function getLabel(): string
     {
         return match ($this) {

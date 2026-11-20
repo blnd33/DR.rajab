@@ -35,7 +35,7 @@ class LowStockReport extends Page implements HasTable
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowTrendingDown;
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 230;
 
     protected string $view = 'filament.pages.table-page';
 

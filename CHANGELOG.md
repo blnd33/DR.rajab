@@ -2,6 +2,20 @@
 
 All notable changes per build phase.
 
+## [Client updates — Stock menu] — 2026-11-20
+
+### Changed
+- **Stock menu, in the client's order** (both companies): 1. **Inventory / stock volume** (new) · 2. **Stock value** (moved from Reports) · 3. **Item / group / subgroup stock** (new) · 4. **Stock value per item / group** (new) · 5. **Stock movement** (the movements list, renamed) and **Stock movement totals** (moved from Reports) · 6. **Input** (new) · 7. **Output** (new) · 8. **Items list** (Catalog → Products, moved and renamed) · **Pricelist** (new) · **Catalogues** (moved from its own section; Lima, Mikron, Covision under it) — then the existing Receive stock, Serial units, Lots, Low stock, Recall search, Excel imports.
+- Reports no longer lists Stock value and Stock movements (they are in Stock).
+
+### Added
+- **Inventory / stock volume**: pieces on hand now per item and station, item, or station.
+- **Item / group / subgroup stock** and **Stock value per item / group**: on hand (and value at true cost) per group = top category, subgroup = the category under it, or item.
+- **Input / Output**: the movements that brought stock into the company (opening, imports, purchases, returns in, count corrections that added) or took it out (sales, surgery use, write-offs, returns to suppliers, count corrections that removed); transfers and instrument-set moves are neither (`MovementType::inputs()/outputs()`).
+- **Pricelist**: every active item with cost price, selling price and profit % (items with a selling price, or all); needs the profit permission.
+- All of them print and export like the other reports, in the three languages (`OnHandStock`, `InventoryReport`, `GroupStockReport`, `StockValueByItemReport`, `StockInputReport`, `StockOutputReport`, `PriceListReport`).
+- **Tests**: quantities per item / station, group / subgroup, values, input vs output (a write-off is output), pricelist profit, menu order.
+
 ## [Client updates — one sign-in for both companies] — 2026-11-19
 
 ### Changed

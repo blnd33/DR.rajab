@@ -12,5 +12,13 @@ class StockMovementsReportPage extends ReportPage
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowsRightLeft;
 
-    protected static ?int $navigationSort = 30;
+    protected static bool $inStockMenu = true;
+
+    // Right after Stock → Stock movement (the list): the totals per type / station / item.
+    protected static ?int $navigationSort = 55;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Stock movement totals');
+    }
 }

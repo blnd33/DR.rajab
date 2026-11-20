@@ -23,13 +23,18 @@ class ProductResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCube;
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 80;
 
     protected static ?string $recordTitleAttribute = 'sku';
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Catalog');
+        return __('Stock');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Items list');
     }
 
     public static function getModelLabel(): string

@@ -15,7 +15,13 @@ final class ReportRegistry
 {
     /** @var list<class-string<Report>> */
     public const REPORTS = [
+        InventoryReport::class,
         StockValueReport::class,
+        GroupStockReport::class,
+        StockValueByItemReport::class,
+        StockInputReport::class,
+        StockOutputReport::class,
+        PriceListReport::class,
         ExpiryReport::class,
         StockMovementsReport::class,
         SalesProfitReport::class,

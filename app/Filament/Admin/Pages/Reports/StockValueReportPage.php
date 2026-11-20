@@ -12,5 +12,7 @@ class StockValueReportPage extends ReportPage
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static ?int $navigationSort = 10;
+    protected static bool $inStockMenu = true;
+
+    protected static ?int $navigationSort = 20;
 }

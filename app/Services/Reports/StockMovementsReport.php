@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\Product;
 use App\Models\StockMovement;
 use Brick\Math\BigDecimal;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * What moved in a period (Module 24): receipts, transfers, surgery use, sales, write-offs…
@@ -14,6 +15,9 @@ use Brick\Math\BigDecimal;
  */
 class StockMovementsReport extends Report
 {
+    /** Stock → Input / Output show only what came in ('in') or went out ('out'); null = everything. */
+    protected ?string $flow = null;
+
     public function __construct(private readonly SnapshotConverters $fx) {}
 
     public static function key(): string
@@ -67,6 +71,7 @@ class StockMovementsReport extends Report
 
         $movements = StockMovement::query()
             ->whereBetween('occurred_at', $context->bounds())
+            ->when($this->flow !== null, fn ($q) => $this->onlyFlow($q))
             ->when($context->branchIds !== null, fn ($q) => $q->where(fn ($w) => $w->whereIn('from_branch_id', $context->branchIds)->orWhereIn('to_branch_id', $context->branchIds)))
             ->groupByRaw("type, product_id, {$branchSql}, cost_currency, fx_snapshot_id")
             ->selectRaw("type, product_id, {$branchSql} AS branch_id, cost_currency, fx_snapshot_id, COUNT(*) AS movements, SUM(quantity) AS quantity, SUM(quantity * COALESCE(unit_cost, 0)) AS cost")
@@ -102,5 +107,23 @@ class StockMovementsReport extends Report
         }
 
         return array_values($rows);
+    }
+
+    /**
+     * Input: opening stock, imports, purchases received, returns in, surgery reversals, and count
+     * corrections that added pieces. Output: sales, surgery use, write-offs, returns to suppliers,
+     * and count corrections that removed pieces. Transfers and instrument-set moves stay inside.
+     *
+     * @param  Builder<StockMovement>  $query
+     */
+    private function onlyFlow($query): void
+    {
+        $in = $this->flow === 'in';
+        $types = array_map(fn (MovementType $t) => $t->value, $in ? MovementType::inputs() : MovementType::outputs());
+
+        $query->where(fn ($w) => $w->whereIn('type', $types)
+            ->orWhere(fn ($c) => $c->where('type', MovementType::CountAdjustment->value)
+                ->whereNull($in ? 'from_branch_id' : 'to_branch_id')
+                ->whereNotNull($in ? 'to_branch_id' : 'from_branch_id')));
     }
 }

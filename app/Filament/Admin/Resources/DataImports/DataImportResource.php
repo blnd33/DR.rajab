@@ -33,7 +33,7 @@ class DataImportResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTableCells;
 
-    protected static ?int $navigationSort = 70;
+    protected static ?int $navigationSort = 250;
 
     public static function getNavigationGroup(): ?string
     {

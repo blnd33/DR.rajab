@@ -37,7 +37,7 @@ class StockBatchResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquare3Stack3d;
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 220;
 
     public static function getNavigationGroup(): ?string
     {

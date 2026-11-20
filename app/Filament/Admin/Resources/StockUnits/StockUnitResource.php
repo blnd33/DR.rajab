@@ -48,7 +48,7 @@ class StockUnitResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFingerPrint;
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 210;
 
     protected static ?string $recordTitleAttribute = 'serial';
 

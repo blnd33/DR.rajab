@@ -35,11 +35,16 @@ class StockMovementResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowsRightLeft;
 
-    protected static ?int $navigationSort = 60;
+    protected static ?int $navigationSort = 50;
 
     public static function getNavigationGroup(): ?string
     {
         return __('Stock');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Stock movement');
     }
 
     public static function getModelLabel(): string
