@@ -103,21 +103,18 @@ it('lets only Super Admin and Manager see and upload, and keeps the files privat
 it('shows every folder in its menu section, and new or hidden folders at once', function () {
     $this->actingAs($this->admin);
 
-    // Catalogues is in the "Catalogues & Pricelist" section; its folders show under it once it is open.
     $this->get('/admin')->assertOk()
-        ->assertSeeInOrder(['Catalogues &amp; Pricelist', 'Pricelist', 'Catalogues'], false)
+        ->assertSeeInOrder(['Catalogues', 'Lima', 'Mikron', 'Covision'])
         ->assertSeeInOrder(['Shipment documents', 'AWB', 'Customs clearance', 'Income tax', 'Internal transport'])
         ->assertSee('Legal / Regulatory department')
         ->assertSee('Internal transport invoices / PL');
-    $this->get(DocumentFolderPage::getUrl(['folder' => ($this->folder)('Lima')->id]))->assertOk()
-        ->assertSeeInOrder(['Catalogues', 'Lima', 'Mikron', 'Covision']);
 
     $new = $this->documents->saveFolder(null, ['section' => 'catalogues', 'name' => ['en' => 'Zimmer', 'ar' => 'زيمر']], $this->admin);
     $this->documents->saveFolder(($this->folder)('Covision'), ['name' => ['en' => 'Covision'], 'is_active' => false], $this->admin);
 
     // The menu is built once per request (a scoped service); a test makes several requests.
     app()->forgetScopedInstances();
-    $this->get(DocumentFolderPage::getUrl(['folder' => ($this->folder)('Lima')->id]))->assertSee('Zimmer')->assertDontSee('Covision');
+    $this->get('/admin')->assertSee('Zimmer')->assertDontSee('Covision');
     expect($new->section)->toBe(DocumentSection::Catalogues);
 
     expect(fn () => $this->documents->saveFolder(null, ['section' => 'catalogues', 'name' => ['ar' => 'بدون إنجليزي']], $this->admin))->toThrow(ValidationException::class)

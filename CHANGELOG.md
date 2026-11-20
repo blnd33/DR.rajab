@@ -2,6 +2,12 @@
 
 All notable changes per build phase.
 
+## [Client updates — Pricelist and Catalogues apart, stock volume / value per specialty] — 2026-11-20
+
+### Changed
+- **Pricelist and Catalogues are two separate sections** under Stock (Pricelist; Catalogues with Lima, Mikron, Covision directly in it), no longer one "Catalogues & Pricelist" section.
+- Stock item 3 is **"Stock Volume per Specialty > Category > Subcategory / Items Group > Item"** and item 4 **"Stock Value per Specialty > Category > Subcategory / Items Group > Item"** (same levels: specialty, category, subcategory, item; the value one opens per specialty too).
+
 ## [Client updates — menu capitals, stock per specialty, Catalogues & Pricelist] — 2026-11-20
 
 ### Changed

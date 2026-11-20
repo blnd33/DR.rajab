@@ -80,8 +80,9 @@ class AdminPanelProvider extends PanelProvider
                 NavigationGroup::make(fn () => __('Clinical'))->collapsible(),
                 NavigationGroup::make(fn () => __('Operations'))->collapsible(),
                 NavigationGroup::make(fn () => __('Stock'))->collapsible(),
-                // Its own section under Stock (not inside it): Pricelist, Catalogues.
-                NavigationGroup::make(fn () => __('Catalogues & Pricelist'))->collapsible(),
+                // Two sections of their own under Stock.
+                NavigationGroup::make(fn () => __('Pricelist'))->collapsible(),
+                NavigationGroup::make(fn () => __('Catalogues'))->collapsible(),
                 NavigationGroup::make(fn () => __('Catalog'))->collapsible(),
                 NavigationGroup::make(fn () => __('Finance'))->collapsible(),
                 NavigationGroup::make(fn () => __('Company agents'))->collapsible(),

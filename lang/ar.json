@@ -2980,5 +2980,8 @@
     "Specialty > Category > Subcategory": "التخصص > الفئة > الفئة الفرعية",
     "Subcategory / items group": "الفئة الفرعية / مجموعة الأصناف",
     "No specialty": "بدون تخصص",
-    "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "قيمة المتوفر الآن بالتكلفة الحقيقية، حسب الصنف أو التخصص أو الفئة أو الفئة الفرعية."
+    "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "قيمة المتوفر الآن بالتكلفة الحقيقية، حسب الصنف أو التخصص أو الفئة أو الفئة الفرعية.",
+    "Stock Volume per Specialty > Category > Subcategory / Items Group > Item": "حجم المخزون حسب التخصص > الفئة > الفئة الفرعية / مجموعة الأصناف > الصنف",
+    "Stock Value per Specialty > Category > Subcategory / Items Group > Item": "قيمة المخزون حسب التخصص > الفئة > الفئة الفرعية / مجموعة الأصناف > الصنف",
+    "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item.": "قيمة المتوفر الآن بالتكلفة الحقيقية، حسب التخصص أو الفئة أو الفئة الفرعية (مجموعة الأصناف) أو الصنف."
 }

@@ -3,8 +3,8 @@
 namespace App\Services\Reports;
 
 /**
- * Stock → Stock value per item / group: what is on hand now at true cost, per item, specialty,
- * category or subcategory.
+ * Stock → Stock Value per Specialty > Category > Subcategory / Items Group > Item: what is on
+ * hand now at true cost, per specialty, category, subcategory or item.
  */
 class StockValueByItemReport extends GroupStockReport
 {
@@ -17,21 +17,21 @@ class StockValueByItemReport extends GroupStockReport
 
     public function title(): string
     {
-        return __('Stock value per item / group');
+        return __('Stock Value per Specialty > Category > Subcategory / Items Group > Item');
     }
 
     public function description(): ?string
     {
-        return __('Value at true cost of what is on hand now, per item, specialty, category or subcategory.');
+        return __('Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item.');
     }
 
     public function groups(): array
     {
         return [
-            'item' => __('Item'),
             'specialty' => __('Specialty'),
             'category' => __('Specialty > Category'),
             'subcategory' => __('Specialty > Category > Subcategory'),
+            'item' => __('Item'),
         ];
     }
 }

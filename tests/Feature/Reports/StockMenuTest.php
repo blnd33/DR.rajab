@@ -24,7 +24,7 @@ use Database\Seeders\InventoryBaseSeeder;
  * The Stock menu as the client listed it: Inventory / stock volume, Stock value, Stock per
  * Specialty > Category > Subcategory / Items Group > Item, Stock value per item / group, Stock
  * movement, Input, Output, Items list — then the older Stock screens. Pricelist and Catalogues are
- * a section of their own under it.
+ * two sections of their own under it.
  */
 
 beforeEach(function () {
@@ -123,11 +123,11 @@ it('lists prices with the profit, priced items first and all on request', functi
         ->and(collect(stockReport(PriceListReport::class, ['group' => 'all']))->pluck('sku')->all())->toBe(['PL-1', 'SP-1']);
 });
 
-it('puts the client\'s list first in the Stock menu, Pricelist and Catalogues in a section of their own', function () {
+it('puts the client\'s list first in the Stock menu, then Pricelist and Catalogues as two sections', function () {
     $html = $this->get('/admin')->assertOk()->getContent();
 
-    $order = ['Inventory / stock volume', 'Stock value', 'Stock per Specialty > Category > Subcategory / Items Group > Item', 'Stock value per item / group', 'Stock movement', 'Input', 'Output', 'Items list', 'Receive stock', 'Catalogues & Pricelist', 'Pricelist', 'Catalogues'];
-    $this->get('/admin')->assertSeeInOrder(array_map(fn (string $label) => e($label), $order), false);
+    $order = ['Inventory / stock volume', 'Stock value', 'Stock Volume per Specialty &gt; Category &gt; Subcategory / Items Group &gt; Item', 'Stock Value per Specialty &gt; Category &gt; Subcategory / Items Group &gt; Item', 'Stock movement', 'Input', 'Output', 'Items list', 'Receive stock', 'Pricelist', 'Catalogues', 'Lima', 'Mikron', 'Covision'];
+    $this->get('/admin')->assertSeeInOrder($order, false);
 
     // Off the menu.
     expect($html)->not->toContain('Stock movement totals');

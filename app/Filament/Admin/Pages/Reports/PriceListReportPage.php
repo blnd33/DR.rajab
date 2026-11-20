@@ -16,6 +16,6 @@ class PriceListReportPage extends ReportPage
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Catalogues & Pricelist');
+        return __('Pricelist');
     }
 }

@@ -2980,5 +2980,8 @@
     "Specialty > Category > Subcategory": "پسپۆڕی > پۆل > ژێرپۆل",
     "Subcategory / items group": "ژێرپۆل / گرووپی کاڵاکان",
     "No specialty": "بێ پسپۆڕی",
-    "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "بەهای ئەوەی ئێستا لە کۆگادایە بە تێچووی ڕاستەقینە، بەپێی کاڵا، پسپۆڕی، پۆل یان ژێرپۆل."
+    "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "بەهای ئەوەی ئێستا لە کۆگادایە بە تێچووی ڕاستەقینە، بەپێی کاڵا، پسپۆڕی، پۆل یان ژێرپۆل.",
+    "Stock Volume per Specialty > Category > Subcategory / Items Group > Item": "قەبارەی کۆگا بەپێی پسپۆڕی > پۆل > ژێرپۆل / گرووپی کاڵاکان > کاڵا",
+    "Stock Value per Specialty > Category > Subcategory / Items Group > Item": "بەهای کۆگا بەپێی پسپۆڕی > پۆل > ژێرپۆل / گرووپی کاڵاکان > کاڵا",
+    "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item.": "بەهای ئەوەی ئێستا لە کۆگادایە بە تێچووی ڕاستەقینە، بەپێی پسپۆڕی، پۆل، ژێرپۆل (گرووپی کاڵاکان) یان کاڵا."
 }

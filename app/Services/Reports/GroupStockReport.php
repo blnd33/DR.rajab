@@ -5,8 +5,8 @@ namespace App\Services\Reports;
 use Brick\Math\BigDecimal;
 
 /**
- * Stock → Stock per Specialty > Category > Subcategory / Items Group > Item (and, with values,
- * Stock value per item / group): on hand now per specialty, category (top of the category tree),
+ * Stock → Stock Volume per Specialty > Category > Subcategory / Items Group > Item (and, with
+ * values, Stock Value per Specialty > Category > Subcategory / Items Group > Item): on hand now per specialty, category (top of the category tree),
  * subcategory / items group (the level under it) or item.
  */
 class GroupStockReport extends Report
@@ -23,7 +23,7 @@ class GroupStockReport extends Report
 
     public function title(): string
     {
-        return __('Stock per Specialty > Category > Subcategory / Items Group > Item');
+        return __('Stock Volume per Specialty > Category > Subcategory / Items Group > Item');
     }
 
     public function description(): ?string

@@ -2780,5 +2780,8 @@
     "Specialty > Category > Subcategory": "Specialty > Category > Subcategory",
     "Subcategory / items group": "Subcategory / items group",
     "No specialty": "No specialty",
-    "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "Value at true cost of what is on hand now, per item, specialty, category or subcategory."
+    "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "Value at true cost of what is on hand now, per item, specialty, category or subcategory.",
+    "Stock Volume per Specialty > Category > Subcategory / Items Group > Item": "Stock Volume per Specialty > Category > Subcategory / Items Group > Item",
+    "Stock Value per Specialty > Category > Subcategory / Items Group > Item": "Stock Value per Specialty > Category > Subcategory / Items Group > Item",
+    "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item.": "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item."
 }
