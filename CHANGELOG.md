@@ -9,7 +9,7 @@ All notable changes per build phase.
 - Reports no longer lists Stock value and Stock movements (they are in Stock).
 
 ### Added
-- **Inventory / stock volume**: pieces on hand now per item and station, item, or station.
+- **Inventory / stock volume**: the whole stock on hand now — **Iraq, Kurdistan, and Iraq and Kurdistan** (stations, items, pieces) — and per item (columns Iraq | Kurdistan | Iraq and Kurdistan), per governorate (all of the company's, with or without stock), per station, or per item and station.
 - **Item / group / subgroup stock** and **Stock value per item / group**: on hand (and value at true cost) per group = top category, subgroup = the category under it, or item.
 - **Input / Output**: the movements that brought stock into the company (opening, imports, purchases, returns in, count corrections that added) or took it out (sales, surgery use, write-offs, returns to suppliers, count corrections that removed); transfers and instrument-set moves are neither (`MovementType::inputs()/outputs()`).
 - **Pricelist**: every active item with cost price, selling price and profit % (items with a selling price, or all); needs the profit permission.

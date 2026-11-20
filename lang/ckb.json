@@ -2967,5 +2967,10 @@
     "On hand": "بەردەست",
     "Item / group / subgroup stock": "کۆگای کاڵا / گرووپ / ژێرگرووپ",
     "Pieces on hand now per group, subgroup or item (groups are the top categories, subgroups the categories under them).": "پارچە بەردەستەکانی ئێستا بەپێی گرووپ، ژێرگرووپ یان کاڵا (گرووپەکان پۆلە سەرەکییەکانن، ژێرگرووپەکان ئەو پۆلانەی لە ژێریانن).",
-    "Subgroup": "ژێرگرووپ"
+    "Subgroup": "ژێرگرووپ",
+    "The whole stock on hand now — Iraq, Kurdistan, and Iraq including Kurdistan — per item, governorate or station.": "هەموو کۆگای بەردەستی ئێستا — عێراق، کوردستان، و عێراق لەگەڵ کوردستان — بەپێی کاڵا، پارێزگا یان وێستگە.",
+    "Iraq, Kurdistan and the whole": "عێراق، کوردستان و کۆی گشتی",
+    "Item: Iraq, Kurdistan and the whole": "کاڵا: عێراق، کوردستان و کۆی گشتی",
+    "Region": "هەرێم",
+    "No governorate": "بێ پارێزگا"
 }

@@ -2767,5 +2767,10 @@
     "On hand": "On hand",
     "Item / group / subgroup stock": "Item / group / subgroup stock",
     "Pieces on hand now per group, subgroup or item (groups are the top categories, subgroups the categories under them).": "Pieces on hand now per group, subgroup or item (groups are the top categories, subgroups the categories under them).",
-    "Subgroup": "Subgroup"
+    "Subgroup": "Subgroup",
+    "The whole stock on hand now — Iraq, Kurdistan, and Iraq including Kurdistan — per item, governorate or station.": "The whole stock on hand now — Iraq, Kurdistan, and Iraq including Kurdistan — per item, governorate or station.",
+    "Iraq, Kurdistan and the whole": "Iraq, Kurdistan and the whole",
+    "Item: Iraq, Kurdistan and the whole": "Item: Iraq, Kurdistan and the whole",
+    "Region": "Region",
+    "No governorate": "No governorate"
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Governorate;
 use App\Enums\Role;
 use App\Enums\TrackingType;
 use App\Enums\WriteOffReason;
@@ -58,16 +59,30 @@ function stockReport(string $class, array $input = []): array
         ->sortBy('key')->values()->all();
 }
 
-it('shows how many pieces are on hand per item and station', function () {
-    $rows = stockReport(InventoryReport::class);
+it('shows the whole stock: Iraq, Kurdistan, and Iraq including Kurdistan', function () {
+    // DHK in Duhok (Kurdistan), EBL here in Baghdad (Iraq).
+    $this->dhk->forceFill(['governorate' => Governorate::Duhok])->save();
+    $this->ebl->forceFill(['governorate' => Governorate::Baghdad])->save();
 
-    $dhk = (string) $this->dhk->name;
-    $ebl = (string) $this->ebl->name;
+    // The first view: the three totals.
+    $regions = app(InventoryReport::class)->rows(ReportContext::make(app(InventoryReport::class), $this->admin, []));
+    expect(collect($regions)->map(fn ($r) => [$r['region'], $r['stations'], $r['items'], $r['quantity']])->all())->toBe([
+        ['Iraq', 1, 2, 7],
+        ['Kurdistan', 1, 1, 30],
+        ['Iraq and Kurdistan', 2, 2, 37],
+    ]);
 
-    expect(collect($rows)->map(fn ($r) => [$r['sku'], $r['branch'], $r['quantity']])->sortBy(fn ($r) => $r[0].$r[1])->values()->all())
-        ->toEqualCanonicalizing([['PL-1', $dhk, 30], ['PL-1', $ebl, 5], ['SP-1', $ebl, 2]])
-        ->and(collect(stockReport(InventoryReport::class, ['group' => 'product']))->pluck('quantity', 'sku')->all())->toBe(['PL-1' => 35, 'SP-1' => 2])
-        ->and(collect(stockReport(InventoryReport::class, ['group' => 'branch']))->pluck('quantity', 'branch')->all())->toEqualCanonicalizing([$dhk => 30, $ebl => 7]);
+    // Per item: Iraq | Kurdistan | the whole.
+    expect(collect(stockReport(InventoryReport::class, ['group' => 'item']))->map(fn ($r) => [$r['sku'], $r['iraq'], $r['kurdistan'], $r['whole']])->all())
+        ->toBe([['PL-1', 5, 30, 35], ['SP-1', 2, 0, 2]]);
+
+    // Per governorate (every governorate, with or without stock) and per station.
+    $governorates = collect(stockReport(InventoryReport::class, ['group' => 'governorate']))->pluck('quantity', 'key');
+    expect($governorates)->toHaveCount(19)
+        ->and($governorates['duhok'])->toBe(30)
+        ->and($governorates['baghdad'])->toBe(7)
+        ->and($governorates['basra'])->toBe(0)
+        ->and(collect(stockReport(InventoryReport::class, ['group' => 'branch']))->sum('quantity'))->toBe(37);
 });
 
 it('adds stock up per group and subgroup, with the value per item', function () {

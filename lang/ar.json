@@ -2967,5 +2967,10 @@
     "On hand": "المتوفر",
     "Item / group / subgroup stock": "مخزون الصنف / المجموعة / المجموعة الفرعية",
     "Pieces on hand now per group, subgroup or item (groups are the top categories, subgroups the categories under them).": "القطع المتوفرة الآن حسب المجموعة أو المجموعة الفرعية أو الصنف (المجموعات هي الفئات الرئيسية، والمجموعات الفرعية هي الفئات التي تحتها).",
-    "Subgroup": "المجموعة الفرعية"
+    "Subgroup": "المجموعة الفرعية",
+    "The whole stock on hand now — Iraq, Kurdistan, and Iraq including Kurdistan — per item, governorate or station.": "كل المخزون المتوفر الآن — العراق، كردستان، والعراق مع كردستان — حسب الصنف أو المحافظة أو المحطة.",
+    "Iraq, Kurdistan and the whole": "العراق، كردستان والمجموع الكلي",
+    "Item: Iraq, Kurdistan and the whole": "الصنف: العراق، كردستان والمجموع الكلي",
+    "Region": "المنطقة",
+    "No governorate": "بدون محافظة"
 }
