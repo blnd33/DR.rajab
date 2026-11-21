@@ -23,7 +23,7 @@ abstract class Report
     }
 
     /**
-     * Which filters the screen offers: period, branch, currency, group.
+     * Which filters the screen offers: period, branch, currency, group, idle ("Not used for").
      *
      * @return list<string>
      */

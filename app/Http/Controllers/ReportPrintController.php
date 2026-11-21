@@ -24,7 +24,7 @@ class ReportPrintController extends Controller
         abort_if($definition === null, 404);
         abort_unless(ReportRegistry::canOpen($user, $definition), 403);
 
-        $context = ReportContext::make($definition, $user, $request->only(['from', 'until', 'branch', 'currency', 'group']));
+        $context = ReportContext::make($definition, $user, $request->only(['from', 'until', 'branch', 'currency', 'group', 'idle']));
         $rows = $definition->rows($context);
         $columns = $definition->visibleColumns($context);
         $branch = $context->branchIds !== null && count($context->branchIds) === 1 ? Branch::query()->find($context->branchIds[0]) : null;

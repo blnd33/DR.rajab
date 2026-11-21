@@ -24,10 +24,15 @@ final class ReportContext
         public readonly ?array $branchIds,
         public readonly string $currency,
         public readonly ?string $group,
+        // Inactive stock: not used (sold, used in surgery, written off…) for this many days.
+        public readonly int $idleDays = 90,
     ) {}
 
+    /** The choices of the "Not used for" filter (days). */
+    public const IDLE_DAYS = [30, 60, 90, 180, 365];
+
     /**
-     * @param  array{from?: ?string, until?: ?string, branch?: int|string|null, currency?: ?string, group?: ?string}  $input
+     * @param  array{from?: ?string, until?: ?string, branch?: int|string|null, currency?: ?string, group?: ?string, idle?: int|string|null}  $input
      */
     public static function make(Report $report, User $user, array $input): self
     {
@@ -51,7 +56,9 @@ final class ReportContext
         $group = in_array($input['group'] ?? null, $groups, true) ? (string) $input['group'] : ($groups[0] ?? null);
         $currency = in_array($input['currency'] ?? null, ['USD', 'IQD', 'EUR'], true) ? (string) $input['currency'] : 'USD';
 
-        return new self($user, $from, $until, $branchIds, $currency, $group);
+        $idle = in_array((int) ($input['idle'] ?? 0), self::IDLE_DAYS, true) ? (int) $input['idle'] : 90;
+
+        return new self($user, $from, $until, $branchIds, $currency, $group, $idle);
     }
 
     /**
@@ -83,6 +90,7 @@ final class ReportContext
             'branch' => $this->branchIds !== null && count($this->branchIds) === 1 ? (string) $this->branchIds[0] : null,
             'currency' => $this->currency,
             'group' => $this->group,
+            'idle' => (string) $this->idleDays,
         ], fn ($v) => $v !== null);
     }
 }

@@ -2983,5 +2983,14 @@
     "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "بەهای ئەوەی ئێستا لە کۆگادایە بە تێچووی ڕاستەقینە، بەپێی کاڵا، پسپۆڕی، پۆل یان ژێرپۆل.",
     "Stock Volume per Specialty > Category > Subcategory / Items Group > Item": "قەبارەی کۆگا بەپێی پسپۆڕی > پۆل > ژێرپۆل / گرووپی کاڵاکان > کاڵا",
     "Stock Value per Specialty > Category > Subcategory / Items Group > Item": "بەهای کۆگا بەپێی پسپۆڕی > پۆل > ژێرپۆل / گرووپی کاڵاکان > کاڵا",
-    "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item.": "بەهای ئەوەی ئێستا لە کۆگادایە بە تێچووی ڕاستەقینە، بەپێی پسپۆڕی، پۆل، ژێرپۆل (گرووپی کاڵاکان) یان کاڵا."
+    "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item.": "بەهای ئەوەی ئێستا لە کۆگادایە بە تێچووی ڕاستەقینە، بەپێی پسپۆڕی، پۆل، ژێرپۆل (گرووپی کاڵاکان) یان کاڵا.",
+    "Inactive stock value": "بەهای کۆگای وەستاو",
+    "Inactive stock volume": "قەبارەی کۆگای وەستاو",
+    "Pieces on hand that have not been used (sold, used in surgery, written off, returned or counted out) for the chosen number of days, although they have been in stock that long.": "ئەو پارچە بەردەستانەی کە لە ماوەی ژمارەی ڕۆژە هەڵبژێردراوەکەدا بەکارنەهاتوون (نەفرۆشراون، لە نەشتەرگەری بەکارنەهاتوون، لەناونەبراون، نەگەڕێندراونەتەوە یان لە ژماردندا کەم نەکراون)، هەرچەندە ئەو ماوەیە لە کۆگادا بوون.",
+    "Value at true cost of the stock on hand that has not been used (sold, used in surgery, written off, returned or counted out) for the chosen number of days, although it has been in stock that long.": "بەهای ئەو کۆگا بەردەستەی بە تێچووی ڕاستەقینە کە لە ماوەی ژمارەی ڕۆژە هەڵبژێردراوەکەدا بەکارنەهاتووە (نەفرۆشراوە، لە نەشتەرگەری بەکارنەهاتووە، لەناونەبراوە، نەگەڕێندراوەتەوە یان لە ژماردندا کەم نەکراوە)، هەرچەندە ئەو ماوەیە لە کۆگادا بووە.",
+    "Not used for": "بەکارنەهاتوو بۆ ماوەی",
+    ":count days": ":count ڕۆژ",
+    "Last used": "دوایین بەکارهێنان",
+    "In stock since": "لە کۆگادایە لە",
+    "Days not used": "ڕۆژانی بێ بەکارهێنان"
 }

@@ -101,6 +101,7 @@ abstract class ReportPage extends Page implements HasTable
             'branch' => $filters['branch']['value'] ?? null,
             'currency' => $filters['currency']['value'] ?? null,
             'group' => $filters['group']['value'] ?? null,
+            'idle' => $filters['idle']['value'] ?? null,
         ];
     }
 
@@ -217,6 +218,12 @@ abstract class ReportPage extends Page implements HasTable
         if (in_array('currency', $wanted, true)) {
             $filters[] = SelectFilter::make('currency')->label(__('Show amounts in'))
                 ->options(fn () => Currency::options())->default('USD')->selectablePlaceholder(false);
+        }
+
+        if (in_array('idle', $wanted, true)) {
+            $filters[] = SelectFilter::make('idle')->label(__('Not used for'))
+                ->options(collect(ReportContext::IDLE_DAYS)->mapWithKeys(fn (int $days) => [(string) $days => __(':count days', ['count' => $days])])->all())
+                ->default('90')->selectablePlaceholder(false);
         }
 
         if (in_array('group', $wanted, true) && $report->groups() !== []) {

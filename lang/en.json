@@ -2783,5 +2783,14 @@
     "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "Value at true cost of what is on hand now, per item, specialty, category or subcategory.",
     "Stock Volume per Specialty > Category > Subcategory / Items Group > Item": "Stock Volume per Specialty > Category > Subcategory / Items Group > Item",
     "Stock Value per Specialty > Category > Subcategory / Items Group > Item": "Stock Value per Specialty > Category > Subcategory / Items Group > Item",
-    "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item.": "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item."
+    "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item.": "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item.",
+    "Inactive stock value": "Inactive stock value",
+    "Inactive stock volume": "Inactive stock volume",
+    "Pieces on hand that have not been used (sold, used in surgery, written off, returned or counted out) for the chosen number of days, although they have been in stock that long.": "Pieces on hand that have not been used (sold, used in surgery, written off, returned or counted out) for the chosen number of days, although they have been in stock that long.",
+    "Value at true cost of the stock on hand that has not been used (sold, used in surgery, written off, returned or counted out) for the chosen number of days, although it has been in stock that long.": "Value at true cost of the stock on hand that has not been used (sold, used in surgery, written off, returned or counted out) for the chosen number of days, although it has been in stock that long.",
+    "Not used for": "Not used for",
+    ":count days": ":count days",
+    "Last used": "Last used",
+    "In stock since": "In stock since",
+    "Days not used": "Days not used"
 }

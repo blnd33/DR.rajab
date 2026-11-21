@@ -22,6 +22,8 @@ final class ReportRegistry
         StockInputReport::class,
         StockOutputReport::class,
         PriceListReport::class,
+        InactiveStockValueReport::class,
+        InactiveStockReport::class,
         ExpiryReport::class,
         StockMovementsReport::class,
         SalesProfitReport::class,

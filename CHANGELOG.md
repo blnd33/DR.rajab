@@ -2,6 +2,12 @@
 
 All notable changes per build phase.
 
+## [Client updates — Inactive Stock Value / Inactive Stock Volume] — 2026-11-21
+
+### Added
+- **Two sections of their own in the side menu, under Stock: Inactive Stock Value and Inactive Stock Volume** (both companies). Stock on hand in a station that has not been used there — nothing sold, used in surgery, written off, returned to a supplier or counted out — for the chosen number of days (**Not used for**: 30 / 60 / 90 / 180 / 365 days, 90 by default), although it has been there that long (new stock is not inactive). Per item and station (with last used, in stock since, days not used), item, station or specialty; the value screen shows the value at true cost. Print and Excel like the other reports (`InactiveStockReport`, `InactiveStockValueReport`; report filter `idle`).
+- **Tests**: new stock is not inactive, use makes it active again, longer periods, value per item / station, the two menu sections.
+
 ## [Client updates — Home page, menu button] — 2026-11-20
 
 ### Changed

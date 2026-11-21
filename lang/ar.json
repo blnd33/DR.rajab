@@ -2983,5 +2983,14 @@
     "Value at true cost of what is on hand now, per item, specialty, category or subcategory.": "قيمة المتوفر الآن بالتكلفة الحقيقية، حسب الصنف أو التخصص أو الفئة أو الفئة الفرعية.",
     "Stock Volume per Specialty > Category > Subcategory / Items Group > Item": "حجم المخزون حسب التخصص > الفئة > الفئة الفرعية / مجموعة الأصناف > الصنف",
     "Stock Value per Specialty > Category > Subcategory / Items Group > Item": "قيمة المخزون حسب التخصص > الفئة > الفئة الفرعية / مجموعة الأصناف > الصنف",
-    "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item.": "قيمة المتوفر الآن بالتكلفة الحقيقية، حسب التخصص أو الفئة أو الفئة الفرعية (مجموعة الأصناف) أو الصنف."
+    "Value at true cost of what is on hand now, per specialty, category, subcategory (items group) or item.": "قيمة المتوفر الآن بالتكلفة الحقيقية، حسب التخصص أو الفئة أو الفئة الفرعية (مجموعة الأصناف) أو الصنف.",
+    "Inactive stock value": "قيمة المخزون الراكد",
+    "Inactive stock volume": "حجم المخزون الراكد",
+    "Pieces on hand that have not been used (sold, used in surgery, written off, returned or counted out) for the chosen number of days, although they have been in stock that long.": "القطع المتوفرة التي لم تُستخدم (لم تُبع، لم تُستخدم في عملية، لم تُشطب، لم تُرجع أو لم تنقص في الجرد) خلال عدد الأيام المختار، رغم وجودها في المخزون طوال تلك المدة.",
+    "Value at true cost of the stock on hand that has not been used (sold, used in surgery, written off, returned or counted out) for the chosen number of days, although it has been in stock that long.": "القيمة بالتكلفة الحقيقية للمخزون المتوفر الذي لم يُستخدم (لم يُبع، لم يُستخدم في عملية، لم يُشطب، لم يُرجع أو لم ينقص في الجرد) خلال عدد الأيام المختار، رغم وجوده في المخزون طوال تلك المدة.",
+    "Not used for": "غير مستخدم منذ",
+    ":count days": ":count يوماً",
+    "Last used": "آخر استخدام",
+    "In stock since": "في المخزون منذ",
+    "Days not used": "أيام بلا استخدام"
 }
