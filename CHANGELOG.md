@@ -2,6 +2,12 @@
 
 All notable changes per build phase.
 
+## [Client updates — Items list per catalog] — 2026-11-22
+
+### Added
+- **Stock → Items list has a tab per catalog**: All · Arthroplasty · Lima (Enovis) · Trauma · Mikron, each with its item count. The supplier catalog import files the Lima / Enovis workbook under Arthroplasty (Hip, Knee, Shoulder) and the Mikron workbook under Trauma, so each tab shows only that workbook's items. One tab per specialty that has items; the label names the brand most of its items carry. A category without a specialty takes its parent's (`Category::specialtyMap()`).
+- **Tests**: tabs, counts and labels; each tab lists only its items; the page in English, Arabic and Kurdish.
+
 ## [Client updates — Clear the Items list on the test site] — 2026-11-22
 
 ### Added

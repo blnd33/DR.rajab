@@ -79,6 +79,33 @@ class Category extends Model
     }
 
     /**
+     * Category id → specialty: the category's own, else the nearest parent's (null when none
+     * up the tree has one). The same rule the reports use for a product's specialty.
+     *
+     * @return array<int, ?Specialty>
+     */
+    public static function specialtyMap(): array
+    {
+        $categories = static::query()->get(['id', 'parent_id', 'specialty'])->keyBy('id');
+        $map = [];
+
+        foreach ($categories as $id => $category) {
+            $seen = [];
+            $node = $category;
+
+            // Walk up until a specialty is found (guarding against a loop in bad data).
+            while ($node !== null && $node->specialty === null && $node->parent_id !== null && ! isset($seen[$node->id])) {
+                $seen[$node->id] = true;
+                $node = $categories->get($node->parent_id);
+            }
+
+            $map[$id] = $node?->specialty;
+        }
+
+        return $map;
+    }
+
+    /**
      * "Implants › Knee"
      */
     public function path(): string
