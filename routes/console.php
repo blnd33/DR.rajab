@@ -4,6 +4,7 @@ use App\Enums\Role;
 use App\Models\IdempotencyKey;
 use App\Models\User;
 use App\Services\Assets\OverdueKitNotifier;
+use App\Services\Catalog\ItemsResetService;
 use App\Services\Catalog\SampleDataService;
 use App\Services\Catalog\TestPricingService;
 use App\Services\Companies\CompanySetupService;
@@ -235,6 +236,52 @@ Artisan::command('orthotrack:reset-test-site {--force : Do not ask to type the s
 
     return 0;
 })->purpose('Empty the client\'s test site (refused on any other site)');
+
+/*
+| Empty the Items list (test site): every item and everything made of items — stock, movements,
+| purchases, sales and their payments, surgeries, transfers, requests, returns, write-offs, counts,
+| kit check-outs. Users, branches, hospitals, suppliers, patients, kits, instruments, cash boxes,
+| expenses and settings stay; box balances are recomputed.
+|   php artisan orthotrack:clear-items --dry-run
+|   php artisan orthotrack:clear-items
+*/
+Artisan::command('orthotrack:clear-items {--dry-run : Only show what would be removed} {--force : Do not ask to type the site name}', function (ItemsResetService $reset) {
+    if (! ItemsResetService::allowed()) {
+        $this->error('Refused: this is not a test site. Only a site with ORTHOTRACK_TEST_SITE=true in .env can be emptied.');
+
+        return 1;
+    }
+
+    $counts = $reset->counts();
+
+    if ($counts === []) {
+        $this->info('The Items list is already empty: nothing to remove.');
+
+        return 0;
+    }
+
+    $this->table(['What', 'Rows'], array_map(fn ($table, $rows) => [$table, number_format($rows)], array_keys($counts), $counts));
+
+    if ($this->option('dry-run')) {
+        $this->info('Dry run: nothing was removed.');
+
+        return 0;
+    }
+
+    $site = (string) (parse_url((string) config('app.url'), PHP_URL_HOST) ?: config('app.url'));
+
+    if (! $this->option('force') && $this->ask("This removes every item and all stock, purchases, sales, surgeries and transfers above from {$site} (users, branches, hospitals, suppliers, kits and cash boxes stay). Type {$site} to confirm") !== $site) {
+        $this->warn('Nothing was removed.');
+
+        return 1;
+    }
+
+    $removed = $reset->run();
+    $this->call('cache:clear');
+    $this->info(sprintf('Done: %s rows removed. The Items list is empty.', number_format(array_sum($removed))));
+
+    return 0;
+})->purpose('Test site: empty the Items list and all stock and documents made of items');
 
 /*
 | Test prices (test site): every product that has stock, in SKU order, costs 1, 2, 3… USD; its
