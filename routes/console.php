@@ -4,6 +4,7 @@ use App\Enums\Role;
 use App\Models\IdempotencyKey;
 use App\Models\User;
 use App\Services\Assets\OverdueKitNotifier;
+use App\Services\Catalog\ClearItemsService;
 use App\Services\Catalog\SampleDataService;
 use App\Services\Catalog\TestPricingService;
 use App\Services\Companies\CompanySetupService;
@@ -340,6 +341,63 @@ Artisan::command('orthotrack:sample-data {file : The supplier workbook (.xlsx)} 
 
     return 0;
 })->purpose('Test site: stations, products from the supplier workbook, stock and test prices');
+
+/*
+| Empty the Items list on the test site (App\Services\Catalog\ClearItemsService): the items, all
+| their stock and every document made of item lines. Stations, users, customers, suppliers,
+| patients, kits, cash boxes and money movements stay. Shows what goes and asks first.
+|   php artisan orthotrack:clear-items --dry-run
+|   php artisan orthotrack:clear-items
+*/
+Artisan::command('orthotrack:clear-items {--user= : Username recorded as who did it (default: the first super admin)} {--dry-run : Only show what would be removed} {--force : Do not ask to type the site name}', function (ClearItemsService $clear) {
+    if (! ClearItemsService::allowed()) {
+        $this->error('Refused: this is not a test site. Only a site with ORTHOTRACK_TEST_SITE=true in .env can have its items cleared.');
+
+        return 1;
+    }
+
+    $preview = $clear->preview();
+
+    if ($preview === []) {
+        $this->info('The Items list is already empty. Nothing to remove.');
+
+        return 0;
+    }
+
+    $this->table(['Table', 'Rows to remove'], collect($preview)->map(fn (int $n, string $table) => [$table, number_format($n)])->values()->all());
+
+    if ($this->option('dry-run')) {
+        $this->line('Dry run: nothing was removed.');
+
+        return 0;
+    }
+
+    $username = $this->option('user');
+    $user = $username
+        ? User::query()->where('username', $username)->first()
+        : User::query()->where('is_active', true)->whereHas('roles', fn ($q) => $q->where('name', Role::SuperAdmin->value))->orderBy('id')->first();
+
+    if ($user === null) {
+        $this->error('No such user (use --user=<username> of a super admin).');
+
+        return 1;
+    }
+
+    $site = (string) (parse_url((string) config('app.url'), PHP_URL_HOST) ?: config('app.url'));
+
+    if (! $this->option('force') && $this->ask("This removes every item, all stock and the documents above from {$site} (stations, users, customers, suppliers and money stay). Type {$site} to confirm") !== $site) {
+        $this->warn('Nothing was removed.');
+
+        return 1;
+    }
+
+    $removed = $clear->run($user);
+
+    $this->call('cache:clear');
+    $this->info(sprintf('Items list cleared on %s: %s rows removed from %d tables.', $site, number_format(array_sum($removed)), count($removed)));
+
+    return 0;
+})->purpose('Test site: remove every item, its stock and the documents made of item lines');
 
 /*
 | Companies (same system, separate data — App\Support\CompanyContext). Commands work in the main

@@ -104,6 +104,8 @@ php artisan orthotrack:create-admin rajab --name="Dr. Rajab"
 
 The reset asks you to type the site name (`test.example.com`) and then erases all data and uploaded files (photos, invoices, imports) and puts the base data back. It refuses on any site without `ORTHOTRACK_TEST_SITE=true` — the real site cannot be emptied with it.
 
+To empty only **Stock → Items list** (stations, logins, customers, suppliers, kits and money stay), use `php artisan orthotrack:clear-items` — `--dry-run` first shows what would go. See [HOSTINGER.md § 7](HOSTINGER.md#only-the-items-list).
+
 ## Sample data from the supplier workbook (optional)
 
 To see the screens filled in without typing everything, load sample data from the supplier's own workbook (for example the Mikron trauma list). Copy the file to the server first (into `/tmp`, so the web user can read it), then:

@@ -2,6 +2,12 @@
 
 All notable changes per build phase.
 
+## [Client updates — Clear the Items list on the test site] — 2026-11-22
+
+### Added
+- **`php artisan orthotrack:clear-items`** (test site only, like `orthotrack:reset-test-site`): empties Stock → Items list and everything made of items — all stock (serials, lots, stock movements, stock-value history), transfers without kits or instruments, stock requests, write-offs, returns and their credit notes, stock counts, purchases, sales invoices with item lines, their supplier/customer balance lines and payment allocations, the item lines of kit checkouts and surgeries (+ commissions on them), and attached files. Keeps stations, logins, customers, suppliers, patients, surgeries, kits, instruments, cash boxes and every money movement. `--dry-run` shows the rows per table; otherwise it shows them and asks to type the site name (`--force` skips that). One transaction; the two ledgers it empties from are append-only again afterwards; recorded in the activity log (`ClearItemsService`). Docs: HOSTINGER.md § 7, TEST-SITE.md.
+- **Tests**: refused on a real site, nothing removed on a dry run or a wrong site name, full demo data cleared with stations, people, kits and cash box balances unchanged.
+
 ## [Client updates — Inactive Stock Value / Inactive Stock Volume] — 2026-11-21
 
 ### Added

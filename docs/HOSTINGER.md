@@ -148,3 +148,15 @@ cd ~/domains/coda-agency.net/drrajab-app
 php artisan orthotrack:reset-test-site      # asks you to type drrajab.coda-agency.net
 php artisan orthotrack:create-admin rajab --name="Dr. Rajab"
 ```
+
+### Only the Items list
+
+To empty **Stock → Items list** but keep stations, logins, customers, suppliers, patients, surgeries, kits, cash boxes and money:
+
+```bash
+cd ~/domains/coda-agency.net/drrajab-app
+php artisan orthotrack:clear-items --dry-run   # shows what would go, removes nothing
+php artisan orthotrack:clear-items             # shows it again, asks you to type drrajab.coda-agency.net
+```
+
+What goes with the items: all stock (serials, lots, stock movements, stock-value history) and every document made of item lines — transfers (a transfer carrying kits or instruments stays, without its items), stock requests, write-offs, returns and their credit notes, stock counts, purchases and sales invoices with their supplier/customer balance lines, the item lines of kit checkouts and surgeries, and the files attached to those. Money in the cash boxes and payments stay as they are. It refuses on any site without `ORTHOTRACK_TEST_SITE=true`; for the other company, put `ORTHOTRACK_COMPANY=al_fadhaa` in front of the command.
