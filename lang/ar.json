@@ -2996,5 +2996,7 @@
     "Sub distributor": "موزّع فرعي",
     "Sub distributors": "الموزّعون الفرعيون",
     "Choose the distributor this sub distributor works under.": "اختر الموزّع الذي يعمل تحته هذا الموزّع الفرعي.",
-    "The distributor this sub distributor works under.": "الموزّع الذي يعمل تحته هذا الموزّع الفرعي."
+    "The distributor this sub distributor works under.": "الموزّع الذي يعمل تحته هذا الموزّع الفرعي.",
+    "Go back": "رجوع",
+    "Go forward": "تقدّم"
 }

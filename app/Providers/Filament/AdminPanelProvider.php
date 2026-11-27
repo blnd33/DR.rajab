@@ -131,6 +131,11 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE,
                 fn () => Blade::render('<x-auth-notice /><x-language-switcher class="mb-2" />'),
             )
+            // Back / forward arrows, before the company name.
+            ->renderHook(
+                PanelsRenderHook::TOPBAR_LOGO_BEFORE,
+                fn () => Blade::render('<x-history-arrows />'),
+            )
             // The other company (KurdishMedicus ↔ Al-Fadhaa' Bureau), right after the company name.
             ->renderHook(
                 PanelsRenderHook::TOPBAR_LOGO_AFTER,

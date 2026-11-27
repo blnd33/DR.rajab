@@ -32,6 +32,45 @@
         }
     }
 
+    /* A thinner side menu: rows and sections closer together. */
+    .fi-sidebar .fi-sidebar-item-btn,
+    .fi-sidebar .fi-sidebar-group-btn {
+        padding-top: 0.3rem;
+        padding-bottom: 0.3rem;
+    }
+
+    .fi-sidebar .fi-sidebar-group-items,
+    .fi-sidebar .fi-sidebar-group {
+        row-gap: 0.0625rem;
+    }
+
+    .fi-sidebar .fi-sidebar-nav-groups {
+        row-gap: 1rem;
+    }
+
+    .fi-sidebar .fi-sidebar-nav {
+        row-gap: 1rem;
+    }
+
+    /* A section's name opens its home page (SectionPage). */
+    .ot-section-link:hover {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+
+    /* Back / forward arrows before the company name. */
+    .ot-history {
+        display: flex;
+        align-items: center;
+        gap: 0.125rem;
+        margin-inline-end: 0.75rem;
+    }
+
+    .ot-history button:disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+
     /* Page numbers above a list (<x-table-top-pagination />), separated from the rows. */
     .ot-pagination-top {
         border-bottom: 1px solid var(--gray-200);
