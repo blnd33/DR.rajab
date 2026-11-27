@@ -2,6 +2,17 @@
 
 All notable changes per build phase.
 
+## [Client updates — Catalogues by category] — 2026-11-27
+
+### Changed
+- **Catalogues by category**: Catalogues (its home page and the side menu) shows the four categories with their icons — **Arthroplasty, Trauma, Spine, Sport medicine** — and **All catalogues**. A category shows its **companies** (windows with their number of documents); a company opens its **catalogue documents** (the folder as before). In the menu a category's companies show under it once it is open. A company not sorted into a category yet (Covision) shows on its own until it is.
+- A catalogue folder has a **Category** (Administration → Document folders, for the Catalogues section). Lima → Arthroplasty, Mikron → Trauma set by the migration (`2026_11_27_000200_add_specialty_to_document_folders`).
+- Section home pages show a section's own entries (what is under an entry is reached through it); window icons are larger.
+
+### Added
+- **All catalogues**: every company's catalogue documents in one list, with company and category; filter by category, company or archived (`AllCataloguesPage`, `/admin/catalogues/all`). A category's page: `CataloguesPage`, `/admin/catalogues?specialty=trauma`.
+- **Tests**: Lima / Mikron sorted, category only for catalogues, categories → companies → documents, All catalogues with its category filter, permissions.
+
 ## [Client updates — section home pages, back / forward, thinner menu] — 2026-11-27
 
 ### Added

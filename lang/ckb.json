@@ -2998,5 +2998,12 @@
     "Choose the distributor this sub distributor works under.": "ئەو دابەشکەرە هەڵبژێرە کە ئەم دابەشکەرە لاوەکییە لەژێریدا کار دەکات.",
     "The distributor this sub distributor works under.": "ئەو دابەشکەرەی ئەم دابەشکەرە لاوەکییە لەژێریدا کار دەکات.",
     "Go back": "گەڕانەوە",
-    "Go forward": "چوونە پێشەوە"
+    "Go forward": "چوونە پێشەوە",
+    "All catalogues": "هەموو کاتالۆگەکان",
+    "The catalogue documents of every company.": "بەڵگەنامەکانی کاتالۆگی هەموو کۆمپانیاکان.",
+    "No catalogue documents yet": "هێشتا هیچ بەڵگەنامەیەکی کاتالۆگ نییە",
+    "No company has catalogues in this category yet. Add a folder in Administration → Document folders, in the Catalogues section, and choose this category.": "هێشتا هیچ کۆمپانیایەک کاتالۆگی لەم پۆلەدا نییە. لە بەڕێوەبردن ← بوخچەکانی بەڵگەنامە، لە بەشی کاتالۆگەکان، بوخچەیەک زیاد بکە و ئەم پۆلە هەڵبژێرە.",
+    ":count document|:count documents": ":count بەڵگەنامە|:count بەڵگەنامە",
+    "Unsorted": "پۆلێن نەکراو",
+    "Catalogues → this category → this company.": "کاتالۆگەکان ← ئەم پۆلە ← ئەم کۆمپانیایە."
 }

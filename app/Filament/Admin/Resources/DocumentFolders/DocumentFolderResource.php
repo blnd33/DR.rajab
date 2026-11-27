@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\DocumentFolders;
 
 use App\Enums\DocumentSection;
+use App\Enums\Specialty;
 use App\Filament\Admin\Forms\TranslatableInput;
 use App\Filament\Admin\Pages\DocumentFolderPage;
 use App\Filament\Admin\Resources\DocumentFolders\Pages\ManageDocumentFolders;
@@ -16,6 +17,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -59,7 +61,12 @@ class DocumentFolderResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            Select::make('section')->label(__('Menu section'))->options(DocumentSection::options())->required()->native(false),
+            Select::make('section')->label(__('Menu section'))->options(DocumentSection::options())->required()->native(false)->live(),
+            // Catalogues: the category the company's catalogues belong to.
+            Select::make('specialty')->label(__('Category'))->options(Specialty::options())->native(false)
+                ->placeholder(__('Unsorted'))
+                ->visible(fn (Get $get) => $get('section') === DocumentSection::Catalogues->value || $get('section') === DocumentSection::Catalogues)
+                ->helperText(__('Catalogues → this category → this company.')),
             TextInput::make('sort')->label(__('Order'))->numeric()->integer()->minValue(0)->default(fn () => DocumentFolder::query()->max('sort') + 1),
             TranslatableInput::make('name', __('Name'))->columnSpanFull(),
             Toggle::make('is_active')->label(__('Shown in the menu'))->default(true)
@@ -74,6 +81,7 @@ class DocumentFolderResource extends Resource
             ->defaultSort(fn ($query) => $query->orderBy('section')->orderBy('sort'))
             ->columns([
                 TextColumn::make('section')->label(__('Menu section'))->badge()->color('gray')->sortable(),
+                TextColumn::make('specialty')->label(__('Category'))->placeholder('—')->toggleable(),
                 TextColumn::make('name')->label(__('Name'))->weight('semibold')
                     ->url(fn (DocumentFolder $record) => DocumentFolderPage::getUrl(['folder' => $record->id])),
                 TextColumn::make('sort')->label(__('Order'))->alignEnd()->sortable(),

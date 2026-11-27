@@ -2998,5 +2998,12 @@
     "Choose the distributor this sub distributor works under.": "اختر الموزّع الذي يعمل تحته هذا الموزّع الفرعي.",
     "The distributor this sub distributor works under.": "الموزّع الذي يعمل تحته هذا الموزّع الفرعي.",
     "Go back": "رجوع",
-    "Go forward": "تقدّم"
+    "Go forward": "تقدّم",
+    "All catalogues": "كل الكتالوجات",
+    "The catalogue documents of every company.": "وثائق الكتالوجات لكل الشركات.",
+    "No catalogue documents yet": "لا توجد وثائق كتالوجات بعد",
+    "No company has catalogues in this category yet. Add a folder in Administration → Document folders, in the Catalogues section, and choose this category.": "لا توجد شركة لها كتالوجات في هذه الفئة بعد. أضف مجلداً من الإدارة ← مجلدات الوثائق، في قسم الكتالوجات، واختر هذه الفئة.",
+    ":count document|:count documents": ":count وثيقة|:count وثائق",
+    "Unsorted": "غير مصنّف",
+    "Catalogues → this category → this company.": "الكتالوجات ← هذه الفئة ← هذه الشركة."
 }

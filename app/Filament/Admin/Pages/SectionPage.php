@@ -37,7 +37,7 @@ class SectionPage extends Page
     }
 
     /**
-     * The section's entries, as in the side menu (children of an entry follow it).
+     * The section's entries, as in the side menu.
      *
      * @return list<array{label: string, url: string, icon: mixed, badge: mixed}>
      */
@@ -53,20 +53,20 @@ class SectionPage extends Page
 
         $items = [];
 
+        // The section's own entries; what is under an entry (Catalogues → Trauma → Mikron) is
+        // reached through that entry.
         foreach ($group->getItems() as $item) {
-            foreach ([$item, ...$item->getChildItems()] as $entry) {
-                /** @var NavigationItem $entry */
-                if (! $entry->isVisible() || blank($entry->getUrl())) {
-                    continue;
-                }
-
-                $items[] = [
-                    'label' => (string) $entry->getLabel(),
-                    'url' => (string) $entry->getUrl(),
-                    'icon' => $entry->getIcon() ?? $group->getIcon() ?? 'heroicon-o-squares-2x2',
-                    'badge' => $entry->getBadge(),
-                ];
+            /** @var NavigationItem $item */
+            if (! $item->isVisible() || blank($item->getUrl())) {
+                continue;
             }
+
+            $items[] = [
+                'label' => (string) $item->getLabel(),
+                'url' => (string) $item->getUrl(),
+                'icon' => $item->getIcon() ?? $group->getIcon() ?? 'heroicon-o-squares-2x2',
+                'badge' => $item->getBadge(),
+            ];
         }
 
         return $items;

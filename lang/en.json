@@ -2798,5 +2798,12 @@
     "Choose the distributor this sub distributor works under.": "Choose the distributor this sub distributor works under.",
     "The distributor this sub distributor works under.": "The distributor this sub distributor works under.",
     "Go back": "Go back",
-    "Go forward": "Go forward"
+    "Go forward": "Go forward",
+    "All catalogues": "All catalogues",
+    "The catalogue documents of every company.": "The catalogue documents of every company.",
+    "No catalogue documents yet": "No catalogue documents yet",
+    "No company has catalogues in this category yet. Add a folder in Administration → Document folders, in the Catalogues section, and choose this category.": "No company has catalogues in this category yet. Add a folder in Administration → Document folders, in the Catalogues section, and choose this category.",
+    ":count document|:count documents": ":count document|:count documents",
+    "Unsorted": "Unsorted",
+    "Catalogues → this category → this company.": "Catalogues → this category → this company."
 }

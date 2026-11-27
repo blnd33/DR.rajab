@@ -104,7 +104,8 @@ it('shows every folder in its menu section, and new or hidden folders at once', 
     $this->actingAs($this->admin);
 
     $this->get('/admin')->assertOk()
-        ->assertSeeInOrder(['Catalogues', 'Lima', 'Mikron', 'Covision'])
+        // Catalogues: the four categories, All catalogues, then companies not sorted yet.
+        ->assertSeeInOrder(['Catalogues', 'Arthroplasty', 'Trauma', 'Spine', 'Sport medicine', 'All catalogues', 'Covision'])
         ->assertSeeInOrder(['Shipment documents', 'AWB', 'Customs clearance', 'Income tax', 'Internal transport'])
         ->assertSee('Legal / Regulatory department')
         ->assertSee('Internal transport invoices / PL');

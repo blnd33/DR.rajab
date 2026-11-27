@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\DocumentSection;
+use App\Enums\Specialty;
 use App\Models\Concerns\HasCleanTranslations;
 use App\Models\Concerns\TracksAuthor;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,6 +18,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  *
  * @property int $id
  * @property DocumentSection $section
+ * @property ?Specialty $specialty Catalogues only: the category (Arthroplasty, Trauma…)
  * @property string $name
  * @property int $sort
  * @property bool $is_active
@@ -30,12 +32,13 @@ class DocumentFolder extends Model
     /** @var list<string> */
     public array $translatable = ['name'];
 
-    protected $fillable = ['section', 'name', 'sort', 'is_active'];
+    protected $fillable = ['section', 'specialty', 'name', 'sort', 'is_active'];
 
     protected function casts(): array
     {
         return [
             'section' => DocumentSection::class,
+            'specialty' => Specialty::class,
             'sort' => 'integer',
             'is_active' => 'boolean',
         ];

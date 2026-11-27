@@ -126,7 +126,7 @@ it('lists prices with the profit, priced items first and all on request', functi
 it('puts the client\'s list first in the Stock menu, then Pricelist and Catalogues as two sections', function () {
     $html = $this->get('/admin')->assertOk()->getContent();
 
-    $order = ['Inventory / stock volume', 'Stock value', 'Stock Volume per Specialty &gt; Category &gt; Subcategory / Items Group &gt; Item', 'Stock Value per Specialty &gt; Category &gt; Subcategory / Items Group &gt; Item', 'Stock movement', 'Input', 'Output', 'Items list', 'Receive stock', 'Pricelist', 'Catalogues', 'Lima', 'Mikron', 'Covision'];
+    $order = ['Inventory / stock volume', 'Stock value', 'Stock Volume per Specialty &gt; Category &gt; Subcategory / Items Group &gt; Item', 'Stock Value per Specialty &gt; Category &gt; Subcategory / Items Group &gt; Item', 'Stock movement', 'Input', 'Output', 'Items list', 'Receive stock', 'Pricelist', 'Catalogues', 'Arthroplasty', 'Trauma', 'Spine', 'Sport medicine', 'All catalogues', 'Covision'];
     $this->get('/admin')->assertSeeInOrder($order, false);
 
     // Off the menu.

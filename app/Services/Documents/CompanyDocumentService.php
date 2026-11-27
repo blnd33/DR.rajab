@@ -4,6 +4,7 @@ namespace App\Services\Documents;
 
 use App\Enums\AttachmentKind;
 use App\Enums\DocumentSection;
+use App\Enums\Specialty;
 use App\Models\CompanyDocument;
 use App\Models\DocumentFolder;
 use App\Models\User;
@@ -109,8 +110,14 @@ class CompanyDocumentService
         }
 
         $folder ??= new DocumentFolder;
+        // Catalogues: the category of the company's catalogues (may be left empty: "Unsorted").
+        $specialty = $section === DocumentSection::Catalogues
+            ? Specialty::tryFrom((string) (array_key_exists('specialty', $data) ? $data['specialty'] : $folder->specialty?->value))
+            : null;
+
         $folder->fill([
             'section' => $section,
+            'specialty' => $specialty,
             'name' => array_map('trim', $name),
             'sort' => (int) ($data['sort'] ?? $folder->sort ?? (DocumentFolder::query()->where('section', $section->value)->max('sort') + 1)),
             'is_active' => (bool) ($data['is_active'] ?? $folder->is_active ?? true),
