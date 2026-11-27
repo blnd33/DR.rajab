@@ -2,6 +2,12 @@
 
 All notable changes per build phase.
 
+## [Client updates — no menu blink, page numbers at the top] — 2026-11-27
+
+### Changed
+- **The side menu no longer blinks**: clicking it swaps only the page (Filament single-page mode, `->spa()`); the menu, the top bar and their state stay. Addresses outside the admin pages — prints, labels, files, imports, the phone app, the company switch — still open as a whole page (`spaUrlExceptions`).
+- **Page numbers above every list as well as below it** (Items List, Stock Movement, …): the same bar — "Showing 1 to 25 of …", per page, page numbers — at the top of the rows (`<x-table-top-pagination />`, table hook `CONTENT_BEFORE`). Like the bottom bar, it shows the page numbers when the list is wide enough and Previous / Next otherwise.
+
 ## [Client updates — Inactive Stock Value / Inactive Stock Volume] — 2026-11-21
 
 ### Added

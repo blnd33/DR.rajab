@@ -29,6 +29,7 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\View\TablesRenderHook;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -71,6 +72,14 @@ class AdminPanelProvider extends PanelProvider
             ->favicon(asset('icons/favicon.svg'))
             ->defaultAvatarProvider(KmAvatarProvider::class)
             ->sidebarCollapsibleOnDesktop()
+            // Clicking the menu swaps only the page, the side menu stays as it is (no blink).
+            // Addresses outside the admin pages (prints, files, the phone app, the company
+            // switch) still open as a whole page.
+            ->spa()
+            ->spaUrlExceptions(fn (): array => [
+                url('/print/*'), url('/labels/*'), url('/attachments/*'), url('/imports/*'),
+                url('/storage/*'), url('/app'), url('/app/*'), url('/company'), url('/company/*'),
+            ])
             // One search only: "Search the whole system" on the Home page (not the top-bar search).
             ->globalSearch(false)
             ->databaseNotifications()
@@ -103,6 +112,11 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn () => Blade::render('<x-pwa-head /><x-nav-title-case />'),
+            )
+            // Page numbers above every list as well as below it.
+            ->renderHook(
+                TablesRenderHook::CONTENT_BEFORE,
+                fn (array $data) => Blade::render('<x-table-top-pagination :has-pagination="$hasPagination" :records="$records" :table="$table" />', $data),
             )
             // The side menu's fold / unfold button, above Home page.
             ->renderHook(

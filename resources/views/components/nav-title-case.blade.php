@@ -31,4 +31,13 @@
             display: flex;
         }
     }
+
+    /* Page numbers above a list (<x-table-top-pagination />), separated from the rows. */
+    .ot-pagination-top {
+        border-bottom: 1px solid var(--gray-200);
+    }
+
+    .dark .ot-pagination-top {
+        border-bottom-color: rgb(255 255 255 / 0.1);
+    }
 </style>
