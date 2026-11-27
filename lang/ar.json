@@ -2992,5 +2992,9 @@
     ":count days": ":count يوماً",
     "Last used": "آخر استخدام",
     "In stock since": "في المخزون منذ",
-    "Days not used": "أيام بلا استخدام"
+    "Days not used": "أيام بلا استخدام",
+    "Sub distributor": "موزّع فرعي",
+    "Sub distributors": "الموزّعون الفرعيون",
+    "Choose the distributor this sub distributor works under.": "اختر الموزّع الذي يعمل تحته هذا الموزّع الفرعي.",
+    "The distributor this sub distributor works under.": "الموزّع الذي يعمل تحته هذا الموزّع الفرعي."
 }

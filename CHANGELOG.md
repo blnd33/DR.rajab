@@ -2,6 +2,12 @@
 
 All notable changes per build phase.
 
+## [Client updates — Sub distributors] — 2026-11-27
+
+### Added
+- **Company Agents → Sub Distributors** (right after Distributors, both companies): name, phone, city, notes and the **distributor they work under** (required, must be a distributor). The Distributors list shows how many sub distributors each has, and a distributor's page lists them. New agent type `sub_distributor`, `company_agents.distributor_id` (migration `2026_11_27_000100_add_sub_distributors`).
+- **Tests**: kept under their distributor, only their own information, the distributor required and checked, lists and pages, menu order.
+
 ## [Client updates — no menu blink, page numbers at the top] — 2026-11-27
 
 ### Changed

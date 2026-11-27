@@ -157,6 +157,7 @@ class CompanyAgentService
             'position' => $type->has('position') ? $text('position', 120) : null,
             'shares_percent' => $type->has('shares') ? $this->percent($data['shares_percent'] ?? null) : null,
             'user_id' => $type->has('user') ? $this->linkedUser($data['user_id'] ?? null, $existing) : null,
+            'distributor_id' => $type->has('distributor') ? $this->distributor($data['distributor_id'] ?? null) : null,
         ];
 
         foreach (['value' => 'value', 'salary' => 'salary', 'mission_fee' => 'mission_fee'] as $field => $prefix) {
@@ -179,6 +180,20 @@ class CompanyAgentService
         $clean['profit_currency'] = $month !== null || $year !== null ? strtoupper(trim((string) $data['profit_currency'])) : null;
 
         return $clean;
+    }
+
+    /**
+     * A sub distributor's distributor: required, and it must be a distributor.
+     */
+    private function distributor(mixed $id): int
+    {
+        $distributor = filled($id) ? CompanyAgent::query()->ofType(AgentType::Distributor)->find((int) $id) : null;
+
+        if ($distributor === null) {
+            throw ValidationException::withMessages(['distributor_id' => __('Choose the distributor this sub distributor works under.')]);
+        }
+
+        return $distributor->id;
     }
 
     public function authorize(User $by): void

@@ -8,6 +8,7 @@ use App\Models\Concerns\TracksAuthor;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Spatie\Activitylog\LogOptions;
@@ -23,6 +24,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property string $name
  * @property ?string $phone
  * @property ?string $city
+ * @property ?int $distributor_id
  * @property ?int $user_id
  * @property ?string $persons
  * @property ?string $stock
@@ -51,6 +53,7 @@ class CompanyAgent extends Model
         'phone',
         'city',
         'user_id',
+        'distributor_id',
         'persons',
         'stock',
         'value_amount',
@@ -93,6 +96,26 @@ class CompanyAgent extends Model
     public function scopeOfType(Builder $query, AgentType $type): void
     {
         $query->where('type', $type->value);
+    }
+
+    /**
+     * A sub distributor's distributor.
+     *
+     * @return BelongsTo<CompanyAgent, $this>
+     */
+    public function distributor(): BelongsTo
+    {
+        return $this->belongsTo(CompanyAgent::class, 'distributor_id');
+    }
+
+    /**
+     * A distributor's sub distributors.
+     *
+     * @return HasMany<CompanyAgent, $this>
+     */
+    public function subDistributors(): HasMany
+    {
+        return $this->hasMany(CompanyAgent::class, 'distributor_id')->where('type', AgentType::SubDistributor->value)->orderBy('name');
     }
 
     /** @return BelongsTo<User, $this> */

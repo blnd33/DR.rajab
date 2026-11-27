@@ -2792,5 +2792,9 @@
     ":count days": ":count days",
     "Last used": "Last used",
     "In stock since": "In stock since",
-    "Days not used": "Days not used"
+    "Days not used": "Days not used",
+    "Sub distributor": "Sub distributor",
+    "Sub distributors": "Sub distributors",
+    "Choose the distributor this sub distributor works under.": "Choose the distributor this sub distributor works under.",
+    "The distributor this sub distributor works under.": "The distributor this sub distributor works under."
 }

@@ -14,6 +14,7 @@ enum AgentType: string implements HasLabel
     use EnumHelpers;
 
     case Distributor = 'distributor';
+    case SubDistributor = 'sub_distributor';
     case DirectSeller = 'direct_seller';
     case Representative = 'representative';
     case Partner = 'partner';
@@ -24,6 +25,7 @@ enum AgentType: string implements HasLabel
     {
         return match ($this) {
             self::Distributor => __('Distributor'),
+            self::SubDistributor => __('Sub distributor'),
             self::DirectSeller => __('Direct seller'),
             self::Representative => __('Representative'),
             self::Partner => __('Partner'),
@@ -36,6 +38,7 @@ enum AgentType: string implements HasLabel
     {
         return match ($this) {
             self::Distributor => __('Distributors'),
+            self::SubDistributor => __('Sub distributors'),
             self::DirectSeller => __('Direct sellers'),
             self::Representative => __('Representatives'),
             self::Partner => __('Partners'),
@@ -53,6 +56,8 @@ enum AgentType: string implements HasLabel
     {
         return match ($this) {
             self::Distributor => ['city'],
+            // Works under a distributor (required).
+            self::SubDistributor => ['city', 'distributor'],
             self::DirectSeller => ['city', 'persons', 'value', 'stock'],
             self::Representative => ['cv', 'salary', 'mission_fee'],
             self::Partner => ['city', 'shares', 'value', 'profit'],

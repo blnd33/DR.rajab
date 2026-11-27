@@ -68,12 +68,15 @@ abstract class AgentResource extends Resource
         $money = fn (string $prefix) => fn ($state, CompanyAgent $record) => Display::money($state, $record->{"{$prefix}_currency"});
 
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with('cv'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['cv', 'distributor'])
+                ->when($type === AgentType::Distributor, fn (Builder $q) => $q->withCount('subDistributors')))
             ->defaultSort('name')
             ->columns(array_values(array_filter([
                 TextColumn::make('name')->label(__('Name'))->searchable()->sortable()->weight('semibold'),
                 CodeColumn::make('phone')->label(__('Phone'))->placeholder('—')->searchable(),
+                $type->has('distributor') ? TextColumn::make('distributor.name')->label(__('Distributor'))->placeholder('—')->searchable()->sortable() : null,
                 $type->has('city') ? TextColumn::make('city')->label(__('City'))->placeholder('—')->searchable()->sortable() : null,
+                $type === AgentType::Distributor ? TextColumn::make('sub_distributors_count')->label(__('Sub distributors'))->alignEnd()->sortable() : null,
                 $type->has('position') ? TextColumn::make('position')->label(__('Position'))->placeholder('—')->searchable() : null,
                 $type->has('user') ? TextColumn::make('user.name')->label(__('System account'))->placeholder('—')->toggleable() : null,
                 $type->has('stock') ? TextColumn::make('stock')->label(__('Stock'))->placeholder('—')->limit(40)->toggleable() : null,
@@ -125,7 +128,10 @@ abstract class AgentResource extends Resource
         return array_values(array_filter([
             $type !== AgentType::Technician ? TextEntry::make('name')->label(__('Name'))->weight('semibold') : null,
             $type !== AgentType::Technician ? TextEntry::make('phone')->label(__('Phone'))->placeholder('—')->extraAttributes(['dir' => 'ltr'])->fontFamily('mono') : null,
+            $type->has('distributor') ? TextEntry::make('distributor.name')->label(__('Distributor'))->placeholder('—') : null,
             $type->has('city') ? TextEntry::make('city')->label(__('City'))->placeholder('—') : null,
+            $type === AgentType::Distributor ? TextEntry::make('sub_distributor_names')->label(__('Sub distributors'))->columnSpanFull()
+                ->state(fn (CompanyAgent $r) => $r->subDistributors->map(fn (CompanyAgent $s) => $s->name.($s->city ? ' ('.$s->city.')' : ''))->implode(' · ') ?: null)->placeholder('—') : null,
             $type->has('position') ? TextEntry::make('position')->label(__('Position'))->placeholder('—') : null,
             $type->has('user') ? TextEntry::make('user.name')->label(__('System account'))->placeholder('—') : null,
             $type->has('shares') ? TextEntry::make('shares_percent')->label(__('Stocks (share %)'))->placeholder('—')->formatStateUsing(fn ($state) => Display::number($state, 2).'%') : null,

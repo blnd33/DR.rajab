@@ -177,3 +177,30 @@ it('opens every company-agent screen in every language', function (string $local
     // A partner's page is another type's 404.
     $this->get('/admin/agents/employees/'.$partner->id)->assertNotFound();
 })->with(['en', 'ar', 'ckb']);
+
+it('keeps sub distributors under their distributor', function () {
+    $azad = $this->agents->create(AgentType::Distributor, ['name' => 'Azad Distribution', 'city' => 'Duhok'], $this->admin);
+    $other = $this->agents->create(AgentType::DirectSeller, ['name' => 'Not a distributor'], $this->admin);
+
+    $sub = $this->agents->create(AgentType::SubDistributor, ['name' => 'Hozan Medical', 'phone' => '0750 111 2222', 'city' => 'Zakho', 'distributor_id' => $azad->id, 'salary_amount' => '900'], $this->admin);
+
+    expect($sub->type)->toBe(AgentType::SubDistributor)
+        ->and($sub->distributor->is($azad))->toBeTrue()
+        ->and($sub->city)->toBe('Zakho')
+        // Only what a sub distributor keeps.
+        ->and($sub->salary_amount)->toBeNull()
+        ->and($azad->subDistributors->pluck('name')->all())->toBe(['Hozan Medical'])
+        // A distributor has no distributor of its own.
+        ->and($azad->distributor_id)->toBeNull();
+
+    // The distributor is required, and must be a distributor.
+    expect(fn () => $this->agents->create(AgentType::SubDistributor, ['name' => 'No distributor'], $this->admin))->toThrow(ValidationException::class)
+        ->and(fn () => $this->agents->create(AgentType::SubDistributor, ['name' => 'Wrong one', 'distributor_id' => $other->id], $this->admin))->toThrow(ValidationException::class);
+
+    // Lists and pages.
+    $this->actingAs($this->admin);
+    $this->get('/admin/agents/sub-distributors')->assertOk()->assertSee('Hozan Medical')->assertSee('Azad Distribution');
+    $this->get('/admin/agents/sub-distributors/'.$sub->id)->assertOk()->assertSee('Azad Distribution');
+    $this->get('/admin/agents/distributors/'.$azad->id)->assertOk()->assertSee('Hozan Medical (Zakho)');
+    $this->get('/admin')->assertSeeInOrder(['Distributors', 'Sub Distributors', 'Direct Sellers']);
+});

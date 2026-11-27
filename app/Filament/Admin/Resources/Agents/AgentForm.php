@@ -44,6 +44,9 @@ final class AgentForm
     public static function details(AgentType $type): array
     {
         return array_values(array_filter([
+            $type->has('distributor') ? Select::make('distributor_id')->label(__('Distributor'))->native(false)->searchable()->required()
+                ->options(fn () => CompanyAgent::query()->ofType(AgentType::Distributor)->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all())
+                ->helperText(__('The distributor this sub distributor works under.')) : null,
             $type->has('city') ? TextInput::make('city')->label(__('City'))->maxLength(120) : null,
             $type->has('position') ? TextInput::make('position')->label(__('Position'))->maxLength(120) : null,
             $type->has('user') ? Select::make('user_id')->label(__('System account (optional)'))->native(false)->searchable()
@@ -83,7 +86,7 @@ final class AgentForm
         }
 
         return collect($agent->only([
-            'name', 'phone', 'city', 'user_id', 'persons', 'stock', 'value_amount', 'value_currency', 'shares_percent',
+            'name', 'phone', 'city', 'user_id', 'distributor_id', 'persons', 'stock', 'value_amount', 'value_currency', 'shares_percent',
             'profit_month_amount', 'profit_year_amount', 'profit_currency', 'position', 'salary_amount', 'salary_currency',
             'mission_fee_amount', 'mission_fee_currency', 'notes', 'is_active',
         ]))->map(fn ($value) => is_string($value) && is_numeric($value) && str_contains($value, '.') ? rtrim(rtrim($value, '0'), '.') : $value)->all();
