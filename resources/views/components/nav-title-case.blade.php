@@ -58,12 +58,19 @@
         text-underline-offset: 3px;
     }
 
-    /* Back / forward arrows before the company name. */
+    /* Back / forward arrows at the top of every page, above its title. */
     .ot-history {
         display: flex;
         align-items: center;
         gap: 0.125rem;
-        margin-inline-end: 0.75rem;
+        margin-inline-start: -0.5rem;
+        margin-top: 1rem;
+        margin-bottom: -0.75rem;
+    }
+
+    /* The windows of a section's home page, like the menu: a capital on every word. */
+    .ot-section-window-label {
+        text-transform: capitalize;
     }
 
     .ot-history button:disabled {

@@ -6,7 +6,7 @@ All notable changes per build phase.
 
 ### Added
 - **Every section of the side menu has its own home page**: clicking a section's name (Company Agents, Stock, Finance…) opens a page with a window for each entry of the section — the same entries as under it in the menu, which stays as it is; only what the user may open (`SectionPage`, `/admin/section?section=company-agents`; keys in `App\Support\SectionRegistry`, the same in every language). The arrow next to the name still folds the section (Filament's menu section copied to `resources/views/vendor/filament-panels/components/sidebar/group.blade.php`, only the name made a link).
-- **Back / forward arrows** at the start of the top bar, like a browser's; dimmed when there is nowhere to go.
+- **Back / forward arrows** at the top of every page, above its title (first in the top bar, moved on request), like a browser's; dimmed when there is nowhere to go. The windows of a section's page have a capital on every word, like the menu.
 
 ### Changed
 - **A thinner side menu**: rows and sections closer together.

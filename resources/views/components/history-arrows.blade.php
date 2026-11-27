@@ -1,5 +1,5 @@
 {{--
-    Back and forward, like a browser's arrows, at the start of the top bar. Dimmed when there is
+    Back and forward, like a browser's arrows, at the top of every page above its title. Dimmed when there is
     nowhere to go (where the browser tells; otherwise always on).
 --}}
 @php
@@ -18,6 +18,7 @@
      x-on:popstate.window="setTimeout(() => check(), 50)">
     <x-filament::icon-button
         color="gray"
+        icon-size="lg"
         :icon="$isRtl ? Heroicon::OutlinedArrowRight : Heroicon::OutlinedArrowLeft"
         :label="__('Go back')"
         x-on:click="history.back()"
@@ -26,6 +27,7 @@
     />
     <x-filament::icon-button
         color="gray"
+        icon-size="lg"
         :icon="$isRtl ? Heroicon::OutlinedArrowLeft : Heroicon::OutlinedArrowRight"
         :label="__('Go forward')"
         x-on:click="history.forward()"
