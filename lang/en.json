@@ -2805,5 +2805,10 @@
     "No company has catalogues in this category yet. Add a folder in Administration → Document folders, in the Catalogues section, and choose this category.": "No company has catalogues in this category yet. Add a folder in Administration → Document folders, in the Catalogues section, and choose this category.",
     ":count document|:count documents": ":count document|:count documents",
     "Unsorted": "Unsorted",
-    "Catalogues → this category → this company.": "Catalogues → this category → this company."
+    "Catalogues → this category → this company.": "Catalogues → this category → this company.",
+    "All companies": "All companies",
+    "Without company": "Without company",
+    "No company has items in this category yet.": "No company has items in this category yet.",
+    "Every active item with its company, cost price, selling price and profit. Items without a selling price are listed too.": "Every active item with its company, cost price, selling price and profit. Items without a selling price are listed too.",
+    ":count with a price": ":count with a price"
 }

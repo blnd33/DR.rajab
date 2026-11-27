@@ -2,6 +2,12 @@
 
 All notable changes per build phase.
 
+## [Client updates — Pricelist by category] — 2026-11-27
+
+### Changed
+- **Pricelist by category**, like Catalogues: Pricelist (its home page and the side menu) shows **Arthroplasty, Trauma, Spine, Sport medicine** and **All companies**. A category shows its **companies** (brands such as Mikron, Lima) with how many items and how many with a price, plus All companies of that category; a company opens **its price list** — each item's name, company, cost, selling price and profit. **All companies** is the full price list (every company's items, with the company column). Print and Excel keep the category and company (`PricelistPage`, `/admin/pricelist?specialty=trauma`; `/admin/reports/price-list?specialty=trauma&brand=…`; `ReportContext` specialty / brand).
+- **Tests**: price list by category and company (and items without a company), the pages, printing, permissions.
+
 ## [Client updates — Catalogues by category] — 2026-11-27
 
 ### Changed

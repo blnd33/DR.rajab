@@ -3005,5 +3005,10 @@
     "No company has catalogues in this category yet. Add a folder in Administration → Document folders, in the Catalogues section, and choose this category.": "هێشتا هیچ کۆمپانیایەک کاتالۆگی لەم پۆلەدا نییە. لە بەڕێوەبردن ← بوخچەکانی بەڵگەنامە، لە بەشی کاتالۆگەکان، بوخچەیەک زیاد بکە و ئەم پۆلە هەڵبژێرە.",
     ":count document|:count documents": ":count بەڵگەنامە|:count بەڵگەنامە",
     "Unsorted": "پۆلێن نەکراو",
-    "Catalogues → this category → this company.": "کاتالۆگەکان ← ئەم پۆلە ← ئەم کۆمپانیایە."
+    "Catalogues → this category → this company.": "کاتالۆگەکان ← ئەم پۆلە ← ئەم کۆمپانیایە.",
+    "All companies": "هەموو کۆمپانیاکان",
+    "Without company": "بێ کۆمپانیا",
+    "No company has items in this category yet.": "هێشتا هیچ کۆمپانیایەک کاڵای لەم پۆلەدا نییە.",
+    "Every active item with its company, cost price, selling price and profit. Items without a selling price are listed too.": "هەموو کاڵایەکی چالاک لەگەڵ کۆمپانیاکەی، نرخی تێچوو، نرخی فرۆشتن و قازانج. ئەو کاڵایانەش کە نرخی فرۆشتنیان نییە لیست دەکرێن.",
+    ":count with a price": ":count نرخیان هەیە"
 }

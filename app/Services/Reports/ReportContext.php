@@ -2,6 +2,7 @@
 
 namespace App\Services\Reports;
 
+use App\Enums\Specialty;
 use App\Models\User;
 use App\Services\Permissions\BranchScopeResolver;
 use Illuminate\Support\Carbon;
@@ -26,13 +27,16 @@ final class ReportContext
         public readonly ?string $group,
         // Inactive stock: not used (sold, used in surgery, written off…) for this many days.
         public readonly int $idleDays = 90,
+        // Pricelist: one category (specialty) and / or one company (brand; 0 = items without one).
+        public readonly ?string $specialty = null,
+        public readonly ?int $brand = null,
     ) {}
 
     /** The choices of the "Not used for" filter (days). */
     public const IDLE_DAYS = [30, 60, 90, 180, 365];
 
     /**
-     * @param  array{from?: ?string, until?: ?string, branch?: int|string|null, currency?: ?string, group?: ?string, idle?: int|string|null}  $input
+     * @param  array{from?: ?string, until?: ?string, branch?: int|string|null, currency?: ?string, group?: ?string, idle?: int|string|null, specialty?: ?string, brand?: int|string|null}  $input
      */
     public static function make(Report $report, User $user, array $input): self
     {
@@ -58,7 +62,10 @@ final class ReportContext
 
         $idle = in_array((int) ($input['idle'] ?? 0), self::IDLE_DAYS, true) ? (int) $input['idle'] : 90;
 
-        return new self($user, $from, $until, $branchIds, $currency, $group, $idle);
+        $specialty = Specialty::tryFrom((string) ($input['specialty'] ?? ''))?->value;
+        $brand = isset($input['brand']) && is_numeric($input['brand']) ? (int) $input['brand'] : null;
+
+        return new self($user, $from, $until, $branchIds, $currency, $group, $idle, $specialty, $brand);
     }
 
     /**
@@ -91,6 +98,8 @@ final class ReportContext
             'currency' => $this->currency,
             'group' => $this->group,
             'idle' => (string) $this->idleDays,
+            'specialty' => $this->specialty,
+            'brand' => $this->brand !== null ? (string) $this->brand : null,
         ], fn ($v) => $v !== null);
     }
 }

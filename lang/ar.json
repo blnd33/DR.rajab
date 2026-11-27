@@ -3005,5 +3005,10 @@
     "No company has catalogues in this category yet. Add a folder in Administration → Document folders, in the Catalogues section, and choose this category.": "لا توجد شركة لها كتالوجات في هذه الفئة بعد. أضف مجلداً من الإدارة ← مجلدات الوثائق، في قسم الكتالوجات، واختر هذه الفئة.",
     ":count document|:count documents": ":count وثيقة|:count وثائق",
     "Unsorted": "غير مصنّف",
-    "Catalogues → this category → this company.": "الكتالوجات ← هذه الفئة ← هذه الشركة."
+    "Catalogues → this category → this company.": "الكتالوجات ← هذه الفئة ← هذه الشركة.",
+    "All companies": "كل الشركات",
+    "Without company": "بدون شركة",
+    "No company has items in this category yet.": "لا توجد شركة لها أصناف في هذه الفئة بعد.",
+    "Every active item with its company, cost price, selling price and profit. Items without a selling price are listed too.": "كل صنف فعّال مع شركته وسعر التكلفة وسعر البيع والربح. تظهر أيضاً الأصناف التي ليس لها سعر بيع.",
+    ":count with a price": ":count لها سعر"
 }
