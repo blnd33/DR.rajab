@@ -9,7 +9,7 @@ All notable changes per build phase.
 - **Back / forward arrows** at the top of every page, above its title (first in the top bar, moved on request), like a browser's; dimmed when there is nowhere to go. The windows of a section's page have a capital on every word, like the menu.
 
 ### Changed
-- **A thinner side menu**: rows and sections closer together.
+- **A thinner side menu**: rows and sections closer together. The fold button at the top of the menu sits in a thin row of its own.
 
 ## [Client updates — Sub distributors] — 2026-11-27
 

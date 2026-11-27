@@ -23,7 +23,8 @@
 
     .ot-sidebar-toggle {
         display: none;
-        padding: 0 0.25rem 0.5rem;
+        padding: 0 0.25rem;
+        margin-bottom: -0.5rem;
     }
 
     @media (min-width: 1024px) {
@@ -50,6 +51,8 @@
 
     .fi-sidebar .fi-sidebar-nav {
         row-gap: 1rem;
+        /* Less empty space above the fold button at the top of the menu. */
+        padding-top: 0.75rem;
     }
 
     /* A section's name opens its home page (SectionPage). */

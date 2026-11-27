@@ -13,7 +13,6 @@
     <x-filament::icon-button
         color="gray"
         :icon="$isRtl ? Heroicon::OutlinedChevronRight : Heroicon::OutlinedChevronLeft"
-        icon-size="lg"
         :label="__('filament-panels::layout.actions.sidebar.collapse.label')"
         x-cloak
         x-data="{}"
@@ -25,7 +24,6 @@
     <x-filament::icon-button
         color="gray"
         :icon="$isRtl ? Heroicon::OutlinedChevronLeft : Heroicon::OutlinedChevronRight"
-        icon-size="lg"
         :label="__('filament-panels::layout.actions.sidebar.expand.label')"
         x-cloak
         x-data="{}"
